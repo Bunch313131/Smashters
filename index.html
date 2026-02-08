@@ -32,6 +32,9 @@
             --masters-black: #1a1a1a;
             --team-a-color: #CE1141;
             --team-b-color: #004F9E;
+            --birdie-color: #CE1141;
+            --eagle-color: #C8A951;
+            --bogey-color: #006747;
             --card-shadow: 0 2px 8px rgba(0,0,0,0.15);
             --card-shadow-hover: 0 4px 16px rgba(0,0,0,0.2);
             --radius: 8px;
@@ -85,9 +88,7 @@
             border-radius: 4px;
         }
 
-        .header-titles {
-            text-align: left;
-        }
+        .header-titles { text-align: left; }
 
         .header-titles h1 {
             font-size: 1.6rem;
@@ -187,10 +188,7 @@
             gap: 20px;
         }
 
-        .lb-team {
-            flex: 1;
-            text-align: center;
-        }
+        .lb-team { flex: 1; text-align: center; }
 
         .lb-team-name {
             font-size: 0.85rem;
@@ -237,22 +235,13 @@
             border-bottom: 1px solid #eee;
             transition: var(--transition);
         }
-        .lb-match-card:last-child {
-            border-radius: 0 0 var(--radius) var(--radius);
-        }
+        .lb-match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); }
         .lb-match-card:hover { background: #fafaf5; }
 
-        .lb-match-players {
-            flex: 1;
-        }
+        .lb-match-players { flex: 1; }
 
-        .lb-match-players .team-line {
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
-        .lb-match-players .team-line.leading {
-            font-weight: bold;
-        }
+        .lb-match-players .team-line { font-size: 0.95rem; line-height: 1.4; }
+        .lb-match-players .team-line.leading { font-weight: bold; }
         .lb-match-players .vs-line {
             font-size: 0.7rem;
             color: #999;
@@ -260,16 +249,9 @@
             letter-spacing: 1px;
         }
 
-        .lb-match-status {
-            text-align: right;
-            min-width: 90px;
-        }
+        .lb-match-status { text-align: right; min-width: 90px; }
 
-        .lb-match-status .status-text {
-            font-size: 1rem;
-            font-weight: bold;
-            line-height: 1.2;
-        }
+        .lb-match-status .status-text { font-size: 1rem; font-weight: bold; line-height: 1.2; }
         .lb-match-status .status-text.team-a-lead { color: var(--team-a-color); }
         .lb-match-status .status-text.team-b-lead { color: var(--team-b-color); }
         .lb-match-status .status-text.all-square { color: var(--masters-green); }
@@ -283,23 +265,13 @@
             letter-spacing: 1px;
         }
 
-        .lb-empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-        .lb-empty h3 {
-            color: var(--masters-green);
-            margin-bottom: 8px;
-            font-size: 1.3rem;
-        }
+        .lb-empty { text-align: center; padding: 60px 20px; color: #999; }
+        .lb-empty h3 { color: var(--masters-green); margin-bottom: 8px; font-size: 1.3rem; }
 
         /* ═══════════════════════════════════════════════════════
            SCORING
            ═══════════════════════════════════════════════════════ */
-        .scoring-match-select {
-            margin-bottom: 16px;
-        }
+        .scoring-match-select { margin-bottom: 16px; }
 
         .scoring-match-btn {
             display: block;
@@ -351,10 +323,15 @@
         .scoring-hole-nav {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             padding: 12px 16px;
             background: var(--masters-dark);
             color: var(--masters-white);
+            gap: 16px;
+        }
+
+        .scoring-hole-nav .hole-info {
+            text-align: center;
         }
 
         .scoring-hole-nav .hole-num {
@@ -362,65 +339,139 @@
             font-weight: bold;
         }
 
+        .scoring-hole-nav .hole-details {
+            font-size: 0.7rem;
+            color: var(--masters-gold);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
         .hole-nav-btn {
             background: rgba(255,255,255,0.15);
             border: none;
             color: var(--masters-white);
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             cursor: pointer;
             transition: var(--transition);
+            flex-shrink: 0;
         }
         .hole-nav-btn:hover { background: rgba(255,255,255,0.25); }
         .hole-nav-btn:disabled { opacity: 0.3; cursor: default; }
 
-        .scoring-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
+        /* Score entry rows */
+        .scoring-team-section {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
         }
 
-        .score-team-btn {
-            padding: 24px 16px;
-            border: none;
-            font-family: 'Georgia', serif;
-            font-size: 0.95rem;
+        .scoring-team-label {
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 4px 2px;
+        }
+        .scoring-team-label.team-a { color: var(--team-a-color); }
+        .scoring-team-label.team-b { color: var(--team-b-color); }
+
+        .score-entry-row {
+            display: flex;
+            align-items: center;
+            padding: 6px 4px;
+            gap: 8px;
+        }
+
+        .score-entry-name {
+            flex: 1;
+            font-size: 0.9rem;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .score-entry-name .hcp-badge {
+            font-size: 0.65rem;
+            color: #999;
+            display: block;
+        }
+
+        .score-entry-controls {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .score-adj-btn {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #ddd;
+            background: #f9f9f5;
+            font-size: 1.4rem;
             font-weight: bold;
             cursor: pointer;
             transition: var(--transition);
-            text-align: center;
-            color: var(--masters-white);
+            color: var(--masters-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .score-team-btn.team-a-btn {
-            background: var(--team-a-color);
-        }
-        .score-team-btn.team-b-btn {
-            background: var(--team-b-color);
-        }
-        .score-team-btn:hover { opacity: 0.9; filter: brightness(1.1); }
-        .score-team-btn.selected {
-            box-shadow: inset 0 0 0 3px var(--masters-yellow);
+        .score-adj-btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+        .score-adj-btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+        .score-adj-btn:hover { background: #eee; }
+        .score-adj-btn:active { background: #ddd; }
+
+        .score-value-display {
+            width: 52px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-top: 2px solid #ddd;
+            border-bottom: 2px solid #ddd;
+            background: var(--masters-white);
+            position: relative;
         }
 
-        .score-halved-btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: #f5f5f0;
-            border: none;
-            border-top: 1px solid #eee;
-            font-family: 'Georgia', serif;
-            font-size: 0.85rem;
+        .score-value-display.birdie { color: var(--birdie-color); }
+        .score-value-display.eagle { color: var(--eagle-color); }
+        .score-value-display.bogey { color: var(--bogey-color); }
+        .score-value-display.double-bogey { color: #666; }
+        .score-value-display.no-score { color: #ccc; }
+
+        .score-vs-par {
+            position: absolute;
+            bottom: 1px;
+            right: 3px;
+            font-size: 0.5rem;
+            font-weight: bold;
+        }
+
+        .best-ball-indicator {
+            font-size: 0.75rem;
+            padding: 4px 8px;
             color: #666;
-            cursor: pointer;
-            transition: var(--transition);
+            font-style: italic;
+        }
+        .best-ball-indicator strong { color: var(--masters-black); }
+
+        .hole-result-banner {
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
-        .score-halved-btn:hover { background: #eee; }
-        .score-halved-btn.selected { background: var(--masters-green); color: var(--masters-white); }
+        .hole-result-banner.team-a-win { background: var(--team-a-color); color: var(--masters-white); }
+        .hole-result-banner.team-b-win { background: var(--team-b-color); color: var(--masters-white); }
+        .hole-result-banner.hole-halved { background: #f0f0e8; color: #666; }
+        .hole-result-banner.hole-pending { background: #f9f9f5; color: #bbb; }
 
         .scoring-hole-strip {
             display: flex;
@@ -453,6 +504,22 @@
         .hole-dot.team-b-won { border-color: var(--team-b-color); background: var(--team-b-color); color: var(--masters-white); }
         .hole-dot.halved-hole { border-color: var(--masters-gold); background: var(--masters-gold); color: var(--masters-white); }
 
+        .scoring-clear-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: none;
+            border: none;
+            border-top: 1px solid #eee;
+            font-family: 'Georgia', serif;
+            font-size: 0.75rem;
+            color: #999;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .scoring-clear-btn:hover { background: #f5f5f0; color: var(--masters-red); }
+
         /* ═══════════════════════════════════════════════════════
            MATCHES
            ═══════════════════════════════════════════════════════ */
@@ -467,10 +534,7 @@
             justify-content: space-between;
         }
 
-        .match-day-header h3 {
-            font-size: 1rem;
-            letter-spacing: 2px;
-        }
+        .match-day-header h3 { font-size: 1rem; letter-spacing: 2px; }
 
         .match-setup-card {
             background: var(--masters-white);
@@ -499,9 +563,7 @@
             gap: 12px;
         }
 
-        .match-team-col {
-            flex: 1;
-        }
+        .match-team-col { flex: 1; }
 
         .match-team-col label {
             display: block;
@@ -512,11 +574,7 @@
             margin-bottom: 4px;
         }
 
-        .match-vs-col {
-            font-size: 0.75rem;
-            color: #999;
-            font-style: italic;
-        }
+        .match-vs-col { font-size: 0.75rem; color: #999; font-style: italic; }
 
         /* ═══════════════════════════════════════════════════════
            PLAYERS
@@ -551,19 +609,10 @@
         .player-avatar.no-team { background: #bbb; }
 
         .player-info { flex: 1; }
-        .player-info .player-name {
-            font-weight: bold;
-            font-size: 1rem;
-        }
-        .player-info .player-detail {
-            font-size: 0.8rem;
-            color: #777;
-        }
+        .player-info .player-name { font-weight: bold; font-size: 1rem; }
+        .player-info .player-detail { font-size: 0.8rem; color: #777; }
 
-        .player-actions {
-            display: flex;
-            gap: 6px;
-        }
+        .player-actions { display: flex; gap: 6px; }
 
         /* ═══════════════════════════════════════════════════════
            DRAFT
@@ -594,10 +643,7 @@
         .draft-team-header.team-a { background: var(--team-a-color); }
         .draft-team-header.team-b { background: var(--team-b-color); }
 
-        .draft-team-list {
-            padding: 8px;
-            min-height: 100px;
-        }
+        .draft-team-list { padding: 8px; min-height: 100px; }
 
         .draft-pick-item {
             padding: 8px 10px;
@@ -609,11 +655,7 @@
             align-items: center;
             gap: 8px;
         }
-        .draft-pick-item .pick-num {
-            font-size: 0.7rem;
-            color: #999;
-            width: 20px;
-        }
+        .draft-pick-item .pick-num { font-size: 0.7rem; color: #999; width: 20px; }
 
         .draft-pool {
             background: var(--masters-white);
@@ -640,14 +682,9 @@
             text-align: center;
             font-size: 0.85rem;
         }
-        .draft-pool-indicator .picking-team {
-            font-weight: bold;
-            font-size: 1rem;
-        }
+        .draft-pool-indicator .picking-team { font-weight: bold; font-size: 1rem; }
 
-        .draft-pool-list {
-            padding: 8px;
-        }
+        .draft-pool-list { padding: 8px; }
 
         .draft-player-btn {
             display: block;
@@ -663,14 +700,8 @@
             font-size: 0.9rem;
             transition: var(--transition);
         }
-        .draft-player-btn:hover {
-            border-color: var(--masters-green);
-            background: #f0f8f0;
-        }
-        .draft-player-btn .player-hcp {
-            font-size: 0.75rem;
-            color: #999;
-        }
+        .draft-player-btn:hover { border-color: var(--masters-green); background: #f0f8f0; }
+        .draft-player-btn .player-hcp { font-size: 0.75rem; color: #999; }
 
         /* ═══════════════════════════════════════════════════════
            SETTINGS
@@ -693,16 +724,43 @@
             text-transform: uppercase;
         }
 
-        .settings-section-body {
-            padding: 16px;
+        .settings-section-body { padding: 16px; }
+
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
         }
+        .course-table th {
+            background: var(--masters-dark);
+            color: var(--masters-yellow);
+            padding: 6px 8px;
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .course-table td {
+            padding: 5px 4px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        .course-table input {
+            width: 44px;
+            padding: 4px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Georgia', serif;
+            font-size: 0.8rem;
+        }
+        .course-table input:focus { outline: none; border-color: var(--masters-green); }
+        .course-table .hole-label { font-weight: bold; color: var(--masters-green); }
 
         /* ═══════════════════════════════════════════════════════
            FORMS & INPUTS
            ═══════════════════════════════════════════════════════ */
-        .form-group {
-            margin-bottom: 14px;
-        }
+        .form-group { margin-bottom: 14px; }
 
         .form-group label {
             display: block;
@@ -724,10 +782,7 @@
             transition: var(--transition);
             background: var(--masters-white);
         }
-        .form-input:focus {
-            outline: none;
-            border-color: var(--masters-green);
-        }
+        .form-input:focus { outline: none; border-color: var(--masters-green); }
 
         select.form-input {
             -webkit-appearance: none;
@@ -738,11 +793,7 @@
             padding-right: 32px;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         /* ═══════════════════════════════════════════════════════
            BUTTONS
@@ -764,48 +815,21 @@
             text-transform: uppercase;
         }
 
-        .btn-primary {
-            background: var(--masters-green);
-            color: var(--masters-white);
-        }
+        .btn-primary { background: var(--masters-green); color: var(--masters-white); }
         .btn-primary:hover { background: var(--masters-dark); }
 
-        .btn-gold {
-            background: var(--masters-gold);
-            color: var(--masters-darkest);
-        }
+        .btn-gold { background: var(--masters-gold); color: var(--masters-darkest); }
         .btn-gold:hover { background: var(--masters-yellow); }
 
-        .btn-danger {
-            background: var(--masters-red);
-            color: var(--masters-white);
-        }
+        .btn-danger { background: var(--masters-red); color: var(--masters-white); }
         .btn-danger:hover { opacity: 0.9; }
 
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--masters-green);
-            color: var(--masters-green);
-        }
+        .btn-outline { background: transparent; border: 2px solid var(--masters-green); color: var(--masters-green); }
         .btn-outline:hover { background: var(--masters-green); color: var(--masters-white); }
 
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.75rem;
-        }
-
-        .btn-block {
-            display: flex;
-            width: 100%;
-        }
-
-        .btn-icon {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            border-radius: 50%;
-            font-size: 0.85rem;
-        }
+        .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
+        .btn-block { display: flex; width: 100%; }
+        .btn-icon { width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 0.85rem; }
 
         /* ═══════════════════════════════════════════════════════
            UTILITIES
@@ -825,15 +849,8 @@
         .mb-16 { margin-bottom: 16px; }
         .mt-16 { margin-top: 16px; }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-        .empty-state h3 {
-            color: var(--masters-green);
-            margin-bottom: 8px;
-        }
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-state h3 { color: var(--masters-green); margin-bottom: 8px; }
         .empty-state p { font-size: 0.9rem; }
 
         .toast {
@@ -916,6 +933,9 @@
             .lb-team-pts { font-size: 2.2rem; }
             .form-row { grid-template-columns: 1fr; }
             .draft-board { grid-template-columns: 1fr; }
+            .score-entry-name { font-size: 0.8rem; }
+            .score-adj-btn { width: 44px; height: 44px; font-size: 1.2rem; }
+            .score-value-display { width: 48px; height: 44px; font-size: 1.2rem; }
         }
 
         @media (min-width: 768px) {
@@ -948,56 +968,16 @@
         </nav>
     </header>
 
-    <!-- ═══════════════════════════════════════════════════════
-         LEADERBOARD TAB
-         ═══════════════════════════════════════════════════════ -->
-    <section class="tab-content active" id="tab-leaderboard">
-        <div id="leaderboard-content"></div>
-    </section>
+    <section class="tab-content active" id="tab-leaderboard"><div id="leaderboard-content"></div></section>
+    <section class="tab-content" id="tab-scoring"><div id="scoring-content"></div></section>
+    <section class="tab-content" id="tab-matches"><div id="matches-content"></div></section>
+    <section class="tab-content" id="tab-players"><div id="players-content"></div></section>
+    <section class="tab-content" id="tab-draft"><div id="draft-content"></div></section>
+    <section class="tab-content" id="tab-settings"><div id="settings-content"></div></section>
 
-    <!-- ═══════════════════════════════════════════════════════
-         SCORING TAB
-         ═══════════════════════════════════════════════════════ -->
-    <section class="tab-content" id="tab-scoring">
-        <div id="scoring-content"></div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════
-         MATCHES TAB
-         ═══════════════════════════════════════════════════════ -->
-    <section class="tab-content" id="tab-matches">
-        <div id="matches-content"></div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════
-         PLAYERS TAB
-         ═══════════════════════════════════════════════════════ -->
-    <section class="tab-content" id="tab-players">
-        <div id="players-content"></div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════
-         DRAFT TAB
-         ═══════════════════════════════════════════════════════ -->
-    <section class="tab-content" id="tab-draft">
-        <div id="draft-content"></div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════
-         SETTINGS TAB
-         ═══════════════════════════════════════════════════════ -->
-    <section class="tab-content" id="tab-settings">
-        <div id="settings-content"></div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════
-         MODAL
-         ═══════════════════════════════════════════════════════ -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="modalContainer"></div>
     </div>
-
-    <!-- TOAST -->
     <div class="toast" id="toast"></div>
 
     <script>
@@ -1005,6 +985,30 @@
        THE SMASHTERS APP
        Dumpster Fire Golf Club - Ryder Cup Style Event Manager
        ═══════════════════════════════════════════════════════════ */
+
+    // ─────────────────────────────────────────────────────────
+    // COURSE DATA
+    // ─────────────────────────────────────────────────────────
+    const DEFAULT_COURSE_HOLES = [
+        { hole: 1,  par: 4, hcp: 15 },
+        { hole: 2,  par: 5, hcp: 13 },
+        { hole: 3,  par: 3, hcp: 9 },
+        { hole: 4,  par: 4, hcp: 1 },
+        { hole: 5,  par: 5, hcp: 7 },
+        { hole: 6,  par: 4, hcp: 3 },
+        { hole: 7,  par: 3, hcp: 17 },
+        { hole: 8,  par: 4, hcp: 11 },
+        { hole: 9,  par: 4, hcp: 5 },
+        { hole: 10, par: 4, hcp: 8 },
+        { hole: 11, par: 4, hcp: 2 },
+        { hole: 12, par: 3, hcp: 16 },
+        { hole: 13, par: 4, hcp: 6 },
+        { hole: 14, par: 4, hcp: 10 },
+        { hole: 15, par: 5, hcp: 12 },
+        { hole: 16, par: 3, hcp: 18 },
+        { hole: 17, par: 4, hcp: 4 },
+        { hole: 18, par: 5, hcp: 14 },
+    ];
 
     // ─────────────────────────────────────────────────────────
     // STATE
@@ -1021,6 +1025,8 @@
             teamSize: 6,
             courseName: '',
             eventDate: '',
+            courseHoles: JSON.parse(JSON.stringify(DEFAULT_COURSE_HOLES)),
+            useHandicaps: true,
         },
         players: {},
         draft: {
@@ -1050,6 +1056,7 @@
                     config: { ...base.config, ...parsed.config,
                         teamA: { ...base.config.teamA, ...(parsed.config?.teamA || {}) },
                         teamB: { ...base.config.teamB, ...(parsed.config?.teamB || {}) },
+                        courseHoles: parsed.config?.courseHoles || base.config.courseHoles,
                     },
                     players: parsed.players || {},
                     draft: { ...base.draft, ...parsed.draft },
@@ -1062,9 +1069,8 @@
     }
 
     function saveState() {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(S));
-        } catch (e) { console.error('Save state error:', e); }
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }
+        catch (e) { console.error('Save state error:', e); }
     }
 
     function genId() {
@@ -1072,7 +1078,7 @@
     }
 
     // ─────────────────────────────────────────────────────────
-    // TOAST
+    // TOAST & MODAL
     // ─────────────────────────────────────────────────────────
     function showToast(msg) {
         const t = document.getElementById('toast');
@@ -1081,13 +1087,9 @@
         setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    // ─────────────────────────────────────────────────────────
-    // MODAL
-    // ─────────────────────────────────────────────────────────
     function openModal(title, bodyHtml, footerHtml) {
         const overlay = document.getElementById('modalOverlay');
-        const container = document.getElementById('modalContainer');
-        container.innerHTML = `
+        document.getElementById('modalContainer').innerHTML = `
             <div class="modal-header">
                 <span>${title}</span>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -1118,15 +1120,9 @@
     });
 
     function renderTab(tabId) {
-        const renderers = {
-            leaderboard: renderLeaderboard,
-            scoring: renderScoring,
-            matches: renderMatches,
-            players: renderPlayers,
-            draft: renderDraft,
-            settings: renderSettings,
-        };
-        if (renderers[tabId]) renderers[tabId]();
+        const r = { leaderboard: renderLeaderboard, scoring: renderScoring, matches: renderMatches,
+            players: renderPlayers, draft: renderDraft, settings: renderSettings };
+        if (r[tabId]) r[tabId]();
     }
 
     // ─────────────────────────────────────────────────────────
@@ -1134,50 +1130,108 @@
     // ─────────────────────────────────────────────────────────
     function getPlayer(id) { return S.players[id] || null; }
     function getPlayerName(id) { return S.players[id]?.name || 'Unknown'; }
+    function getPlayerHcp(id) { return parseInt(S.players[id]?.handicap) || 0; }
+    function getTeamPlayers(team) { return Object.values(S.players).filter(p => p.team === team); }
+    function getMatchesByDay(day) { return Object.values(S.matches).filter(m => m.day === day).sort((a, b) => a.order - b.order); }
 
-    function getTeamPlayers(team) {
-        return Object.values(S.players).filter(p => p.team === team);
+    function getHoleInfo(holeNum) {
+        return S.config.courseHoles[holeNum - 1] || { hole: holeNum, par: 4, hcp: holeNum };
     }
 
-    function getUnassignedPlayers() {
-        return Object.values(S.players).filter(p => !p.team);
-    }
-
-    function getMatchesByDay(day) {
-        return Object.values(S.matches).filter(m => m.day === day).sort((a, b) => a.order - b.order);
+    function formatScore(n) {
+        if (n === Math.floor(n)) return n.toString();
+        return Math.floor(n) + '\u00BD';
     }
 
     // ─────────────────────────────────────────────────────────
-    // MATCH PLAY SCORING LOGIC
+    // HANDICAP & SCORING LOGIC
+    // ─────────────────────────────────────────────────────────
+    // Returns how many strokes a player receives on a given hole
+    function getStrokesOnHole(playerHcp, holeHcpRank) {
+        if (!playerHcp || playerHcp <= 0) return 0;
+        const full = Math.floor(playerHcp / 18);
+        const extra = playerHcp % 18;
+        return full + (holeHcpRank <= extra ? 1 : 0);
+    }
+
+    // Get the net score for a player on a hole
+    function getNetScore(playerId, holeNum, grossScore) {
+        if (grossScore === null || grossScore === undefined) return null;
+        if (!S.config.useHandicaps) return grossScore;
+        const holeInfo = getHoleInfo(holeNum);
+        const strokes = getStrokesOnHole(getPlayerHcp(playerId), holeInfo.hcp);
+        return grossScore - strokes;
+    }
+
+    // Determine who wins a hole from the match scores
+    // Returns 'A', 'B', 'halved', or null (incomplete)
+    function getHoleWinner(match, holeNum) {
+        const holeScores = match.holes[holeNum];
+        if (!holeScores) return null;
+
+        // Get all players and their scores
+        const teamAIds = match.teamA;
+        const teamBIds = match.teamB;
+
+        // Check if all players have scores entered
+        const allPlayers = [...teamAIds, ...teamBIds];
+        const allHaveScores = allPlayers.every(id => holeScores[id] !== undefined && holeScores[id] !== null);
+        if (!allHaveScores) return null;
+
+        if (match.type === 'fourball') {
+            // Best ball: lowest net score from each team
+            const teamANets = teamAIds.map(id => getNetScore(id, holeNum, holeScores[id])).filter(s => s !== null);
+            const teamBNets = teamBIds.map(id => getNetScore(id, holeNum, holeScores[id])).filter(s => s !== null);
+            if (teamANets.length === 0 || teamBNets.length === 0) return null;
+            const bestA = Math.min(...teamANets);
+            const bestB = Math.min(...teamBNets);
+            if (bestA < bestB) return 'A';
+            if (bestB < bestA) return 'B';
+            return 'halved';
+        } else {
+            // Singles: direct comparison
+            const netA = getNetScore(teamAIds[0], holeNum, holeScores[teamAIds[0]]);
+            const netB = getNetScore(teamBIds[0], holeNum, holeScores[teamBIds[0]]);
+            if (netA === null || netB === null) return null;
+            if (netA < netB) return 'A';
+            if (netB < netA) return 'B';
+            return 'halved';
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // MATCH PLAY STATUS
     // ─────────────────────────────────────────────────────────
     function getMatchPlayStatus(match) {
-        let score = 0;
+        let score = 0; // positive = A leading
         let holesPlayed = 0;
 
         for (let h = 1; h <= 18; h++) {
-            if (match.holes[h]) {
-                holesPlayed++;
-                if (match.holes[h] === 'A') score++;
-                else if (match.holes[h] === 'B') score--;
-            }
+            const winner = getHoleWinner(match, h);
+            if (winner === 'A') { score++; holesPlayed++; }
+            else if (winner === 'B') { score--; holesPlayed++; }
+            else if (winner === 'halved') { holesPlayed++; }
+            // null = not played or incomplete, stop counting consecutive
         }
 
         const holesRemaining = 18 - holesPlayed;
         const lead = Math.abs(score);
         const leader = score > 0 ? 'A' : score < 0 ? 'B' : null;
-        const isComplete = match.status === 'complete' ||
-            (holesPlayed > 0 && (lead > holesRemaining || holesPlayed === 18));
+        const isDormie = lead > 0 && lead === holesRemaining;
+        const isWon = lead > holesRemaining && holesPlayed > 0;
+        const isFinished = holesPlayed === 18;
+        const isComplete = match.status === 'complete' || isWon || isFinished;
 
-        if (isComplete && lead > holesRemaining && holesPlayed < 18) {
-            return { leader, text: `${lead} & ${holesRemaining}`, isComplete: true, holesPlayed, score };
-        } else if (isComplete && holesPlayed === 18) {
-            if (score === 0) return { leader: null, text: 'HALVED', isComplete: true, holesPlayed, score };
-            return { leader, text: `${lead} UP`, isComplete: true, holesPlayed, score };
+        if (isComplete && isWon && holesPlayed < 18) {
+            return { leader, text: `${lead} & ${holesRemaining}`, isComplete: true, holesPlayed, score, isDormie: false };
+        } else if (isComplete && isFinished) {
+            if (score === 0) return { leader: null, text: 'HALVED', isComplete: true, holesPlayed, score, isDormie: false };
+            return { leader, text: `${lead} UP`, isComplete: true, holesPlayed, score, isDormie: false };
         } else if (holesPlayed === 0) {
-            return { leader: null, text: '-', isComplete: false, holesPlayed: 0, score: 0 };
+            return { leader: null, text: '-', isComplete: false, holesPlayed: 0, score: 0, isDormie: false };
         } else {
-            if (score === 0) return { leader: null, text: 'ALL SQUARE', isComplete: false, holesPlayed, score };
-            return { leader, text: `${lead} UP`, isComplete: false, holesPlayed, score };
+            if (score === 0) return { leader: null, text: 'ALL SQUARE', isComplete: false, holesPlayed, score, isDormie };
+            return { leader, text: `${lead} UP`, isComplete: false, holesPlayed, score, isDormie };
         }
     }
 
@@ -1193,15 +1247,9 @@
         let a = 0, b = 0;
         Object.values(S.matches).forEach(m => {
             const pts = getMatchPoints(m);
-            a += pts.A;
-            b += pts.B;
+            a += pts.A; b += pts.B;
         });
         return { A: a, B: b };
-    }
-
-    function formatScore(n) {
-        if (n === Math.floor(n)) return n.toString();
-        return Math.floor(n) + '\u00BD'; // ½ character
     }
 
     // ─────────────────────────────────────────────────────────
@@ -1212,11 +1260,8 @@
         const allMatches = Object.values(S.matches);
 
         if (allMatches.length === 0 && Object.keys(S.players).length === 0) {
-            el.innerHTML = `
-                <div class="lb-empty">
-                    <h3>Welcome to The Smashters</h3>
-                    <p>Add players in the <strong>Players</strong> tab to get started,<br>then set up matches in the <strong>Matches</strong> tab.</p>
-                </div>`;
+            el.innerHTML = `<div class="lb-empty"><h3>Welcome to The Smashters</h3>
+                <p>Add players in the <strong>Players</strong> tab to get started,<br>then set up matches in the <strong>Matches</strong> tab.</p></div>`;
             return;
         }
 
@@ -1244,12 +1289,10 @@
             html += `<div class="lb-section-header">Day 1 &mdash; Four Ball</div>`;
             html += day1.map(m => renderLeaderboardMatch(m)).join('');
         }
-
         if (day2.length > 0) {
             html += `<div class="lb-section-header" style="margin-top:16px;">Day 2 &mdash; Singles</div>`;
             html += day2.map(m => renderLeaderboardMatch(m)).join('');
         }
-
         if (allMatches.length === 0) {
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
         }
@@ -1292,7 +1335,6 @@
     // ─────────────────────────────────────────────────────────
     function renderScoring() {
         const el = document.getElementById('scoring-content');
-        const activeMatches = Object.values(S.matches).filter(m => m.status !== 'complete');
 
         if (Object.keys(S.matches).length === 0) {
             el.innerHTML = `<div class="empty-state"><h3>No Matches Yet</h3><p>Set up matches first in the Matches tab.</p></div>`;
@@ -1316,7 +1358,6 @@
         });
         html += '</div>';
 
-        // Scoring interface for selected match
         if (S.ui.activeMatchId && S.matches[S.ui.activeMatchId]) {
             html += renderScoringInterface(S.matches[S.ui.activeMatchId]);
         }
@@ -1327,22 +1368,63 @@
     function renderScoringInterface(match) {
         const status = getMatchPlayStatus(match);
         const hole = S.ui.scoringHole || 1;
-        const holeResult = match.holes[hole] || null;
-        const teamANames = match.teamA.map(id => getPlayerName(id)).join(' / ');
-        const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' / ');
+        const holeInfo = getHoleInfo(hole);
+        const holeScores = match.holes[hole] || {};
+        const allPlayers = [...match.teamA, ...match.teamB];
+        const holeWinner = getHoleWinner(match, hole);
 
         let statusText = status.text;
         if (status.leader === 'A') statusText = `${S.config.teamA.name} ${status.text}`;
         else if (status.leader === 'B') statusText = `${S.config.teamB.name} ${status.text}`;
 
+        // Build player score entry rows for Team A
+        let teamARows = match.teamA.map(id => renderScoreEntryRow(id, hole, holeScores, holeInfo)).join('');
+        let teamBRows = match.teamB.map(id => renderScoreEntryRow(id, hole, holeScores, holeInfo)).join('');
+
+        // Best ball indicators for four-ball
+        let bestBallA = '', bestBallB = '';
+        if (match.type === 'fourball') {
+            const aNets = match.teamA.map(id => {
+                const g = holeScores[id];
+                return g != null ? { id, net: getNetScore(id, hole, g), gross: g } : null;
+            }).filter(Boolean);
+            const bNets = match.teamB.map(id => {
+                const g = holeScores[id];
+                return g != null ? { id, net: getNetScore(id, hole, g), gross: g } : null;
+            }).filter(Boolean);
+
+            if (aNets.length > 0) {
+                const best = aNets.reduce((a, b) => a.net <= b.net ? a : b);
+                bestBallA = `<div class="best-ball-indicator">Best ball: <strong>${best.net}</strong>${S.config.useHandicaps && best.net !== best.gross ? ` (${best.gross} gross)` : ''}</div>`;
+            }
+            if (bNets.length > 0) {
+                const best = bNets.reduce((a, b) => a.net <= b.net ? a : b);
+                bestBallB = `<div class="best-ball-indicator">Best ball: <strong>${best.net}</strong>${S.config.useHandicaps && best.net !== best.gross ? ` (${best.gross} gross)` : ''}</div>`;
+            }
+        }
+
+        // Hole result banner
+        let bannerClass = 'hole-pending', bannerText = 'Enter scores';
+        if (holeWinner === 'A') {
+            bannerClass = 'team-a-win';
+            bannerText = `${S.config.teamA.name} wins hole`;
+        } else if (holeWinner === 'B') {
+            bannerClass = 'team-b-win';
+            bannerText = `${S.config.teamB.name} wins hole`;
+        } else if (holeWinner === 'halved') {
+            bannerClass = 'hole-halved';
+            bannerText = 'Hole halved';
+        }
+
         // Hole strip
         let holeStrip = '';
         for (let h = 1; h <= 18; h++) {
+            const w = getHoleWinner(match, h);
             let cls = '';
             if (h === hole) cls = 'current';
-            else if (match.holes[h] === 'A') cls = 'team-a-won';
-            else if (match.holes[h] === 'B') cls = 'team-b-won';
-            else if (match.holes[h] === 'halved') cls = 'halved-hole';
+            else if (w === 'A') cls = 'team-a-won';
+            else if (w === 'B') cls = 'team-b-won';
+            else if (w === 'halved') cls = 'halved-hole';
             holeStrip += `<div class="hole-dot ${cls}" onclick="jumpToHole(${h})">${h}</div>`;
         }
 
@@ -1354,23 +1436,75 @@
                 </div>
                 <div class="scoring-hole-nav">
                     <button class="hole-nav-btn" onclick="prevHole()" ${hole <= 1 ? 'disabled' : ''}>&larr;</button>
-                    <div class="hole-num">Hole ${hole}</div>
+                    <div class="hole-info">
+                        <div class="hole-num">Hole ${hole}</div>
+                        <div class="hole-details">Par ${holeInfo.par} &middot; HCP ${holeInfo.hcp}</div>
+                    </div>
                     <button class="hole-nav-btn" onclick="nextHole()" ${hole >= 18 ? 'disabled' : ''}>&rarr;</button>
                 </div>
-                <div class="scoring-buttons">
-                    <button class="score-team-btn team-a-btn ${holeResult === 'A' ? 'selected' : ''}"
-                            onclick="scoreHole('A')" style="background:${S.config.teamA.color}">
-                        ${S.config.teamA.name}<br><small>${teamANames}</small>
-                    </button>
-                    <button class="score-team-btn team-b-btn ${holeResult === 'B' ? 'selected' : ''}"
-                            onclick="scoreHole('B')" style="background:${S.config.teamB.color}">
-                        ${S.config.teamB.name}<br><small>${teamBNames}</small>
-                    </button>
+
+                <div class="scoring-team-section">
+                    <div class="scoring-team-label team-a">${S.config.teamA.name}</div>
+                    ${teamARows}
+                    ${bestBallA}
                 </div>
-                <button class="score-halved-btn ${holeResult === 'halved' ? 'selected' : ''}"
-                        onclick="scoreHole('halved')">Halved</button>
+
+                <div class="scoring-team-section">
+                    <div class="scoring-team-label team-b">${S.config.teamB.name}</div>
+                    ${teamBRows}
+                    ${bestBallB}
+                </div>
+
+                <div class="hole-result-banner ${bannerClass}">${bannerText}</div>
+
                 <div class="scoring-hole-strip">${holeStrip}</div>
+
+                <button class="scoring-clear-btn" onclick="clearHoleScores(${hole})">Clear Hole ${hole} Scores</button>
+
                 ${status.isComplete ? '<div style="padding:12px;text-align:center;color:var(--masters-green);font-weight:bold;">Match Complete &mdash; ' + status.text + '</div>' : ''}
+            </div>`;
+    }
+
+    function renderScoreEntryRow(playerId, holeNum, holeScores, holeInfo) {
+        const player = getPlayer(playerId);
+        const name = player?.name || 'Unknown';
+        const hcp = getPlayerHcp(playerId);
+        const grossScore = holeScores[playerId];
+        const hasScore = grossScore !== undefined && grossScore !== null;
+        const par = holeInfo.par;
+
+        // Strokes received on this hole
+        const strokesReceived = S.config.useHandicaps ? getStrokesOnHole(hcp, holeInfo.hcp) : 0;
+
+        // Score display class
+        let scoreClass = 'no-score';
+        let vsParText = '';
+        if (hasScore) {
+            const diff = grossScore - par;
+            if (diff <= -2) { scoreClass = 'eagle'; vsParText = diff; }
+            else if (diff === -1) { scoreClass = 'birdie'; vsParText = '-1'; }
+            else if (diff === 0) { scoreClass = ''; vsParText = 'E'; }
+            else if (diff === 1) { scoreClass = 'bogey'; vsParText = '+1'; }
+            else { scoreClass = 'double-bogey'; vsParText = '+' + diff; }
+        }
+
+        const displayScore = hasScore ? grossScore : '-';
+        const strokeDots = strokesReceived > 0 ? ' <span style="color:var(--masters-red);font-size:0.7rem;">' + '\u25CF'.repeat(strokesReceived) + '</span>' : '';
+
+        return `
+            <div class="score-entry-row">
+                <div class="score-entry-name">
+                    ${name}${strokeDots}
+                    <span class="hcp-badge">HCP ${hcp}${strokesReceived > 0 ? ' (+' + strokesReceived + ')' : ''}</span>
+                </div>
+                <div class="score-entry-controls">
+                    <button class="score-adj-btn" onclick="adjustScore('${playerId}', ${holeNum}, -1)">&minus;</button>
+                    <div class="score-value-display ${scoreClass}">
+                        ${displayScore}
+                        ${vsParText ? `<span class="score-vs-par">${vsParText}</span>` : ''}
+                    </div>
+                    <button class="score-adj-btn" onclick="adjustScore('${playerId}', ${holeNum}, 1)">+</button>
+                </div>
             </div>`;
     }
 
@@ -1383,58 +1517,64 @@
 
     function findNextUnplayedHole(match) {
         for (let h = 1; h <= 18; h++) {
-            if (!match.holes[h]) return h;
+            if (!getHoleWinner(match, h)) return h;
         }
         return 18;
     }
 
-    function scoreHole(result) {
+    function adjustScore(playerId, holeNum, delta) {
         const match = S.matches[S.ui.activeMatchId];
         if (!match) return;
 
-        const hole = S.ui.scoringHole;
-        if (match.holes[hole] === result) {
-            delete match.holes[hole]; // toggle off
+        if (!match.holes[holeNum]) match.holes[holeNum] = {};
+        const current = match.holes[holeNum][playerId];
+        const par = getHoleInfo(holeNum).par;
+
+        if (current === undefined || current === null) {
+            // First tap: start at par then apply delta
+            match.holes[holeNum][playerId] = par + delta;
         } else {
-            match.holes[hole] = result;
+            const newVal = current + delta;
+            if (newVal >= 1 && newVal <= 15) {
+                match.holes[holeNum][playerId] = newVal;
+            }
         }
 
-        // Check if match is now active
-        if (match.status === 'pending' && Object.keys(match.holes).length > 0) {
-            match.status = 'active';
-        }
+        // Update match status
+        updateMatchStatus(match);
+        saveState();
+        renderScoring();
+    }
 
-        // Check if match is complete
+    function clearHoleScores(holeNum) {
+        const match = S.matches[S.ui.activeMatchId];
+        if (!match) return;
+        delete match.holes[holeNum];
+        updateMatchStatus(match);
+        saveState();
+        renderScoring();
+    }
+
+    function updateMatchStatus(match) {
+        const hasAnyScores = Object.keys(match.holes).length > 0;
         const status = getMatchPlayStatus(match);
         if (status.isComplete) {
             match.status = 'complete';
+        } else if (hasAnyScores) {
+            match.status = 'active';
         } else {
-            match.status = Object.keys(match.holes).length > 0 ? 'active' : 'pending';
-        }
-
-        saveState();
-        renderScoring();
-
-        // Auto-advance to next hole if we just scored this one
-        if (match.holes[hole] && !status.isComplete && hole < 18) {
-            S.ui.scoringHole = hole + 1;
-            saveState();
-            setTimeout(() => renderScoring(), 300);
+            match.status = 'pending';
         }
     }
 
     function prevHole() {
         if (S.ui.scoringHole > 1) { S.ui.scoringHole--; saveState(); renderScoring(); }
     }
-
     function nextHole() {
         if (S.ui.scoringHole < 18) { S.ui.scoringHole++; saveState(); renderScoring(); }
     }
-
     function jumpToHole(h) {
-        S.ui.scoringHole = h;
-        saveState();
-        renderScoring();
+        S.ui.scoringHole = h; saveState(); renderScoring();
     }
 
     // ─────────────────────────────────────────────────────────
@@ -1454,31 +1594,15 @@
 
         let html = '<h2 class="section-title">Match Setup</h2>';
 
-        // Day 1 - Four Ball
-        html += `
-            <div class="match-day-header">
-                <h3>Day 1 &mdash; Four Ball</h3>
-                <button class="btn btn-gold btn-sm" onclick="openCreateMatch(1, 'fourball')">+ Add Match</button>
-            </div>`;
+        html += `<div class="match-day-header"><h3>Day 1 &mdash; Four Ball</h3>
+            <button class="btn btn-gold btn-sm" onclick="openCreateMatch(1, 'fourball')">+ Add Match</button></div>`;
+        if (day1.length === 0) { html += `<div class="empty-state mb-16"><p>No four ball matches yet.</p></div>`; }
+        else { html += day1.map(m => renderMatchCard(m)).join(''); }
 
-        if (day1.length === 0) {
-            html += `<div class="empty-state mb-16"><p>No four ball matches yet.</p></div>`;
-        } else {
-            html += day1.map(m => renderMatchCard(m)).join('');
-        }
-
-        // Day 2 - Singles
-        html += `
-            <div class="match-day-header" style="margin-top:20px;">
-                <h3>Day 2 &mdash; Singles</h3>
-                <button class="btn btn-gold btn-sm" onclick="openCreateMatch(2, 'singles')">+ Add Match</button>
-            </div>`;
-
-        if (day2.length === 0) {
-            html += `<div class="empty-state"><p>No singles matches yet.</p></div>`;
-        } else {
-            html += day2.map(m => renderMatchCard(m)).join('');
-        }
+        html += `<div class="match-day-header" style="margin-top:20px;"><h3>Day 2 &mdash; Singles</h3>
+            <button class="btn btn-gold btn-sm" onclick="openCreateMatch(2, 'singles')">+ Add Match</button></div>`;
+        if (day2.length === 0) { html += `<div class="empty-state"><p>No singles matches yet.</p></div>`; }
+        else { html += day2.map(m => renderMatchCard(m)).join(''); }
 
         el.innerHTML = html;
     }
@@ -1486,7 +1610,6 @@
     function renderMatchCard(match) {
         const teamANames = match.teamA.map(id => getPlayerName(id)).join(' & ');
         const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' & ');
-        const status = getMatchPlayStatus(match);
         const label = match.type === 'fourball' ? 'Four Ball' : 'Singles';
 
         return `
@@ -1516,31 +1639,21 @@
         const label = type === 'fourball' ? 'Four Ball' : 'Singles';
 
         let body = `<p class="mb-16">Create a Day ${day} ${label} match.</p>`;
-
-        // Team A player selects
         body += `<div class="form-group"><label style="color:${S.config.teamA.color}">${S.config.teamA.name} Player${numPlayers > 1 ? 's' : ''}</label>`;
         for (let i = 0; i < numPlayers; i++) {
-            body += `<select class="form-input mb-8" id="matchTeamA${i}">
-                <option value="">-- Select Player --</option>
-                ${teamAPlayers.map(p => `<option value="${p.id}">${p.name} (${p.handicap || 'N/A'})</option>`).join('')}
-            </select>`;
+            body += `<select class="form-input mb-8" id="matchTeamA${i}"><option value="">-- Select Player --</option>
+                ${teamAPlayers.map(p => `<option value="${p.id}">${p.name} (HCP ${p.handicap || 'N/A'})</option>`).join('')}</select>`;
         }
         body += '</div>';
-
-        // Team B player selects
         body += `<div class="form-group"><label style="color:${S.config.teamB.color}">${S.config.teamB.name} Player${numPlayers > 1 ? 's' : ''}</label>`;
         for (let i = 0; i < numPlayers; i++) {
-            body += `<select class="form-input mb-8" id="matchTeamB${i}">
-                <option value="">-- Select Player --</option>
-                ${teamBPlayers.map(p => `<option value="${p.id}">${p.name} (${p.handicap || 'N/A'})</option>`).join('')}
-            </select>`;
+            body += `<select class="form-input mb-8" id="matchTeamB${i}"><option value="">-- Select Player --</option>
+                ${teamBPlayers.map(p => `<option value="${p.id}">${p.name} (HCP ${p.handicap || 'N/A'})</option>`).join('')}</select>`;
         }
         body += '</div>';
 
-        const footer = `
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        const footer = `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
             <button class="btn btn-primary" onclick="createMatch(${day}, '${type}', ${numPlayers})">Create Match</button>`;
-
         openModal(`New ${label} Match`, body, footer);
     }
 
@@ -1552,36 +1665,22 @@
             if (aVal) teamA.push(aVal);
             if (bVal) teamB.push(bVal);
         }
+        if (teamA.length === 0 || teamB.length === 0) { showToast('Please select at least one player per team'); return; }
 
-        if (teamA.length === 0 || teamB.length === 0) {
-            showToast('Please select at least one player per team');
-            return;
-        }
-
-        const existingDay = getMatchesByDay(day);
         const match = {
-            id: genId(),
-            type,
-            day,
-            order: existingDay.length + 1,
-            teamA,
-            teamB,
-            holes: {},
-            status: 'pending',
+            id: genId(), type, day,
+            order: getMatchesByDay(day).length + 1,
+            teamA, teamB, holes: {}, status: 'pending',
         };
-
         S.matches[match.id] = match;
-        saveState();
-        closeModal();
-        renderMatches();
+        saveState(); closeModal(); renderMatches();
         showToast('Match created');
     }
 
     function deleteMatch(matchId) {
         if (!confirm('Remove this match?')) return;
         delete S.matches[matchId];
-        saveState();
-        renderMatches();
+        saveState(); renderMatches();
         showToast('Match removed');
     }
 
@@ -1592,16 +1691,13 @@
         const el = document.getElementById('players-content');
         const allPlayers = Object.values(S.players);
 
-        let html = `
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <h2 class="section-title" style="margin-bottom:0;">Players</h2>
-                <button class="btn btn-primary btn-sm" onclick="openPlayerModal()">+ Add Player</button>
-            </div>`;
+        let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 class="section-title" style="margin-bottom:0;">Players</h2>
+            <button class="btn btn-primary btn-sm" onclick="openPlayerModal()">+ Add Player</button></div>`;
 
         if (allPlayers.length === 0) {
             html += `<div class="empty-state"><h3>No Players Yet</h3><p>Add players to get started.</p></div>`;
         } else {
-            // Group by team
             const teamA = allPlayers.filter(p => p.team === 'A');
             const teamB = allPlayers.filter(p => p.team === 'B');
             const unassigned = allPlayers.filter(p => !p.team);
@@ -1619,7 +1715,6 @@
                 html += unassigned.map(p => renderPlayerCard(p)).join('');
             }
         }
-
         el.innerHTML = html;
     }
 
@@ -1648,61 +1743,41 @@
     function openPlayerModal(playerId) {
         const player = playerId ? S.players[playerId] : null;
         const title = player ? 'Edit Player' : 'Add Player';
-
         const body = `
-            <div class="form-group">
-                <label>Name</label>
-                <input class="form-input" id="playerName" value="${player?.name || ''}" placeholder="John Smith">
-            </div>
+            <div class="form-group"><label>Name</label>
+                <input class="form-input" id="playerName" value="${player?.name || ''}" placeholder="John Smith"></div>
             <div class="form-row">
-                <div class="form-group">
-                    <label>Handicap</label>
-                    <input class="form-input" id="playerHcp" type="number" value="${player?.handicap || ''}" placeholder="e.g. 12">
-                </div>
-                <div class="form-group">
-                    <label>Team</label>
+                <div class="form-group"><label>Handicap</label>
+                    <input class="form-input" id="playerHcp" type="number" value="${player?.handicap || ''}" placeholder="e.g. 12"></div>
+                <div class="form-group"><label>Team</label>
                     <select class="form-input" id="playerTeam">
                         <option value="" ${!player?.team ? 'selected' : ''}>Unassigned</option>
                         <option value="A" ${player?.team === 'A' ? 'selected' : ''}>${S.config.teamA.name}</option>
                         <option value="B" ${player?.team === 'B' ? 'selected' : ''}>${S.config.teamB.name}</option>
-                    </select>
-                </div>
+                    </select></div>
             </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input class="form-input" id="playerEmail" type="email" value="${player?.email || ''}" placeholder="john@email.com">
-            </div>
-            <div class="form-group">
-                <label>Phone</label>
-                <input class="form-input" id="playerPhone" type="tel" value="${player?.phone || ''}" placeholder="(555) 123-4567">
-            </div>`;
-
-        const footer = `
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <div class="form-group"><label>Email</label>
+                <input class="form-input" id="playerEmail" type="email" value="${player?.email || ''}" placeholder="john@email.com"></div>
+            <div class="form-group"><label>Phone</label>
+                <input class="form-input" id="playerPhone" type="tel" value="${player?.phone || ''}" placeholder="(555) 123-4567"></div>`;
+        const footer = `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
             <button class="btn btn-primary" onclick="savePlayer('${playerId || ''}')">${player ? 'Save Changes' : 'Add Player'}</button>`;
-
         openModal(title, body, footer);
-
         setTimeout(() => document.getElementById('playerName')?.focus(), 100);
     }
 
     function savePlayer(existingId) {
         const name = document.getElementById('playerName').value.trim();
         if (!name) { showToast('Name is required'); return; }
-
         const id = existingId || genId();
         S.players[id] = {
-            id,
-            name,
+            id, name,
             handicap: document.getElementById('playerHcp').value || '',
             team: document.getElementById('playerTeam').value || null,
             email: document.getElementById('playerEmail').value.trim(),
             phone: document.getElementById('playerPhone').value.trim(),
         };
-
-        saveState();
-        closeModal();
-        renderPlayers();
+        saveState(); closeModal(); renderPlayers();
         showToast(existingId ? 'Player updated' : 'Player added');
     }
 
@@ -1710,20 +1785,14 @@
         const player = S.players[playerId];
         if (!confirm(`Remove ${player?.name}?`)) return;
         delete S.players[playerId];
-
-        // Remove from any matches
         Object.values(S.matches).forEach(m => {
             m.teamA = m.teamA.filter(id => id !== playerId);
             m.teamB = m.teamB.filter(id => id !== playerId);
         });
-
-        // Remove from draft
         S.draft.picks = S.draft.picks.filter(p => p.playerId !== playerId);
         if (S.draft.captainA === playerId) S.draft.captainA = null;
         if (S.draft.captainB === playerId) S.draft.captainB = null;
-
-        saveState();
-        renderPlayers();
+        saveState(); renderPlayers();
         showToast('Player removed');
     }
 
@@ -1740,15 +1809,9 @@
         }
 
         let html = '<h2 class="section-title">Team Draft</h2>';
-
-        if (S.draft.status === 'pending') {
-            html += renderDraftSetup();
-        } else if (S.draft.status === 'active') {
-            html += renderDraftActive();
-        } else {
-            html += renderDraftComplete();
-        }
-
+        if (S.draft.status === 'pending') html += renderDraftSetup();
+        else if (S.draft.status === 'active') html += renderDraftActive();
+        else html += renderDraftComplete();
         el.innerHTML = html;
     }
 
@@ -1760,20 +1823,14 @@
                 <div class="settings-section-body">
                     <p class="mb-16">Snake draft format: Team A picks first, then alternates (A, B, B, A, A, B, ...).</p>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>${S.config.teamA.name} Captain</label>
-                            <select class="form-input" id="draftCaptainA">
-                                <option value="">-- Select --</option>
+                        <div class="form-group"><label>${S.config.teamA.name} Captain</label>
+                            <select class="form-input" id="draftCaptainA"><option value="">-- Select --</option>
                                 ${allPlayers.map(p => `<option value="${p.id}" ${S.draft.captainA === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>${S.config.teamB.name} Captain</label>
-                            <select class="form-input" id="draftCaptainB">
-                                <option value="">-- Select --</option>
+                            </select></div>
+                        <div class="form-group"><label>${S.config.teamB.name} Captain</label>
+                            <select class="form-input" id="draftCaptainB"><option value="">-- Select --</option>
                                 ${allPlayers.map(p => `<option value="${p.id}" ${S.draft.captainB === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
-                            </select>
-                        </div>
+                            </select></div>
                     </div>
                     <button class="btn btn-primary btn-block mt-16" onclick="startDraft()">Start Draft</button>
                 </div>
@@ -1787,7 +1844,7 @@
         const available = Object.values(S.players).filter(p => !drafted.has(p.id));
         const teamAPicks = S.draft.picks.filter(p => p.team === 'A');
         const teamBPicks = S.draft.picks.filter(p => p.team === 'B');
-        const currentTeam = S.draft.currentTeam;
+        const ct = S.draft.currentTeam;
 
         let html = `
             <div class="draft-board">
@@ -1808,89 +1865,48 @@
             </div>`;
 
         if (available.length === 0) {
-            html += `
-                <div class="text-center mt-16">
-                    <p style="font-size:1.1rem;color:var(--masters-green);font-weight:bold;margin-bottom:12px;">Draft Complete!</p>
-                    <button class="btn btn-primary" onclick="finalizeDraft()">Finalize Teams</button>
-                </div>`;
+            html += `<div class="text-center mt-16"><p style="font-size:1.1rem;color:var(--masters-green);font-weight:bold;margin-bottom:12px;">Draft Complete!</p>
+                <button class="btn btn-primary" onclick="finalizeDraft()">Finalize Teams</button></div>`;
         } else {
-            html += `
-                <div class="draft-pool">
-                    <div class="draft-pool-header">Available Players</div>
-                    <div class="draft-pool-indicator">
-                        <span class="picking-team" style="color:${currentTeam === 'A' ? S.config.teamA.color : S.config.teamB.color}">
-                            ${currentTeam === 'A' ? S.config.teamA.name : S.config.teamB.name} picks
-                        </span>
-                    </div>
-                    <div class="draft-pool-list">
-                        ${available.map(p => `
-                            <button class="draft-player-btn" onclick="makeDraftPick('${p.id}')">
-                                ${p.name} <span class="player-hcp">${p.handicap ? 'HCP: ' + p.handicap : ''}</span>
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
+            html += `<div class="draft-pool"><div class="draft-pool-header">Available Players</div>
+                <div class="draft-pool-indicator"><span class="picking-team" style="color:${ct === 'A' ? S.config.teamA.color : S.config.teamB.color}">
+                    ${ct === 'A' ? S.config.teamA.name : S.config.teamB.name} picks</span></div>
+                <div class="draft-pool-list">
+                    ${available.map(p => `<button class="draft-player-btn" onclick="makeDraftPick('${p.id}')">
+                        ${p.name} <span class="player-hcp">${p.handicap ? 'HCP: ' + p.handicap : ''}</span></button>`).join('')}
+                </div></div>
                 <div class="mt-16" style="display:flex;gap:8px;">
                     <button class="btn btn-outline btn-sm" onclick="undoDraftPick()" ${S.draft.picks.length === 0 ? 'disabled' : ''}>Undo Last Pick</button>
                     <button class="btn btn-danger btn-sm" onclick="resetDraft()">Reset Draft</button>
                 </div>`;
         }
-
         return html;
     }
 
     function renderDraftComplete() {
         const teamA = getTeamPlayers('A');
         const teamB = getTeamPlayers('B');
-
         return `
             <div class="draft-board">
-                <div class="draft-team-col">
-                    <div class="draft-team-header team-a">${S.config.teamA.name}</div>
-                    <div class="draft-team-list">
-                        ${teamA.map(p => `<div class="draft-pick-item">${p.name}</div>`).join('')}
-                    </div>
-                </div>
-                <div class="draft-team-col">
-                    <div class="draft-team-header team-b">${S.config.teamB.name}</div>
-                    <div class="draft-team-list">
-                        ${teamB.map(p => `<div class="draft-pick-item">${p.name}</div>`).join('')}
-                    </div>
-                </div>
+                <div class="draft-team-col"><div class="draft-team-header team-a">${S.config.teamA.name}</div>
+                    <div class="draft-team-list">${teamA.map(p => `<div class="draft-pick-item">${p.name}</div>`).join('')}</div></div>
+                <div class="draft-team-col"><div class="draft-team-header team-b">${S.config.teamB.name}</div>
+                    <div class="draft-team-list">${teamB.map(p => `<div class="draft-pick-item">${p.name}</div>`).join('')}</div></div>
             </div>
-            <div class="mt-16 text-center">
-                <button class="btn btn-danger btn-sm" onclick="resetDraft()">Reset Draft</button>
-            </div>`;
+            <div class="mt-16 text-center"><button class="btn btn-danger btn-sm" onclick="resetDraft()">Reset Draft</button></div>`;
     }
 
     function startDraft() {
         const captainA = document.getElementById('draftCaptainA').value;
         const captainB = document.getElementById('draftCaptainB').value;
+        if (!captainA || !captainB) { showToast('Select both captains'); return; }
+        if (captainA === captainB) { showToast('Captains must be different players'); return; }
 
-        if (!captainA || !captainB) {
-            showToast('Select both captains');
-            return;
-        }
-        if (captainA === captainB) {
-            showToast('Captains must be different players');
-            return;
-        }
-
-        // Clear all team assignments first
         Object.values(S.players).forEach(p => p.team = null);
-
-        S.draft.captainA = captainA;
-        S.draft.captainB = captainB;
-        S.draft.status = 'active';
-        S.draft.picks = [];
-        S.draft.currentTeam = 'A';
-
-        // Assign captains to teams
+        S.draft = { captainA, captainB, status: 'active', picks: [], currentTeam: 'A' };
         S.players[captainA].team = 'A';
         S.players[captainB].team = 'B';
-
-        saveState();
-        renderDraft();
+        saveState(); renderDraft();
         showToast('Draft started! ' + S.config.teamA.name + ' picks first');
     }
 
@@ -1898,44 +1914,31 @@
         const team = S.draft.currentTeam;
         S.draft.picks.push({ team, playerId, order: S.draft.picks.length + 1 });
         S.players[playerId].team = team;
-
-        // Snake draft: A, B, B, A, A, B, B, ...
-        const totalPicks = S.draft.picks.length;
-        // After pick N (1-indexed), determine next team
-        // Pattern: A(1), B(2), B(3), A(4), A(5), B(6), B(7), ...
-        // Pick N: team = (Math.floor((N) / 2) % 2 === 0) ? 'A' : 'B'
-        const nextPick = totalPicks + 1;
+        const nextPick = S.draft.picks.length + 1;
         S.draft.currentTeam = (Math.floor((nextPick - 1) / 2) % 2 === 0) ? 'A' : 'B';
-
-        saveState();
-        renderDraft();
-
-        const teamName = team === 'A' ? S.config.teamA.name : S.config.teamB.name;
-        showToast(`${teamName} selects ${S.players[playerId].name}`);
+        saveState(); renderDraft();
+        showToast(`${team === 'A' ? S.config.teamA.name : S.config.teamB.name} selects ${S.players[playerId].name}`);
     }
 
     function undoDraftPick() {
         if (S.draft.picks.length === 0) return;
-        const lastPick = S.draft.picks.pop();
-        S.players[lastPick.playerId].team = null;
-        S.draft.currentTeam = lastPick.team;
-        saveState();
-        renderDraft();
+        const last = S.draft.picks.pop();
+        S.players[last.playerId].team = null;
+        S.draft.currentTeam = last.team;
+        saveState(); renderDraft();
     }
 
     function resetDraft() {
         if (!confirm('Reset the entire draft? All team assignments will be cleared.')) return;
         Object.values(S.players).forEach(p => p.team = null);
         S.draft = { status: 'pending', captainA: null, captainB: null, picks: [], currentTeam: 'A' };
-        saveState();
-        renderDraft();
+        saveState(); renderDraft();
         showToast('Draft reset');
     }
 
     function finalizeDraft() {
         S.draft.status = 'complete';
-        saveState();
-        renderDraft();
+        saveState(); renderDraft();
         showToast('Teams finalized!');
     }
 
@@ -1944,6 +1947,18 @@
     // ─────────────────────────────────────────────────────────
     function renderSettings() {
         const el = document.getElementById('settings-content');
+        const ch = S.config.courseHoles;
+
+        // Course hole table rows
+        let courseRows = '';
+        for (let i = 0; i < 18; i++) {
+            const h = ch[i] || { hole: i + 1, par: 4, hcp: i + 1 };
+            courseRows += `<tr>
+                <td class="hole-label">${h.hole}</td>
+                <td><input type="number" id="par_${i}" value="${h.par}" min="3" max="6"></td>
+                <td><input type="number" id="hcp_${i}" value="${h.hcp}" min="1" max="18"></td>
+            </tr>`;
+        }
 
         el.innerHTML = `
             <h2 class="section-title">Event Settings</h2>
@@ -1951,28 +1966,18 @@
             <div class="settings-section">
                 <div class="settings-section-header">Event Info</div>
                 <div class="settings-section-body">
-                    <div class="form-group">
-                        <label>Event Name</label>
-                        <input class="form-input" id="cfgEventName" value="${S.config.eventName}">
-                    </div>
-                    <div class="form-group">
-                        <label>Club Name</label>
-                        <input class="form-input" id="cfgClubName" value="${S.config.clubName}">
-                    </div>
+                    <div class="form-group"><label>Event Name</label>
+                        <input class="form-input" id="cfgEventName" value="${S.config.eventName}"></div>
+                    <div class="form-group"><label>Club Name</label>
+                        <input class="form-input" id="cfgClubName" value="${S.config.clubName}"></div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Course</label>
-                            <input class="form-input" id="cfgCourse" value="${S.config.courseName}" placeholder="e.g. Augusta National">
-                        </div>
-                        <div class="form-group">
-                            <label>Event Date</label>
-                            <input class="form-input" id="cfgDate" type="date" value="${S.config.eventDate}">
-                        </div>
+                        <div class="form-group"><label>Course</label>
+                            <input class="form-input" id="cfgCourse" value="${S.config.courseName}" placeholder="e.g. Augusta National"></div>
+                        <div class="form-group"><label>Event Date</label>
+                            <input class="form-input" id="cfgDate" type="date" value="${S.config.eventDate}"></div>
                     </div>
-                    <div class="form-group">
-                        <label>Year</label>
-                        <input class="form-input" id="cfgYear" type="number" value="${S.config.year}">
-                    </div>
+                    <div class="form-group"><label>Year</label>
+                        <input class="form-input" id="cfgYear" type="number" value="${S.config.year}"></div>
                 </div>
             </div>
 
@@ -1980,29 +1985,42 @@
                 <div class="settings-section-header">Teams</div>
                 <div class="settings-section-body">
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Team A Name</label>
-                            <input class="form-input" id="cfgTeamAName" value="${S.config.teamA.name}">
-                        </div>
-                        <div class="form-group">
-                            <label>Team A Color</label>
-                            <input class="form-input" id="cfgTeamAColor" type="color" value="${S.config.teamA.color}" style="height:42px;padding:4px;">
-                        </div>
+                        <div class="form-group"><label>Team A Name</label>
+                            <input class="form-input" id="cfgTeamAName" value="${S.config.teamA.name}"></div>
+                        <div class="form-group"><label>Team A Color</label>
+                            <input class="form-input" id="cfgTeamAColor" type="color" value="${S.config.teamA.color}" style="height:42px;padding:4px;"></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Team B Name</label>
-                            <input class="form-input" id="cfgTeamBName" value="${S.config.teamB.name}">
-                        </div>
-                        <div class="form-group">
-                            <label>Team B Color</label>
-                            <input class="form-input" id="cfgTeamBColor" type="color" value="${S.config.teamB.color}" style="height:42px;padding:4px;">
-                        </div>
+                        <div class="form-group"><label>Team B Name</label>
+                            <input class="form-input" id="cfgTeamBName" value="${S.config.teamB.name}"></div>
+                        <div class="form-group"><label>Team B Color</label>
+                            <input class="form-input" id="cfgTeamBColor" type="color" value="${S.config.teamB.color}" style="height:42px;padding:4px;"></div>
                     </div>
+                    <div class="form-group"><label>Players Per Team</label>
+                        <input class="form-input" id="cfgTeamSize" type="number" value="${S.config.teamSize}" min="2" max="20"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-header">Scoring</div>
+                <div class="settings-section-body">
                     <div class="form-group">
-                        <label>Players Per Team</label>
-                        <input class="form-input" id="cfgTeamSize" type="number" value="${S.config.teamSize}" min="2" max="20">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" id="cfgUseHandicaps" ${S.config.useHandicaps ? 'checked' : ''} style="width:18px;height:18px;">
+                            Apply Handicap Strokes
+                        </label>
+                        <span class="text-sm text-muted">When enabled, players receive strokes based on their handicap and hole difficulty.</span>
                     </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-header">Course Setup</div>
+                <div class="settings-section-body" style="padding:8px;overflow-x:auto;">
+                    <table class="course-table">
+                        <thead><tr><th>Hole</th><th>Par</th><th>HCP</th></tr></thead>
+                        <tbody>${courseRows}</tbody>
+                    </table>
                 </div>
             </div>
 
@@ -2028,15 +2046,21 @@
         S.config.teamB.name = document.getElementById('cfgTeamBName').value.trim() || 'Team B';
         S.config.teamB.color = document.getElementById('cfgTeamBColor').value;
         S.config.teamSize = parseInt(document.getElementById('cfgTeamSize').value) || 6;
+        S.config.useHandicaps = document.getElementById('cfgUseHandicaps').checked;
 
-        // Update CSS variables
+        // Save course holes
+        for (let i = 0; i < 18; i++) {
+            S.config.courseHoles[i] = {
+                hole: i + 1,
+                par: parseInt(document.getElementById(`par_${i}`).value) || 4,
+                hcp: parseInt(document.getElementById(`hcp_${i}`).value) || (i + 1),
+            };
+        }
+
         document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
         document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
-
         saveState();
         showToast('Settings saved');
-
-        // Re-render header
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
     }
@@ -2046,8 +2070,7 @@
         if (!confirm('Really? This cannot be undone.')) return;
         localStorage.removeItem(STORAGE_KEY);
         S = defaultState();
-        saveState();
-        renderTab(S.ui.activeTab);
+        saveState(); renderTab(S.ui.activeTab);
         showToast('All data reset');
     }
 
@@ -2055,29 +2078,18 @@
     // INIT
     // ─────────────────────────────────────────────────────────
     function init() {
-        // Apply team colors from saved state
         document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
         document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
-
-        // Update header from config
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
-
-        // Set active tab
         switchTab(S.ui.activeTab || 'leaderboard');
     }
 
-    // Close modal on overlay click
     document.getElementById('modalOverlay').addEventListener('click', e => {
         if (e.target === e.currentTarget) closeModal();
     });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-    // Keyboard: Escape to close modal
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeModal();
-    });
-
-    // Boot
     init();
     </script>
 </body>
