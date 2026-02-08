@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>The Smashters - Dumpster Fire Golf Club</title>
+    <style>
+        /* ═══════════════════════════════════════════════════════
+           FONTS
+           ═══════════════════════════════════════════════════════ */
+        @font-face {
+            font-family: 'Azalea';
+            src: url('assets/fonts/Azalea.otf') format('opentype'),
+                 url('assets/fonts/Azalea.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           CSS VARIABLES - Masters Inspired Palette
+           ═══════════════════════════════════════════════════════ */
+        :root {
+            --masters-green: #006747;
+            --masters-dark: #00432e;
+            --masters-darkest: #002a1c;
+            --masters-light-green: #1a8a5c;
+            --masters-yellow: #FBD116;
+            --masters-gold: #C8A951;
+            --masters-cream: #F5F1E8;
+            --masters-red: #CE1141;
+            --masters-white: #FFFFFF;
+            --masters-black: #1a1a1a;
+            --team-a-color: #CE1141;
+            --team-b-color: #004F9E;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            --card-shadow-hover: 0 4px 16px rgba(0,0,0,0.2);
+            --radius: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s ease;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           BASE STYLES
+           ═══════════════════════════════════════════════════════ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--masters-cream);
+            color: var(--masters-black);
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1, h2, h3, .azalea {
+            font-family: 'Azalea', 'Georgia', serif;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           HEADER
+           ═══════════════════════════════════════════════════════ */
+        .app-header {
+            background: linear-gradient(180deg, var(--masters-dark) 0%, var(--masters-green) 100%);
+            color: var(--masters-white);
+            text-align: center;
+            padding: 16px 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .header-titles {
+            text-align: left;
+        }
+
+        .header-titles h1 {
+            font-size: 1.6rem;
+            color: var(--masters-yellow);
+            letter-spacing: 3px;
+            line-height: 1.1;
+        }
+
+        .header-titles .subtitle {
+            font-size: 0.7rem;
+            color: var(--masters-gold);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: 'Georgia', serif;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           TAB NAVIGATION
+           ═══════════════════════════════════════════════════════ */
+        .tab-nav {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            gap: 0;
+            border-bottom: 2px solid var(--masters-yellow);
+        }
+        .tab-nav::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            flex: 0 0 auto;
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-family: 'Georgia', serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn:hover { color: rgba(255,255,255,0.9); }
+
+        .tab-btn.active {
+            color: var(--masters-yellow);
+            border-bottom-color: var(--masters-yellow);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           MAIN CONTENT
+           ═══════════════════════════════════════════════════════ */
+        .tab-content {
+            display: none;
+            padding: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+            animation: fadeIn 0.2s ease;
+        }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           LEADERBOARD
+           ═══════════════════════════════════════════════════════ */
+        .lb-team-score {
+            background: linear-gradient(135deg, var(--masters-darkest), var(--masters-dark));
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            color: var(--masters-white);
+        }
+
+        .lb-team-score .lb-title {
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: 0.9rem;
+            color: var(--masters-gold);
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .lb-score-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .lb-team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .lb-team-name {
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .lb-team-name.team-a { color: var(--team-a-color); }
+        .lb-team-name.team-b { color: var(--team-b-color); }
+
+        .lb-team-pts {
+            font-size: 2.8rem;
+            font-weight: bold;
+            font-family: 'Georgia', serif;
+            line-height: 1;
+        }
+
+        .lb-vs {
+            font-size: 0.8rem;
+            color: var(--masters-gold);
+            font-style: italic;
+        }
+
+        .lb-section-header {
+            background: var(--masters-green);
+            color: var(--masters-yellow);
+            padding: 10px 16px;
+            border-radius: var(--radius) var(--radius) 0 0;
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .lb-match-card {
+            background: var(--masters-white);
+            border: 1px solid #ddd;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            transition: var(--transition);
+        }
+        .lb-match-card:last-child {
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .lb-match-card:hover { background: #fafaf5; }
+
+        .lb-match-players {
+            flex: 1;
+        }
+
+        .lb-match-players .team-line {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .lb-match-players .team-line.leading {
+            font-weight: bold;
+        }
+        .lb-match-players .vs-line {
+            font-size: 0.7rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .lb-match-status {
+            text-align: right;
+            min-width: 90px;
+        }
+
+        .lb-match-status .status-text {
+            font-size: 1rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        .lb-match-status .status-text.team-a-lead { color: var(--team-a-color); }
+        .lb-match-status .status-text.team-b-lead { color: var(--team-b-color); }
+        .lb-match-status .status-text.all-square { color: var(--masters-green); }
+        .lb-match-status .status-text.halved { color: #666; }
+        .lb-match-status .status-text.pending { color: #bbb; }
+
+        .lb-match-status .thru-text {
+            font-size: 0.7rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .lb-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .lb-empty h3 {
+            color: var(--masters-green);
+            margin-bottom: 8px;
+            font-size: 1.3rem;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           SCORING
+           ═══════════════════════════════════════════════════════ */
+        .scoring-match-select {
+            margin-bottom: 16px;
+        }
+
+        .scoring-match-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            background: var(--masters-white);
+            border: 2px solid #ddd;
+            border-radius: var(--radius);
+            text-align: left;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        .scoring-match-btn:hover { border-color: var(--masters-green); }
+        .scoring-match-btn.active-match {
+            border-color: var(--masters-green);
+            background: #f0f8f0;
+        }
+
+        .scoring-interface {
+            background: var(--masters-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .scoring-header {
+            background: var(--masters-green);
+            color: var(--masters-white);
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        .scoring-header .match-label {
+            font-size: 0.75rem;
+            color: var(--masters-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .scoring-header .match-status-lg {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 4px 0;
+        }
+
+        .scoring-hole-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--masters-dark);
+            color: var(--masters-white);
+        }
+
+        .scoring-hole-nav .hole-num {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .hole-nav-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: var(--masters-white);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .hole-nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .hole-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+        .scoring-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .score-team-btn {
+            padding: 24px 16px;
+            border: none;
+            font-family: 'Georgia', serif;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            color: var(--masters-white);
+        }
+        .score-team-btn.team-a-btn {
+            background: var(--team-a-color);
+        }
+        .score-team-btn.team-b-btn {
+            background: var(--team-b-color);
+        }
+        .score-team-btn:hover { opacity: 0.9; filter: brightness(1.1); }
+        .score-team-btn.selected {
+            box-shadow: inset 0 0 0 3px var(--masters-yellow);
+        }
+
+        .score-halved-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #f5f5f0;
+            border: none;
+            border-top: 1px solid #eee;
+            font-family: 'Georgia', serif;
+            font-size: 0.85rem;
+            color: #666;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .score-halved-btn:hover { background: #eee; }
+        .score-halved-btn.selected { background: var(--masters-green); color: var(--masters-white); }
+
+        .scoring-hole-strip {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 12px;
+            gap: 4px;
+            background: #fafaf5;
+            border-top: 1px solid #eee;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .hole-dot {
+            flex: 0 0 auto;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: bold;
+            border: 2px solid #ddd;
+            background: var(--masters-white);
+            color: #999;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .hole-dot.current { border-color: var(--masters-green); background: var(--masters-green); color: var(--masters-white); }
+        .hole-dot.team-a-won { border-color: var(--team-a-color); background: var(--team-a-color); color: var(--masters-white); }
+        .hole-dot.team-b-won { border-color: var(--team-b-color); background: var(--team-b-color); color: var(--masters-white); }
+        .hole-dot.halved-hole { border-color: var(--masters-gold); background: var(--masters-gold); color: var(--masters-white); }
+
+        /* ═══════════════════════════════════════════════════════
+           MATCHES
+           ═══════════════════════════════════════════════════════ */
+        .match-day-header {
+            background: var(--masters-green);
+            color: var(--masters-yellow);
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .match-day-header h3 {
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .match-setup-card {
+            background: var(--masters-white);
+            border-radius: var(--radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .match-setup-header {
+            background: var(--masters-dark);
+            color: var(--masters-white);
+            padding: 10px 16px;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .match-setup-body {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .match-team-col {
+            flex: 1;
+        }
+
+        .match-team-col label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .match-vs-col {
+            font-size: 0.75rem;
+            color: #999;
+            font-style: italic;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           PLAYERS
+           ═══════════════════════════════════════════════════════ */
+        .player-card {
+            background: var(--masters-white);
+            border-radius: var(--radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+        }
+        .player-card:hover { box-shadow: var(--card-shadow-hover); }
+
+        .player-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--masters-white);
+            flex-shrink: 0;
+        }
+        .player-avatar.team-a { background: var(--team-a-color); }
+        .player-avatar.team-b { background: var(--team-b-color); }
+        .player-avatar.no-team { background: #bbb; }
+
+        .player-info { flex: 1; }
+        .player-info .player-name {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .player-info .player-detail {
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           DRAFT
+           ═══════════════════════════════════════════════════════ */
+        .draft-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .draft-team-col {
+            background: var(--masters-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .draft-team-header {
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--masters-white);
+        }
+        .draft-team-header.team-a { background: var(--team-a-color); }
+        .draft-team-header.team-b { background: var(--team-b-color); }
+
+        .draft-team-list {
+            padding: 8px;
+            min-height: 100px;
+        }
+
+        .draft-pick-item {
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+            background: #f5f5f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .draft-pick-item .pick-num {
+            font-size: 0.7rem;
+            color: #999;
+            width: 20px;
+        }
+
+        .draft-pool {
+            background: var(--masters-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .draft-pool-header {
+            background: var(--masters-green);
+            color: var(--masters-yellow);
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .draft-pool-indicator {
+            background: var(--masters-dark);
+            color: var(--masters-white);
+            padding: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .draft-pool-indicator .picking-team {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .draft-pool-list {
+            padding: 8px;
+        }
+
+        .draft-player-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 6px;
+            background: #f9f9f5;
+            border: 2px solid #eee;
+            border-radius: var(--radius);
+            text-align: left;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        .draft-player-btn:hover {
+            border-color: var(--masters-green);
+            background: #f0f8f0;
+        }
+        .draft-player-btn .player-hcp {
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           SETTINGS
+           ═══════════════════════════════════════════════════════ */
+        .settings-section {
+            background: var(--masters-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .settings-section-header {
+            background: var(--masters-green);
+            color: var(--masters-yellow);
+            padding: 12px 16px;
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .settings-section-body {
+            padding: 16px;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           FORMS & INPUTS
+           ═══════════════════════════════════════════════════════ */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: var(--radius);
+            font-family: 'Georgia', serif;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background: var(--masters-white);
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--masters-green);
+        }
+
+        select.form-input {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           BUTTONS
+           ═══════════════════════════════════════════════════════ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-family: 'Georgia', serif;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: var(--masters-green);
+            color: var(--masters-white);
+        }
+        .btn-primary:hover { background: var(--masters-dark); }
+
+        .btn-gold {
+            background: var(--masters-gold);
+            color: var(--masters-darkest);
+        }
+        .btn-gold:hover { background: var(--masters-yellow); }
+
+        .btn-danger {
+            background: var(--masters-red);
+            color: var(--masters-white);
+        }
+        .btn-danger:hover { opacity: 0.9; }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--masters-green);
+            color: var(--masters-green);
+        }
+        .btn-outline:hover { background: var(--masters-green); color: var(--masters-white); }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+
+        .btn-block {
+            display: flex;
+            width: 100%;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 0.85rem;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           UTILITIES
+           ═══════════════════════════════════════════════════════ */
+        .section-title {
+            font-family: 'Azalea', 'Georgia', serif;
+            color: var(--masters-green);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+        }
+
+        .text-center { text-align: center; }
+        .text-muted { color: #999; }
+        .text-sm { font-size: 0.8rem; }
+        .mb-8 { margin-bottom: 8px; }
+        .mb-16 { margin-bottom: 16px; }
+        .mt-16 { margin-top: 16px; }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        .empty-state h3 {
+            color: var(--masters-green);
+            margin-bottom: 8px;
+        }
+        .empty-state p { font-size: 0.9rem; }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--masters-dark);
+            color: var(--masters-white);
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--masters-cream);
+            border-radius: var(--radius-lg);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: var(--masters-green);
+            color: var(--masters-yellow);
+            padding: 14px 16px;
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--masters-white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body { padding: 16px; }
+
+        .modal-footer {
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            border-top: 1px solid #ddd;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════ */
+        @media (max-width: 600px) {
+            .header-titles h1 { font-size: 1.3rem; }
+            .tab-btn { padding: 8px 12px; font-size: 0.7rem; }
+            .lb-team-pts { font-size: 2.2rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .draft-board { grid-template-columns: 1fr; }
+        }
+
+        @media (min-width: 768px) {
+            .tab-content { padding: 24px; }
+            .header-logo { width: 60px; height: 60px; }
+            .header-titles h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HEADER & NAVIGATION
+         ═══════════════════════════════════════════════════════ -->
+    <header class="app-header">
+        <div class="header-top">
+            <img src="assets/images/smashters-logo.jpg" alt="Smashters" class="header-logo">
+            <div class="header-titles">
+                <h1>The Smashters</h1>
+                <div class="subtitle">Dumpster Fire Golf Club</div>
+            </div>
+        </div>
+        <nav class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="leaderboard">Leaderboard</button>
+            <button class="tab-btn" data-tab="scoring">Scoring</button>
+            <button class="tab-btn" data-tab="matches">Matches</button>
+            <button class="tab-btn" data-tab="players">Players</button>
+            <button class="tab-btn" data-tab="draft">Draft</button>
+            <button class="tab-btn" data-tab="settings">Settings</button>
+        </nav>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════
+         LEADERBOARD TAB
+         ═══════════════════════════════════════════════════════ -->
+    <section class="tab-content active" id="tab-leaderboard">
+        <div id="leaderboard-content"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SCORING TAB
+         ═══════════════════════════════════════════════════════ -->
+    <section class="tab-content" id="tab-scoring">
+        <div id="scoring-content"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MATCHES TAB
+         ═══════════════════════════════════════════════════════ -->
+    <section class="tab-content" id="tab-matches">
+        <div id="matches-content"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PLAYERS TAB
+         ═══════════════════════════════════════════════════════ -->
+    <section class="tab-content" id="tab-players">
+        <div id="players-content"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         DRAFT TAB
+         ═══════════════════════════════════════════════════════ -->
+    <section class="tab-content" id="tab-draft">
+        <div id="draft-content"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SETTINGS TAB
+         ═══════════════════════════════════════════════════════ -->
+    <section class="tab-content" id="tab-settings">
+        <div id="settings-content"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MODAL
+         ═══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContainer"></div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+    /* ═══════════════════════════════════════════════════════════
+       THE SMASHTERS APP
+       Dumpster Fire Golf Club - Ryder Cup Style Event Manager
+       ═══════════════════════════════════════════════════════════ */
+
+    // ─────────────────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────────────────
+    const STORAGE_KEY = 'smashters-state';
+
+    const defaultState = () => ({
+        config: {
+            eventName: 'The Smashters',
+            clubName: 'Dumpster Fire Golf Club',
+            year: new Date().getFullYear(),
+            teamA: { name: 'Team Fire', color: '#CE1141' },
+            teamB: { name: 'Team Ice', color: '#004F9E' },
+            teamSize: 6,
+            courseName: '',
+            eventDate: '',
+        },
+        players: {},
+        draft: {
+            status: 'pending',
+            captainA: null,
+            captainB: null,
+            picks: [],
+            currentTeam: 'A',
+        },
+        matches: {},
+        ui: {
+            activeTab: 'leaderboard',
+            activeMatchId: null,
+            scoringHole: 1,
+        },
+    });
+
+    let S = loadState();
+
+    function loadState() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                const base = defaultState();
+                return {
+                    config: { ...base.config, ...parsed.config,
+                        teamA: { ...base.config.teamA, ...(parsed.config?.teamA || {}) },
+                        teamB: { ...base.config.teamB, ...(parsed.config?.teamB || {}) },
+                    },
+                    players: parsed.players || {},
+                    draft: { ...base.draft, ...parsed.draft },
+                    matches: parsed.matches || {},
+                    ui: { ...base.ui, ...parsed.ui },
+                };
+            }
+        } catch (e) { console.error('Load state error:', e); }
+        return defaultState();
+    }
+
+    function saveState() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(S));
+        } catch (e) { console.error('Save state error:', e); }
+    }
+
+    function genId() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // TOAST
+    // ─────────────────────────────────────────────────────────
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // MODAL
+    // ─────────────────────────────────────────────────────────
+    function openModal(title, bodyHtml, footerHtml) {
+        const overlay = document.getElementById('modalOverlay');
+        const container = document.getElementById('modalContainer');
+        container.innerHTML = `
+            <div class="modal-header">
+                <span>${title}</span>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">${bodyHtml}</div>
+            ${footerHtml ? `<div class="modal-footer">${footerHtml}</div>` : ''}
+        `;
+        overlay.classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // TAB NAVIGATION
+    // ─────────────────────────────────────────────────────────
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.toggle('active', s.id === `tab-${tabId}`));
+        S.ui.activeTab = tabId;
+        saveState();
+        renderTab(tabId);
+    }
+
+    document.getElementById('tabNav').addEventListener('click', e => {
+        if (e.target.classList.contains('tab-btn')) switchTab(e.target.dataset.tab);
+    });
+
+    function renderTab(tabId) {
+        const renderers = {
+            leaderboard: renderLeaderboard,
+            scoring: renderScoring,
+            matches: renderMatches,
+            players: renderPlayers,
+            draft: renderDraft,
+            settings: renderSettings,
+        };
+        if (renderers[tabId]) renderers[tabId]();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────────────────
+    function getPlayer(id) { return S.players[id] || null; }
+    function getPlayerName(id) { return S.players[id]?.name || 'Unknown'; }
+
+    function getTeamPlayers(team) {
+        return Object.values(S.players).filter(p => p.team === team);
+    }
+
+    function getUnassignedPlayers() {
+        return Object.values(S.players).filter(p => !p.team);
+    }
+
+    function getMatchesByDay(day) {
+        return Object.values(S.matches).filter(m => m.day === day).sort((a, b) => a.order - b.order);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // MATCH PLAY SCORING LOGIC
+    // ─────────────────────────────────────────────────────────
+    function getMatchPlayStatus(match) {
+        let score = 0;
+        let holesPlayed = 0;
+
+        for (let h = 1; h <= 18; h++) {
+            if (match.holes[h]) {
+                holesPlayed++;
+                if (match.holes[h] === 'A') score++;
+                else if (match.holes[h] === 'B') score--;
+            }
+        }
+
+        const holesRemaining = 18 - holesPlayed;
+        const lead = Math.abs(score);
+        const leader = score > 0 ? 'A' : score < 0 ? 'B' : null;
+        const isComplete = match.status === 'complete' ||
+            (holesPlayed > 0 && (lead > holesRemaining || holesPlayed === 18));
+
+        if (isComplete && lead > holesRemaining && holesPlayed < 18) {
+            return { leader, text: `${lead} & ${holesRemaining}`, isComplete: true, holesPlayed, score };
+        } else if (isComplete && holesPlayed === 18) {
+            if (score === 0) return { leader: null, text: 'HALVED', isComplete: true, holesPlayed, score };
+            return { leader, text: `${lead} UP`, isComplete: true, holesPlayed, score };
+        } else if (holesPlayed === 0) {
+            return { leader: null, text: '-', isComplete: false, holesPlayed: 0, score: 0 };
+        } else {
+            if (score === 0) return { leader: null, text: 'ALL SQUARE', isComplete: false, holesPlayed, score };
+            return { leader, text: `${lead} UP`, isComplete: false, holesPlayed, score };
+        }
+    }
+
+    function getMatchPoints(match) {
+        const status = getMatchPlayStatus(match);
+        if (!status.isComplete) return { A: 0, B: 0, settled: false };
+        if (status.text === 'HALVED') return { A: 0.5, B: 0.5, settled: true };
+        if (status.leader === 'A') return { A: 1, B: 0, settled: true };
+        return { A: 0, B: 1, settled: true };
+    }
+
+    function getTeamScores() {
+        let a = 0, b = 0;
+        Object.values(S.matches).forEach(m => {
+            const pts = getMatchPoints(m);
+            a += pts.A;
+            b += pts.B;
+        });
+        return { A: a, B: b };
+    }
+
+    function formatScore(n) {
+        if (n === Math.floor(n)) return n.toString();
+        return Math.floor(n) + '\u00BD'; // ½ character
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: LEADERBOARD
+    // ─────────────────────────────────────────────────────────
+    function renderLeaderboard() {
+        const el = document.getElementById('leaderboard-content');
+        const allMatches = Object.values(S.matches);
+
+        if (allMatches.length === 0 && Object.keys(S.players).length === 0) {
+            el.innerHTML = `
+                <div class="lb-empty">
+                    <h3>Welcome to The Smashters</h3>
+                    <p>Add players in the <strong>Players</strong> tab to get started,<br>then set up matches in the <strong>Matches</strong> tab.</p>
+                </div>`;
+            return;
+        }
+
+        const scores = getTeamScores();
+        const day1 = getMatchesByDay(1);
+        const day2 = getMatchesByDay(2);
+
+        let html = `
+            <div class="lb-team-score">
+                <div class="lb-title">The Smashters ${S.config.year}</div>
+                <div class="lb-score-display">
+                    <div class="lb-team">
+                        <div class="lb-team-name team-a">${S.config.teamA.name}</div>
+                        <div class="lb-team-pts">${formatScore(scores.A)}</div>
+                    </div>
+                    <div class="lb-vs">vs</div>
+                    <div class="lb-team">
+                        <div class="lb-team-name team-b">${S.config.teamB.name}</div>
+                        <div class="lb-team-pts">${formatScore(scores.B)}</div>
+                    </div>
+                </div>
+            </div>`;
+
+        if (day1.length > 0) {
+            html += `<div class="lb-section-header">Day 1 &mdash; Four Ball</div>`;
+            html += day1.map(m => renderLeaderboardMatch(m)).join('');
+        }
+
+        if (day2.length > 0) {
+            html += `<div class="lb-section-header" style="margin-top:16px;">Day 2 &mdash; Singles</div>`;
+            html += day2.map(m => renderLeaderboardMatch(m)).join('');
+        }
+
+        if (allMatches.length === 0) {
+            html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
+        }
+
+        el.innerHTML = html;
+    }
+
+    function renderLeaderboardMatch(match) {
+        const status = getMatchPlayStatus(match);
+        const teamANames = match.teamA.map(id => getPlayerName(id)).join(' / ');
+        const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' / ');
+        const isALeading = status.leader === 'A';
+        const isBLeading = status.leader === 'B';
+
+        let statusClass = 'pending';
+        if (status.isComplete && status.text === 'HALVED') statusClass = 'halved';
+        else if (isALeading) statusClass = 'team-a-lead';
+        else if (isBLeading) statusClass = 'team-b-lead';
+        else if (status.text === 'ALL SQUARE') statusClass = 'all-square';
+
+        const thru = status.holesPlayed === 0 ? '' :
+            status.isComplete ? 'FINAL' : `THRU ${status.holesPlayed}`;
+
+        return `
+            <div class="lb-match-card">
+                <div class="lb-match-players">
+                    <div class="team-line ${isALeading ? 'leading' : ''}">${teamANames}</div>
+                    <div class="vs-line">vs</div>
+                    <div class="team-line ${isBLeading ? 'leading' : ''}">${teamBNames}</div>
+                </div>
+                <div class="lb-match-status">
+                    <div class="status-text ${statusClass}">${status.text}</div>
+                    <div class="thru-text">${thru}</div>
+                </div>
+            </div>`;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: SCORING
+    // ─────────────────────────────────────────────────────────
+    function renderScoring() {
+        const el = document.getElementById('scoring-content');
+        const activeMatches = Object.values(S.matches).filter(m => m.status !== 'complete');
+
+        if (Object.keys(S.matches).length === 0) {
+            el.innerHTML = `<div class="empty-state"><h3>No Matches Yet</h3><p>Set up matches first in the Matches tab.</p></div>`;
+            return;
+        }
+
+        let html = '<h2 class="section-title">Live Scoring</h2>';
+
+        // Match selector
+        html += '<div class="scoring-match-select">';
+        Object.values(S.matches).forEach(m => {
+            const teamANames = m.teamA.map(id => getPlayerName(id)).join(' / ');
+            const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' / ');
+            const status = getMatchPlayStatus(m);
+            const isActive = S.ui.activeMatchId === m.id;
+            html += `
+                <button class="scoring-match-btn ${isActive ? 'active-match' : ''}" onclick="selectScoringMatch('${m.id}')">
+                    <strong>${teamANames}</strong> vs <strong>${teamBNames}</strong>
+                    <span class="text-muted text-sm" style="float:right;">${status.text}${status.holesPlayed > 0 ? ' &middot; Thru ' + status.holesPlayed : ''}</span>
+                </button>`;
+        });
+        html += '</div>';
+
+        // Scoring interface for selected match
+        if (S.ui.activeMatchId && S.matches[S.ui.activeMatchId]) {
+            html += renderScoringInterface(S.matches[S.ui.activeMatchId]);
+        }
+
+        el.innerHTML = html;
+    }
+
+    function renderScoringInterface(match) {
+        const status = getMatchPlayStatus(match);
+        const hole = S.ui.scoringHole || 1;
+        const holeResult = match.holes[hole] || null;
+        const teamANames = match.teamA.map(id => getPlayerName(id)).join(' / ');
+        const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' / ');
+
+        let statusText = status.text;
+        if (status.leader === 'A') statusText = `${S.config.teamA.name} ${status.text}`;
+        else if (status.leader === 'B') statusText = `${S.config.teamB.name} ${status.text}`;
+
+        // Hole strip
+        let holeStrip = '';
+        for (let h = 1; h <= 18; h++) {
+            let cls = '';
+            if (h === hole) cls = 'current';
+            else if (match.holes[h] === 'A') cls = 'team-a-won';
+            else if (match.holes[h] === 'B') cls = 'team-b-won';
+            else if (match.holes[h] === 'halved') cls = 'halved-hole';
+            holeStrip += `<div class="hole-dot ${cls}" onclick="jumpToHole(${h})">${h}</div>`;
+        }
+
+        return `
+            <div class="scoring-interface">
+                <div class="scoring-header">
+                    <div class="match-label">${match.type === 'fourball' ? 'Four Ball' : 'Singles'} &middot; Day ${match.day}</div>
+                    <div class="match-status-lg">${statusText}</div>
+                </div>
+                <div class="scoring-hole-nav">
+                    <button class="hole-nav-btn" onclick="prevHole()" ${hole <= 1 ? 'disabled' : ''}>&larr;</button>
+                    <div class="hole-num">Hole ${hole}</div>
+                    <button class="hole-nav-btn" onclick="nextHole()" ${hole >= 18 ? 'disabled' : ''}>&rarr;</button>
+                </div>
+                <div class="scoring-buttons">
+                    <button class="score-team-btn team-a-btn ${holeResult === 'A' ? 'selected' : ''}"
+                            onclick="scoreHole('A')" style="background:${S.config.teamA.color}">
+                        ${S.config.teamA.name}<br><small>${teamANames}</small>
+                    </button>
+                    <button class="score-team-btn team-b-btn ${holeResult === 'B' ? 'selected' : ''}"
+                            onclick="scoreHole('B')" style="background:${S.config.teamB.color}">
+                        ${S.config.teamB.name}<br><small>${teamBNames}</small>
+                    </button>
+                </div>
+                <button class="score-halved-btn ${holeResult === 'halved' ? 'selected' : ''}"
+                        onclick="scoreHole('halved')">Halved</button>
+                <div class="scoring-hole-strip">${holeStrip}</div>
+                ${status.isComplete ? '<div style="padding:12px;text-align:center;color:var(--masters-green);font-weight:bold;">Match Complete &mdash; ' + status.text + '</div>' : ''}
+            </div>`;
+    }
+
+    function selectScoringMatch(matchId) {
+        S.ui.activeMatchId = matchId;
+        S.ui.scoringHole = findNextUnplayedHole(S.matches[matchId]);
+        saveState();
+        renderScoring();
+    }
+
+    function findNextUnplayedHole(match) {
+        for (let h = 1; h <= 18; h++) {
+            if (!match.holes[h]) return h;
+        }
+        return 18;
+    }
+
+    function scoreHole(result) {
+        const match = S.matches[S.ui.activeMatchId];
+        if (!match) return;
+
+        const hole = S.ui.scoringHole;
+        if (match.holes[hole] === result) {
+            delete match.holes[hole]; // toggle off
+        } else {
+            match.holes[hole] = result;
+        }
+
+        // Check if match is now active
+        if (match.status === 'pending' && Object.keys(match.holes).length > 0) {
+            match.status = 'active';
+        }
+
+        // Check if match is complete
+        const status = getMatchPlayStatus(match);
+        if (status.isComplete) {
+            match.status = 'complete';
+        } else {
+            match.status = Object.keys(match.holes).length > 0 ? 'active' : 'pending';
+        }
+
+        saveState();
+        renderScoring();
+
+        // Auto-advance to next hole if we just scored this one
+        if (match.holes[hole] && !status.isComplete && hole < 18) {
+            S.ui.scoringHole = hole + 1;
+            saveState();
+            setTimeout(() => renderScoring(), 300);
+        }
+    }
+
+    function prevHole() {
+        if (S.ui.scoringHole > 1) { S.ui.scoringHole--; saveState(); renderScoring(); }
+    }
+
+    function nextHole() {
+        if (S.ui.scoringHole < 18) { S.ui.scoringHole++; saveState(); renderScoring(); }
+    }
+
+    function jumpToHole(h) {
+        S.ui.scoringHole = h;
+        saveState();
+        renderScoring();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: MATCHES
+    // ─────────────────────────────────────────────────────────
+    function renderMatches() {
+        const el = document.getElementById('matches-content');
+        const day1 = getMatchesByDay(1);
+        const day2 = getMatchesByDay(2);
+        const teamAPlayers = getTeamPlayers('A');
+        const teamBPlayers = getTeamPlayers('B');
+
+        if (teamAPlayers.length === 0 && teamBPlayers.length === 0) {
+            el.innerHTML = `<div class="empty-state"><h3>No Teams Yet</h3><p>Assign players to teams first using the <strong>Players</strong> or <strong>Draft</strong> tab.</p></div>`;
+            return;
+        }
+
+        let html = '<h2 class="section-title">Match Setup</h2>';
+
+        // Day 1 - Four Ball
+        html += `
+            <div class="match-day-header">
+                <h3>Day 1 &mdash; Four Ball</h3>
+                <button class="btn btn-gold btn-sm" onclick="openCreateMatch(1, 'fourball')">+ Add Match</button>
+            </div>`;
+
+        if (day1.length === 0) {
+            html += `<div class="empty-state mb-16"><p>No four ball matches yet.</p></div>`;
+        } else {
+            html += day1.map(m => renderMatchCard(m)).join('');
+        }
+
+        // Day 2 - Singles
+        html += `
+            <div class="match-day-header" style="margin-top:20px;">
+                <h3>Day 2 &mdash; Singles</h3>
+                <button class="btn btn-gold btn-sm" onclick="openCreateMatch(2, 'singles')">+ Add Match</button>
+            </div>`;
+
+        if (day2.length === 0) {
+            html += `<div class="empty-state"><p>No singles matches yet.</p></div>`;
+        } else {
+            html += day2.map(m => renderMatchCard(m)).join('');
+        }
+
+        el.innerHTML = html;
+    }
+
+    function renderMatchCard(match) {
+        const teamANames = match.teamA.map(id => getPlayerName(id)).join(' & ');
+        const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' & ');
+        const status = getMatchPlayStatus(match);
+        const label = match.type === 'fourball' ? 'Four Ball' : 'Singles';
+
+        return `
+            <div class="match-setup-card">
+                <div class="match-setup-header">
+                    <span>Match ${match.order} &middot; ${label}</span>
+                    <button class="btn btn-sm" style="background:var(--masters-red);color:#fff;padding:4px 10px;" onclick="deleteMatch('${match.id}')">Remove</button>
+                </div>
+                <div class="match-setup-body">
+                    <div class="match-team-col">
+                        <label style="color:${S.config.teamA.color}">${S.config.teamA.name}</label>
+                        <strong>${teamANames || 'TBD'}</strong>
+                    </div>
+                    <div class="match-vs-col">vs</div>
+                    <div class="match-team-col" style="text-align:right">
+                        <label style="color:${S.config.teamB.color}">${S.config.teamB.name}</label>
+                        <strong>${teamBNames || 'TBD'}</strong>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function openCreateMatch(day, type) {
+        const teamAPlayers = getTeamPlayers('A');
+        const teamBPlayers = getTeamPlayers('B');
+        const numPlayers = type === 'fourball' ? 2 : 1;
+        const label = type === 'fourball' ? 'Four Ball' : 'Singles';
+
+        let body = `<p class="mb-16">Create a Day ${day} ${label} match.</p>`;
+
+        // Team A player selects
+        body += `<div class="form-group"><label style="color:${S.config.teamA.color}">${S.config.teamA.name} Player${numPlayers > 1 ? 's' : ''}</label>`;
+        for (let i = 0; i < numPlayers; i++) {
+            body += `<select class="form-input mb-8" id="matchTeamA${i}">
+                <option value="">-- Select Player --</option>
+                ${teamAPlayers.map(p => `<option value="${p.id}">${p.name} (${p.handicap || 'N/A'})</option>`).join('')}
+            </select>`;
+        }
+        body += '</div>';
+
+        // Team B player selects
+        body += `<div class="form-group"><label style="color:${S.config.teamB.color}">${S.config.teamB.name} Player${numPlayers > 1 ? 's' : ''}</label>`;
+        for (let i = 0; i < numPlayers; i++) {
+            body += `<select class="form-input mb-8" id="matchTeamB${i}">
+                <option value="">-- Select Player --</option>
+                ${teamBPlayers.map(p => `<option value="${p.id}">${p.name} (${p.handicap || 'N/A'})</option>`).join('')}
+            </select>`;
+        }
+        body += '</div>';
+
+        const footer = `
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="createMatch(${day}, '${type}', ${numPlayers})">Create Match</button>`;
+
+        openModal(`New ${label} Match`, body, footer);
+    }
+
+    function createMatch(day, type, numPlayers) {
+        const teamA = [], teamB = [];
+        for (let i = 0; i < numPlayers; i++) {
+            const aVal = document.getElementById(`matchTeamA${i}`).value;
+            const bVal = document.getElementById(`matchTeamB${i}`).value;
+            if (aVal) teamA.push(aVal);
+            if (bVal) teamB.push(bVal);
+        }
+
+        if (teamA.length === 0 || teamB.length === 0) {
+            showToast('Please select at least one player per team');
+            return;
+        }
+
+        const existingDay = getMatchesByDay(day);
+        const match = {
+            id: genId(),
+            type,
+            day,
+            order: existingDay.length + 1,
+            teamA,
+            teamB,
+            holes: {},
+            status: 'pending',
+        };
+
+        S.matches[match.id] = match;
+        saveState();
+        closeModal();
+        renderMatches();
+        showToast('Match created');
+    }
+
+    function deleteMatch(matchId) {
+        if (!confirm('Remove this match?')) return;
+        delete S.matches[matchId];
+        saveState();
+        renderMatches();
+        showToast('Match removed');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: PLAYERS
+    // ─────────────────────────────────────────────────────────
+    function renderPlayers() {
+        const el = document.getElementById('players-content');
+        const allPlayers = Object.values(S.players);
+
+        let html = `
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <h2 class="section-title" style="margin-bottom:0;">Players</h2>
+                <button class="btn btn-primary btn-sm" onclick="openPlayerModal()">+ Add Player</button>
+            </div>`;
+
+        if (allPlayers.length === 0) {
+            html += `<div class="empty-state"><h3>No Players Yet</h3><p>Add players to get started.</p></div>`;
+        } else {
+            // Group by team
+            const teamA = allPlayers.filter(p => p.team === 'A');
+            const teamB = allPlayers.filter(p => p.team === 'B');
+            const unassigned = allPlayers.filter(p => !p.team);
+
+            if (teamA.length > 0) {
+                html += `<div class="text-sm text-muted mb-8" style="color:${S.config.teamA.color};font-weight:bold;text-transform:uppercase;letter-spacing:1px;">${S.config.teamA.name} (${teamA.length})</div>`;
+                html += teamA.map(p => renderPlayerCard(p)).join('');
+            }
+            if (teamB.length > 0) {
+                html += `<div class="text-sm text-muted mb-8 mt-16" style="color:${S.config.teamB.color};font-weight:bold;text-transform:uppercase;letter-spacing:1px;">${S.config.teamB.name} (${teamB.length})</div>`;
+                html += teamB.map(p => renderPlayerCard(p)).join('');
+            }
+            if (unassigned.length > 0) {
+                html += `<div class="text-sm text-muted mb-8 mt-16" style="font-weight:bold;text-transform:uppercase;letter-spacing:1px;">Unassigned (${unassigned.length})</div>`;
+                html += unassigned.map(p => renderPlayerCard(p)).join('');
+            }
+        }
+
+        el.innerHTML = html;
+    }
+
+    function renderPlayerCard(player) {
+        const initials = player.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        const teamClass = player.team === 'A' ? 'team-a' : player.team === 'B' ? 'team-b' : 'no-team';
+        const details = [];
+        if (player.handicap) details.push(`HCP: ${player.handicap}`);
+        if (player.email) details.push(player.email);
+        if (player.phone) details.push(player.phone);
+
+        return `
+            <div class="player-card">
+                <div class="player-avatar ${teamClass}">${initials}</div>
+                <div class="player-info">
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-detail">${details.join(' &middot; ') || 'No details'}</div>
+                </div>
+                <div class="player-actions">
+                    <button class="btn btn-outline btn-icon btn-sm" onclick="openPlayerModal('${player.id}')" title="Edit">&#9998;</button>
+                    <button class="btn btn-danger btn-icon btn-sm" onclick="deletePlayer('${player.id}')" title="Delete">&times;</button>
+                </div>
+            </div>`;
+    }
+
+    function openPlayerModal(playerId) {
+        const player = playerId ? S.players[playerId] : null;
+        const title = player ? 'Edit Player' : 'Add Player';
+
+        const body = `
+            <div class="form-group">
+                <label>Name</label>
+                <input class="form-input" id="playerName" value="${player?.name || ''}" placeholder="John Smith">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Handicap</label>
+                    <input class="form-input" id="playerHcp" type="number" value="${player?.handicap || ''}" placeholder="e.g. 12">
+                </div>
+                <div class="form-group">
+                    <label>Team</label>
+                    <select class="form-input" id="playerTeam">
+                        <option value="" ${!player?.team ? 'selected' : ''}>Unassigned</option>
+                        <option value="A" ${player?.team === 'A' ? 'selected' : ''}>${S.config.teamA.name}</option>
+                        <option value="B" ${player?.team === 'B' ? 'selected' : ''}>${S.config.teamB.name}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input class="form-input" id="playerEmail" type="email" value="${player?.email || ''}" placeholder="john@email.com">
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input class="form-input" id="playerPhone" type="tel" value="${player?.phone || ''}" placeholder="(555) 123-4567">
+            </div>`;
+
+        const footer = `
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="savePlayer('${playerId || ''}')">${player ? 'Save Changes' : 'Add Player'}</button>`;
+
+        openModal(title, body, footer);
+
+        setTimeout(() => document.getElementById('playerName')?.focus(), 100);
+    }
+
+    function savePlayer(existingId) {
+        const name = document.getElementById('playerName').value.trim();
+        if (!name) { showToast('Name is required'); return; }
+
+        const id = existingId || genId();
+        S.players[id] = {
+            id,
+            name,
+            handicap: document.getElementById('playerHcp').value || '',
+            team: document.getElementById('playerTeam').value || null,
+            email: document.getElementById('playerEmail').value.trim(),
+            phone: document.getElementById('playerPhone').value.trim(),
+        };
+
+        saveState();
+        closeModal();
+        renderPlayers();
+        showToast(existingId ? 'Player updated' : 'Player added');
+    }
+
+    function deletePlayer(playerId) {
+        const player = S.players[playerId];
+        if (!confirm(`Remove ${player?.name}?`)) return;
+        delete S.players[playerId];
+
+        // Remove from any matches
+        Object.values(S.matches).forEach(m => {
+            m.teamA = m.teamA.filter(id => id !== playerId);
+            m.teamB = m.teamB.filter(id => id !== playerId);
+        });
+
+        // Remove from draft
+        S.draft.picks = S.draft.picks.filter(p => p.playerId !== playerId);
+        if (S.draft.captainA === playerId) S.draft.captainA = null;
+        if (S.draft.captainB === playerId) S.draft.captainB = null;
+
+        saveState();
+        renderPlayers();
+        showToast('Player removed');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: DRAFT
+    // ─────────────────────────────────────────────────────────
+    function renderDraft() {
+        const el = document.getElementById('draft-content');
+        const allPlayers = Object.values(S.players);
+
+        if (allPlayers.length < 2) {
+            el.innerHTML = `<div class="empty-state"><h3>Need More Players</h3><p>Add at least 2 players before starting a draft.</p></div>`;
+            return;
+        }
+
+        let html = '<h2 class="section-title">Team Draft</h2>';
+
+        if (S.draft.status === 'pending') {
+            html += renderDraftSetup();
+        } else if (S.draft.status === 'active') {
+            html += renderDraftActive();
+        } else {
+            html += renderDraftComplete();
+        }
+
+        el.innerHTML = html;
+    }
+
+    function renderDraftSetup() {
+        const allPlayers = Object.values(S.players);
+        return `
+            <div class="settings-section">
+                <div class="settings-section-header">Draft Setup</div>
+                <div class="settings-section-body">
+                    <p class="mb-16">Snake draft format: Team A picks first, then alternates (A, B, B, A, A, B, ...).</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>${S.config.teamA.name} Captain</label>
+                            <select class="form-input" id="draftCaptainA">
+                                <option value="">-- Select --</option>
+                                ${allPlayers.map(p => `<option value="${p.id}" ${S.draft.captainA === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>${S.config.teamB.name} Captain</label>
+                            <select class="form-input" id="draftCaptainB">
+                                <option value="">-- Select --</option>
+                                ${allPlayers.map(p => `<option value="${p.id}" ${S.draft.captainB === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-block mt-16" onclick="startDraft()">Start Draft</button>
+                </div>
+            </div>`;
+    }
+
+    function renderDraftActive() {
+        const drafted = new Set(S.draft.picks.map(p => p.playerId));
+        if (S.draft.captainA) drafted.add(S.draft.captainA);
+        if (S.draft.captainB) drafted.add(S.draft.captainB);
+        const available = Object.values(S.players).filter(p => !drafted.has(p.id));
+        const teamAPicks = S.draft.picks.filter(p => p.team === 'A');
+        const teamBPicks = S.draft.picks.filter(p => p.team === 'B');
+        const currentTeam = S.draft.currentTeam;
+
+        let html = `
+            <div class="draft-board">
+                <div class="draft-team-col">
+                    <div class="draft-team-header team-a">${S.config.teamA.name}</div>
+                    <div class="draft-team-list">
+                        ${S.draft.captainA ? `<div class="draft-pick-item"><span class="pick-num">C</span><strong>${getPlayerName(S.draft.captainA)}</strong></div>` : ''}
+                        ${teamAPicks.map((p, i) => `<div class="draft-pick-item"><span class="pick-num">${i + 1}</span>${getPlayerName(p.playerId)}</div>`).join('')}
+                    </div>
+                </div>
+                <div class="draft-team-col">
+                    <div class="draft-team-header team-b">${S.config.teamB.name}</div>
+                    <div class="draft-team-list">
+                        ${S.draft.captainB ? `<div class="draft-pick-item"><span class="pick-num">C</span><strong>${getPlayerName(S.draft.captainB)}</strong></div>` : ''}
+                        ${teamBPicks.map((p, i) => `<div class="draft-pick-item"><span class="pick-num">${i + 1}</span>${getPlayerName(p.playerId)}</div>`).join('')}
+                    </div>
+                </div>
+            </div>`;
+
+        if (available.length === 0) {
+            html += `
+                <div class="text-center mt-16">
+                    <p style="font-size:1.1rem;color:var(--masters-green);font-weight:bold;margin-bottom:12px;">Draft Complete!</p>
+                    <button class="btn btn-primary" onclick="finalizeDraft()">Finalize Teams</button>
+                </div>`;
+        } else {
+            html += `
+                <div class="draft-pool">
+                    <div class="draft-pool-header">Available Players</div>
+                    <div class="draft-pool-indicator">
+                        <span class="picking-team" style="color:${currentTeam === 'A' ? S.config.teamA.color : S.config.teamB.color}">
+                            ${currentTeam === 'A' ? S.config.teamA.name : S.config.teamB.name} picks
+                        </span>
+                    </div>
+                    <div class="draft-pool-list">
+                        ${available.map(p => `
+                            <button class="draft-player-btn" onclick="makeDraftPick('${p.id}')">
+                                ${p.name} <span class="player-hcp">${p.handicap ? 'HCP: ' + p.handicap : ''}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="mt-16" style="display:flex;gap:8px;">
+                    <button class="btn btn-outline btn-sm" onclick="undoDraftPick()" ${S.draft.picks.length === 0 ? 'disabled' : ''}>Undo Last Pick</button>
+                    <button class="btn btn-danger btn-sm" onclick="resetDraft()">Reset Draft</button>
+                </div>`;
+        }
+
+        return html;
+    }
+
+    function renderDraftComplete() {
+        const teamA = getTeamPlayers('A');
+        const teamB = getTeamPlayers('B');
+
+        return `
+            <div class="draft-board">
+                <div class="draft-team-col">
+                    <div class="draft-team-header team-a">${S.config.teamA.name}</div>
+                    <div class="draft-team-list">
+                        ${teamA.map(p => `<div class="draft-pick-item">${p.name}</div>`).join('')}
+                    </div>
+                </div>
+                <div class="draft-team-col">
+                    <div class="draft-team-header team-b">${S.config.teamB.name}</div>
+                    <div class="draft-team-list">
+                        ${teamB.map(p => `<div class="draft-pick-item">${p.name}</div>`).join('')}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-16 text-center">
+                <button class="btn btn-danger btn-sm" onclick="resetDraft()">Reset Draft</button>
+            </div>`;
+    }
+
+    function startDraft() {
+        const captainA = document.getElementById('draftCaptainA').value;
+        const captainB = document.getElementById('draftCaptainB').value;
+
+        if (!captainA || !captainB) {
+            showToast('Select both captains');
+            return;
+        }
+        if (captainA === captainB) {
+            showToast('Captains must be different players');
+            return;
+        }
+
+        // Clear all team assignments first
+        Object.values(S.players).forEach(p => p.team = null);
+
+        S.draft.captainA = captainA;
+        S.draft.captainB = captainB;
+        S.draft.status = 'active';
+        S.draft.picks = [];
+        S.draft.currentTeam = 'A';
+
+        // Assign captains to teams
+        S.players[captainA].team = 'A';
+        S.players[captainB].team = 'B';
+
+        saveState();
+        renderDraft();
+        showToast('Draft started! ' + S.config.teamA.name + ' picks first');
+    }
+
+    function makeDraftPick(playerId) {
+        const team = S.draft.currentTeam;
+        S.draft.picks.push({ team, playerId, order: S.draft.picks.length + 1 });
+        S.players[playerId].team = team;
+
+        // Snake draft: A, B, B, A, A, B, B, ...
+        const totalPicks = S.draft.picks.length;
+        // After pick N (1-indexed), determine next team
+        // Pattern: A(1), B(2), B(3), A(4), A(5), B(6), B(7), ...
+        // Pick N: team = (Math.floor((N) / 2) % 2 === 0) ? 'A' : 'B'
+        const nextPick = totalPicks + 1;
+        S.draft.currentTeam = (Math.floor((nextPick - 1) / 2) % 2 === 0) ? 'A' : 'B';
+
+        saveState();
+        renderDraft();
+
+        const teamName = team === 'A' ? S.config.teamA.name : S.config.teamB.name;
+        showToast(`${teamName} selects ${S.players[playerId].name}`);
+    }
+
+    function undoDraftPick() {
+        if (S.draft.picks.length === 0) return;
+        const lastPick = S.draft.picks.pop();
+        S.players[lastPick.playerId].team = null;
+        S.draft.currentTeam = lastPick.team;
+        saveState();
+        renderDraft();
+    }
+
+    function resetDraft() {
+        if (!confirm('Reset the entire draft? All team assignments will be cleared.')) return;
+        Object.values(S.players).forEach(p => p.team = null);
+        S.draft = { status: 'pending', captainA: null, captainB: null, picks: [], currentTeam: 'A' };
+        saveState();
+        renderDraft();
+        showToast('Draft reset');
+    }
+
+    function finalizeDraft() {
+        S.draft.status = 'complete';
+        saveState();
+        renderDraft();
+        showToast('Teams finalized!');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: SETTINGS
+    // ─────────────────────────────────────────────────────────
+    function renderSettings() {
+        const el = document.getElementById('settings-content');
+
+        el.innerHTML = `
+            <h2 class="section-title">Event Settings</h2>
+
+            <div class="settings-section">
+                <div class="settings-section-header">Event Info</div>
+                <div class="settings-section-body">
+                    <div class="form-group">
+                        <label>Event Name</label>
+                        <input class="form-input" id="cfgEventName" value="${S.config.eventName}">
+                    </div>
+                    <div class="form-group">
+                        <label>Club Name</label>
+                        <input class="form-input" id="cfgClubName" value="${S.config.clubName}">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Course</label>
+                            <input class="form-input" id="cfgCourse" value="${S.config.courseName}" placeholder="e.g. Augusta National">
+                        </div>
+                        <div class="form-group">
+                            <label>Event Date</label>
+                            <input class="form-input" id="cfgDate" type="date" value="${S.config.eventDate}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Year</label>
+                        <input class="form-input" id="cfgYear" type="number" value="${S.config.year}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-header">Teams</div>
+                <div class="settings-section-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Team A Name</label>
+                            <input class="form-input" id="cfgTeamAName" value="${S.config.teamA.name}">
+                        </div>
+                        <div class="form-group">
+                            <label>Team A Color</label>
+                            <input class="form-input" id="cfgTeamAColor" type="color" value="${S.config.teamA.color}" style="height:42px;padding:4px;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Team B Name</label>
+                            <input class="form-input" id="cfgTeamBName" value="${S.config.teamB.name}">
+                        </div>
+                        <div class="form-group">
+                            <label>Team B Color</label>
+                            <input class="form-input" id="cfgTeamBColor" type="color" value="${S.config.teamB.color}" style="height:42px;padding:4px;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Players Per Team</label>
+                        <input class="form-input" id="cfgTeamSize" type="number" value="${S.config.teamSize}" min="2" max="20">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="saveSettings()">Save Settings</button>
+
+            <div class="settings-section" style="margin-top:24px;">
+                <div class="settings-section-header" style="background:var(--masters-red);">Danger Zone</div>
+                <div class="settings-section-body">
+                    <p class="text-sm text-muted mb-16">Reset all event data including players, matches, and scores.</p>
+                    <button class="btn btn-danger" onclick="resetAll()">Reset Everything</button>
+                </div>
+            </div>`;
+    }
+
+    function saveSettings() {
+        S.config.eventName = document.getElementById('cfgEventName').value.trim() || 'The Smashters';
+        S.config.clubName = document.getElementById('cfgClubName').value.trim();
+        S.config.courseName = document.getElementById('cfgCourse').value.trim();
+        S.config.eventDate = document.getElementById('cfgDate').value;
+        S.config.year = parseInt(document.getElementById('cfgYear').value) || new Date().getFullYear();
+        S.config.teamA.name = document.getElementById('cfgTeamAName').value.trim() || 'Team A';
+        S.config.teamA.color = document.getElementById('cfgTeamAColor').value;
+        S.config.teamB.name = document.getElementById('cfgTeamBName').value.trim() || 'Team B';
+        S.config.teamB.color = document.getElementById('cfgTeamBColor').value;
+        S.config.teamSize = parseInt(document.getElementById('cfgTeamSize').value) || 6;
+
+        // Update CSS variables
+        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+
+        saveState();
+        showToast('Settings saved');
+
+        // Re-render header
+        document.querySelector('.header-titles h1').textContent = S.config.eventName;
+        document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
+    }
+
+    function resetAll() {
+        if (!confirm('This will delete ALL data - players, matches, scores, everything. Are you sure?')) return;
+        if (!confirm('Really? This cannot be undone.')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        S = defaultState();
+        saveState();
+        renderTab(S.ui.activeTab);
+        showToast('All data reset');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────────────────
+    function init() {
+        // Apply team colors from saved state
+        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+
+        // Update header from config
+        document.querySelector('.header-titles h1').textContent = S.config.eventName;
+        document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
+
+        // Set active tab
+        switchTab(S.ui.activeTab || 'leaderboard');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+
+    // Keyboard: Escape to close modal
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // Boot
+    init();
+    </script>
+</body>
+</html>
