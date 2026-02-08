@@ -160,113 +160,173 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           LEADERBOARD
+           LEADERBOARD - Ryder Cup Broadcast Style
            ═══════════════════════════════════════════════════════ */
-        .lb-team-score {
-            background: linear-gradient(135deg, var(--masters-darkest), var(--masters-dark));
+        .lb-board {
             border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
+            overflow: hidden;
             box-shadow: var(--card-shadow);
-            color: var(--masters-white);
-        }
-
-        .lb-team-score .lb-title {
-            font-family: 'Azalea', 'Georgia', serif;
-            font-size: 0.9rem;
-            color: var(--masters-gold);
-            letter-spacing: 2px;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-        }
-
-        .lb-score-display {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .lb-team { flex: 1; text-align: center; }
-
-        .lb-team-name {
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            font-weight: bold;
-        }
-
-        .lb-team-name.team-a { color: var(--team-a-color); }
-        .lb-team-name.team-b { color: var(--team-b-color); }
-
-        .lb-team-pts {
-            font-size: 2.8rem;
-            font-weight: bold;
-            font-family: 'Georgia', serif;
-            line-height: 1;
-        }
-
-        .lb-vs {
-            font-size: 0.8rem;
-            color: var(--masters-gold);
-            font-style: italic;
+            margin-bottom: 20px;
         }
 
         .lb-section-header {
             background: var(--masters-green);
             color: var(--masters-yellow);
             padding: 10px 16px;
-            border-radius: var(--radius) var(--radius) 0 0;
             font-family: 'Azalea', 'Georgia', serif;
             font-size: 0.95rem;
             letter-spacing: 2px;
             text-transform: uppercase;
         }
 
-        .lb-match-card {
-            background: var(--masters-white);
-            border: 1px solid #ddd;
-            padding: 12px 16px;
+        /* Match row - 3 column broadcast layout */
+        .lb-match-row {
+            display: grid;
+            grid-template-columns: 1fr 44px 1fr;
+            min-height: 48px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+        }
+        .lb-match-row:last-child { border-bottom: none; }
+
+        .lb-cell-a, .lb-cell-b {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #eee;
+            padding: 10px 12px;
+            color: var(--masters-white);
+            background: #e8e4db;
+            color: var(--masters-black);
             transition: var(--transition);
         }
-        .lb-match-card:last-child { border-radius: 0 0 var(--radius) var(--radius); }
-        .lb-match-card:hover { background: #fafaf5; }
 
-        .lb-match-players { flex: 1; }
-
-        .lb-match-players .team-line { font-size: 0.95rem; line-height: 1.4; }
-        .lb-match-players .team-line.leading { font-weight: bold; }
-        .lb-match-players .vs-line {
-            font-size: 0.7rem;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* Team A cell: score on left, name right-aligned */
+        .lb-cell-a {
+            justify-content: flex-end;
+            text-align: right;
+            gap: 10px;
         }
 
-        .lb-match-status { text-align: right; min-width: 90px; }
+        /* Team B cell: name left-aligned, score on right */
+        .lb-cell-b {
+            justify-content: flex-start;
+            text-align: left;
+            gap: 10px;
+        }
 
-        .lb-match-status .status-text { font-size: 1rem; font-weight: bold; line-height: 1.2; }
-        .lb-match-status .status-text.team-a-lead { color: var(--team-a-color); }
-        .lb-match-status .status-text.team-b-lead { color: var(--team-b-color); }
-        .lb-match-status .status-text.all-square { color: var(--masters-green); }
-        .lb-match-status .status-text.halved { color: #666; }
-        .lb-match-status .status-text.pending { color: #bbb; }
+        .lb-player-name {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        .lb-match-status .thru-text {
-            font-size: 0.7rem;
+        .lb-match-score {
+            font-weight: bold;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+
+        /* Leading team gets their color background */
+        .lb-cell-a.leading {
+            background: var(--team-a-color);
+            color: var(--masters-white);
+        }
+        .lb-cell-b.leading {
+            background: var(--team-b-color);
+            color: var(--masters-white);
+        }
+
+        /* Tied/halved - both sides neutral */
+        .lb-cell-a.tied, .lb-cell-b.tied {
+            background: #e8e4db;
+            color: var(--masters-black);
+        }
+
+        /* Pending - lighter */
+        .lb-cell-a.pending, .lb-cell-b.pending {
+            background: #f0ece3;
             color: #999;
+        }
+
+        /* Center thru column */
+        .lb-cell-thru {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #6b6b6b;
+            color: var(--masters-white);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        /* Team totals footer bar */
+        .lb-totals-row {
+            display: grid;
+            grid-template-columns: 1fr 44px 1fr;
+            min-height: 52px;
+            font-size: 1rem;
+        }
+
+        .lb-totals-a, .lb-totals-b {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            font-weight: bold;
+            color: var(--masters-white);
+            gap: 10px;
+        }
+
+        .lb-totals-a {
+            background: var(--team-a-color);
+            justify-content: flex-end;
+            text-align: right;
+        }
+        .lb-totals-b {
+            background: var(--team-b-color);
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .lb-total-team-name {
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .lb-total-pts {
+            font-size: 1.6rem;
+            font-family: 'Georgia', serif;
+            line-height: 1;
+        }
+
+        .lb-totals-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #4a4a4a;
+        }
+
+        .lb-totals-center img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            border-radius: 4px;
         }
 
         .lb-empty { text-align: center; padding: 60px 20px; color: #999; }
         .lb-empty h3 { color: var(--masters-green); margin-bottom: 8px; font-size: 1.3rem; }
+
+        @media (max-width: 600px) {
+            .lb-match-row { grid-template-columns: 1fr 36px 1fr; font-size: 0.8rem; }
+            .lb-totals-row { grid-template-columns: 1fr 36px 1fr; }
+            .lb-cell-a, .lb-cell-b { padding: 8px 8px; }
+            .lb-cell-thru { font-size: 0.65rem; }
+            .lb-total-pts { font-size: 1.3rem; }
+            .lb-total-team-name { font-size: 0.65rem; }
+        }
 
         /* ═══════════════════════════════════════════════════════
            SCORING
@@ -1268,31 +1328,39 @@
         const scores = getTeamScores();
         const day1 = getMatchesByDay(1);
         const day2 = getMatchesByDay(2);
+        let html = '';
 
-        let html = `
-            <div class="lb-team-score">
-                <div class="lb-title">The Smashters ${S.config.year}</div>
-                <div class="lb-score-display">
-                    <div class="lb-team">
-                        <div class="lb-team-name team-a">${S.config.teamA.name}</div>
-                        <div class="lb-team-pts">${formatScore(scores.A)}</div>
+        if (day1.length > 0) {
+            html += `<div class="lb-board">`;
+            html += `<div class="lb-section-header">Day 1 &mdash; Four Ball</div>`;
+            html += day1.map(m => renderLeaderboardMatch(m)).join('');
+            html += `</div>`;
+        }
+        if (day2.length > 0) {
+            html += `<div class="lb-board" style="margin-top:16px;">`;
+            html += `<div class="lb-section-header">Day 2 &mdash; Singles</div>`;
+            html += day2.map(m => renderLeaderboardMatch(m)).join('');
+            html += `</div>`;
+        }
+
+        // Team totals bar
+        html += `
+            <div class="lb-board" style="margin-top:16px;">
+                <div class="lb-totals-row">
+                    <div class="lb-totals-a">
+                        <span class="lb-total-team-name">${S.config.teamA.name}</span>
+                        <span class="lb-total-pts">${formatScore(scores.A)}</span>
                     </div>
-                    <div class="lb-vs">vs</div>
-                    <div class="lb-team">
-                        <div class="lb-team-name team-b">${S.config.teamB.name}</div>
-                        <div class="lb-team-pts">${formatScore(scores.B)}</div>
+                    <div class="lb-totals-center">
+                        <img src="assets/images/smashters-logo.jpg" alt="">
+                    </div>
+                    <div class="lb-totals-b">
+                        <span class="lb-total-pts">${formatScore(scores.B)}</span>
+                        <span class="lb-total-team-name">${S.config.teamB.name}</span>
                     </div>
                 </div>
             </div>`;
 
-        if (day1.length > 0) {
-            html += `<div class="lb-section-header">Day 1 &mdash; Four Ball</div>`;
-            html += day1.map(m => renderLeaderboardMatch(m)).join('');
-        }
-        if (day2.length > 0) {
-            html += `<div class="lb-section-header" style="margin-top:16px;">Day 2 &mdash; Singles</div>`;
-            html += day2.map(m => renderLeaderboardMatch(m)).join('');
-        }
         if (allMatches.length === 0) {
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
         }
@@ -1306,26 +1374,50 @@
         const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' / ');
         const isALeading = status.leader === 'A';
         const isBLeading = status.leader === 'B';
+        const isTied = status.text === 'ALL SQUARE' || status.text === 'HALVED';
+        const isPending = status.holesPlayed === 0;
 
-        let statusClass = 'pending';
-        if (status.isComplete && status.text === 'HALVED') statusClass = 'halved';
-        else if (isALeading) statusClass = 'team-a-lead';
-        else if (isBLeading) statusClass = 'team-b-lead';
-        else if (status.text === 'ALL SQUARE') statusClass = 'all-square';
+        // Thru / Final indicator for center column
+        const thru = isPending ? '' :
+            status.isComplete ? 'F' : status.holesPlayed;
 
-        const thru = status.holesPlayed === 0 ? '' :
-            status.isComplete ? 'FINAL' : `THRU ${status.holesPlayed}`;
+        // Cell state classes
+        let cellAClass = 'pending', cellBClass = 'pending';
+        if (isPending) {
+            cellAClass = 'pending'; cellBClass = 'pending';
+        } else if (isTied) {
+            cellAClass = 'tied'; cellBClass = 'tied';
+        } else if (isALeading) {
+            cellAClass = 'leading'; cellBClass = 'tied';
+        } else if (isBLeading) {
+            cellAClass = 'tied'; cellBClass = 'leading';
+        }
+
+        // Score text goes on the leading team's side
+        // For tied/halved it shows on both sides
+        let scoreA = '', scoreB = '';
+        if (isPending) {
+            // nothing
+        } else if (isTied) {
+            const label = status.isComplete ? 'Tied' : 'Tied';
+            scoreA = label;
+            scoreB = label;
+        } else if (isALeading) {
+            scoreA = status.text;
+        } else if (isBLeading) {
+            scoreB = status.text;
+        }
 
         return `
-            <div class="lb-match-card">
-                <div class="lb-match-players">
-                    <div class="team-line ${isALeading ? 'leading' : ''}">${teamANames}</div>
-                    <div class="vs-line">vs</div>
-                    <div class="team-line ${isBLeading ? 'leading' : ''}">${teamBNames}</div>
+            <div class="lb-match-row">
+                <div class="lb-cell-a ${cellAClass}">
+                    ${scoreA ? `<span class="lb-match-score">${scoreA}</span>` : ''}
+                    <span class="lb-player-name">${teamANames}</span>
                 </div>
-                <div class="lb-match-status">
-                    <div class="status-text ${statusClass}">${status.text}</div>
-                    <div class="thru-text">${thru}</div>
+                <div class="lb-cell-thru">${thru}</div>
+                <div class="lb-cell-b ${cellBClass}">
+                    <span class="lb-player-name">${teamBNames}</span>
+                    ${scoreB ? `<span class="lb-match-score">${scoreB}</span>` : ''}
                 </div>
             </div>`;
     }
