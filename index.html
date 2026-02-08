@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-title" content="Smashters">
     <meta name="theme-color" content="#00432e">
     <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
     <title>The Smashters - Dumpster Fire Golf Club</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -1172,6 +1173,91 @@
         }
 
         /* ═══════════════════════════════════════════════════════
+           INSTALL BANNER
+           ═══════════════════════════════════════════════════════ */
+        .install-banner {
+            display: none;
+            background: linear-gradient(135deg, var(--masters-dark) 0%, var(--masters-green) 100%);
+            color: var(--masters-white);
+            padding: 14px 16px;
+            margin: 12px 16px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .install-banner.show { display: block; }
+        .install-banner-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .install-banner-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: var(--masters-darkest);
+            padding: 6px;
+            flex-shrink: 0;
+        }
+        .install-banner-text { flex: 1; }
+        .install-banner-text strong {
+            display: block;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+        .install-banner-text span {
+            font-size: 0.75rem;
+            opacity: 0.85;
+        }
+        .install-banner-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .install-banner-close:hover { color: #fff; }
+        .install-banner-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .install-banner-actions .btn { flex: 1; justify-content: center; font-size: 0.75rem; padding: 8px 12px; }
+        .install-ios-steps {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+        .install-ios-steps .step-num {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: var(--masters-yellow);
+            color: var(--masters-darkest);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+        .install-ios-steps .share-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            vertical-align: text-bottom;
+        }
+
+        /* ═══════════════════════════════════════════════════════
            LIVE SHARING
            ═══════════════════════════════════════════════════════ */
         .live-banner {
@@ -1340,6 +1426,9 @@
 
     <!-- Live Banner -->
     <div class="live-banner" id="liveBanner"></div>
+
+    <!-- Install Banner -->
+    <div class="install-banner" id="installBanner"></div>
 
     <section class="tab-content active" id="tab-leaderboard"><div id="leaderboard-content"></div></section>
     <section class="tab-content" id="tab-scoring"><div id="scoring-content"></div></section>
@@ -2635,6 +2724,139 @@
     }
 
     // ─────────────────────────────────────────────────────────
+    // ADD TO HOME SCREEN
+    // ─────────────────────────────────────────────────────────
+    const INSTALL_KEY = 'smashters-install-dismissed';
+    let deferredInstallPrompt = null;
+
+    function isStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+    }
+
+    function isIOS() {
+        return /iphone|ipad|ipod/i.test(navigator.userAgent);
+    }
+
+    function isAndroid() {
+        return /android/i.test(navigator.userAgent);
+    }
+
+    function installDismissed() {
+        return localStorage.getItem(INSTALL_KEY) === 'true';
+    }
+
+    function dismissInstall() {
+        localStorage.setItem(INSTALL_KEY, 'true');
+        document.getElementById('installBanner').classList.remove('show');
+    }
+
+    function confirmInstalled() {
+        localStorage.setItem(INSTALL_KEY, 'installed');
+        document.getElementById('installBanner').classList.remove('show');
+        showToast('Awesome! Launch from your Home Screen anytime.');
+    }
+
+    // Share icon SVG for iOS instructions
+    const IOS_SHARE_SVG = `<svg class="share-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M5 10l7-7 7 7"/><path d="M5 17h14v4H5z" fill="none"/></svg>`;
+
+    function showInstallBanner() {
+        const banner = document.getElementById('installBanner');
+        if (!banner) return;
+
+        if (isIOS()) {
+            // iOS: show manual instructions
+            banner.innerHTML = `
+                <div class="install-banner-top">
+                    <img src="assets/images/apple-touch-icon.png" class="install-banner-icon" alt="">
+                    <div class="install-banner-text">
+                        <strong>Add to Home Screen</strong>
+                        <span>Get the full app experience with one tap</span>
+                    </div>
+                    <button class="install-banner-close" onclick="dismissInstall()" aria-label="Close">&times;</button>
+                </div>
+                <div class="install-ios-steps">
+                    <div><span class="step-num">1</span>Tap the <strong>Share</strong> button ${IOS_SHARE_SVG} at the bottom of Safari</div>
+                    <div style="margin-top:6px;"><span class="step-num">2</span>Scroll down and tap <strong>Add to Home Screen</strong></div>
+                    <div style="margin-top:6px;"><span class="step-num">3</span>Tap <strong>Add</strong> in the top right</div>
+                </div>
+                <div class="install-banner-actions">
+                    <button class="btn btn-gold" onclick="confirmInstalled()">Done - I Added It</button>
+                    <button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff;" onclick="dismissInstall()">Not Now</button>
+                </div>`;
+        } else if (deferredInstallPrompt) {
+            // Android/Chrome: native install prompt available
+            banner.innerHTML = `
+                <div class="install-banner-top">
+                    <img src="assets/images/apple-touch-icon.png" class="install-banner-icon" alt="">
+                    <div class="install-banner-text">
+                        <strong>Add to Home Screen</strong>
+                        <span>Quick access from your Home Screen</span>
+                    </div>
+                    <button class="install-banner-close" onclick="dismissInstall()" aria-label="Close">&times;</button>
+                </div>
+                <div class="install-banner-actions">
+                    <button class="btn btn-gold" onclick="triggerNativeInstall()">Add to Home Screen</button>
+                    <button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff;" onclick="dismissInstall()">Not Now</button>
+                </div>`;
+        } else {
+            // Other mobile browsers: generic instructions
+            banner.innerHTML = `
+                <div class="install-banner-top">
+                    <img src="assets/images/apple-touch-icon.png" class="install-banner-icon" alt="">
+                    <div class="install-banner-text">
+                        <strong>Add to Home Screen</strong>
+                        <span>Use your browser menu to add this app</span>
+                    </div>
+                    <button class="install-banner-close" onclick="dismissInstall()" aria-label="Close">&times;</button>
+                </div>
+                <div class="install-banner-actions">
+                    <button class="btn btn-gold" onclick="confirmInstalled()">Done - I Added It</button>
+                    <button class="btn btn-outline" style="border-color:rgba(255,255,255,0.3);color:#fff;" onclick="dismissInstall()">Not Now</button>
+                </div>`;
+        }
+        banner.classList.add('show');
+    }
+
+    async function triggerNativeInstall() {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        const result = await deferredInstallPrompt.userChoice;
+        if (result.outcome === 'accepted') {
+            confirmInstalled();
+        }
+        deferredInstallPrompt = null;
+    }
+
+    // Capture the Chrome/Edge install prompt before it auto-fires
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        // If banner check hasn't run yet, it will pick this up in init
+        // If it already ran, show banner now
+        if (!isStandalone() && !installDismissed()) {
+            showInstallBanner();
+        }
+    });
+
+    // Detect when app is successfully installed
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        confirmInstalled();
+    });
+
+    function checkInstallBanner() {
+        // Already running as installed app
+        if (isStandalone()) return;
+        // User already dismissed or confirmed
+        if (installDismissed()) return;
+        // Only show on mobile-ish devices
+        if (!isIOS() && !isAndroid() && !deferredInstallPrompt) return;
+        // Small delay so it doesn't compete with splash screen
+        setTimeout(() => showInstallBanner(), 3500);
+    }
+
+    // ─────────────────────────────────────────────────────────
     // FIREBASE & LIVE SYNC
     // ─────────────────────────────────────────────────────────
     const FIREBASE_CONFIG = {
@@ -3086,6 +3308,9 @@
         }
 
         switchTab(S.ui.activeTab || 'leaderboard');
+
+        // Check if we should show Add to Home Screen banner
+        checkInstallBanner();
     }
 
     document.getElementById('modalOverlay').addEventListener('click', e => {
