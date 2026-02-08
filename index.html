@@ -1623,8 +1623,8 @@
         const par = getHoleInfo(holeNum).par;
 
         if (current === undefined || current === null) {
-            // First tap: start at par then apply delta
-            match.holes[holeNum][playerId] = par + delta;
+            // First tap: set to par, then adjust from there
+            match.holes[holeNum][playerId] = par;
         } else {
             const newVal = current + delta;
             if (newVal >= 1 && newVal <= 15) {
