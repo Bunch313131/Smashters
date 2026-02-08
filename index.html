@@ -63,8 +63,12 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        h1, h2, h3, .azalea {
+        /* Azalea: logo/title only. Clean sans-serif for UI headers (Masters broadcast style) */
+        .azalea, .header-titles h1, .splash-title {
             font-family: 'Azalea', 'Georgia', serif;
+        }
+        h2, h3 {
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -102,16 +106,16 @@
         .header-titles h1 {
             font-size: 1.6rem;
             color: var(--masters-yellow);
-            letter-spacing: 3px;
+            letter-spacing: 1.5px;
             line-height: 1.1;
         }
 
         .header-titles .subtitle {
             font-size: 0.75rem;
             color: var(--masters-white);
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            font-family: 'Georgia', serif;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             opacity: 0.9;
         }
 
@@ -134,9 +138,10 @@
             background: none;
             border: none;
             color: rgba(255,255,255,0.6);
-            font-family: 'Georgia', serif;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             cursor: pointer;
             white-space: nowrap;
@@ -271,9 +276,10 @@
             background: var(--masters-green);
             color: var(--masters-yellow);
             padding: 10px 16px;
-            font-family: 'Azalea', 'Georgia', serif;
-            font-size: 0.95rem;
-            letter-spacing: 2px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.85rem;
+            font-weight: bold;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
@@ -388,15 +394,18 @@
         }
 
         .lb-total-team-name {
-            font-size: 0.8rem;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.75rem;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             opacity: 0.9;
         }
 
         .lb-total-pts {
             font-size: 1.6rem;
-            font-family: 'Georgia', serif;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: bold;
             line-height: 1;
         }
 
@@ -466,10 +475,11 @@
         }
 
         .scoring-header .match-label {
-            font-size: 0.75rem;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.7rem;
             color: var(--masters-gold);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .scoring-header .match-status-lg {
@@ -498,9 +508,10 @@
         }
 
         .scoring-hole-nav .hole-details {
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-size: 0.7rem;
             color: var(--masters-gold);
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
         }
 
@@ -526,10 +537,11 @@
         }
 
         .scoring-team-label {
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-size: 0.7rem;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             padding: 4px 4px 2px;
         }
         .scoring-team-label.team-a { color: var(--team-a-color); }
@@ -621,9 +633,10 @@
         .hole-result-banner {
             text-align: center;
             padding: 10px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-weight: bold;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
         }
         .hole-result-banner.team-a-win { background: var(--team-a-color); color: var(--masters-white); }
@@ -669,12 +682,13 @@
             background: none;
             border: none;
             border-top: 1px solid #eee;
-            font-family: 'Georgia', serif;
-            font-size: 0.75rem;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.7rem;
+            font-weight: bold;
             color: #999;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.3px;
         }
         .scoring-clear-btn:hover { background: #f5f5f0; color: var(--masters-red); }
 
@@ -692,7 +706,7 @@
             justify-content: space-between;
         }
 
-        .match-day-header h3 { font-size: 1rem; letter-spacing: 2px; }
+        .match-day-header h3 { font-size: 0.9rem; letter-spacing: 0.5px; }
 
         .match-setup-card {
             background: var(--masters-white);
@@ -706,8 +720,10 @@
             background: var(--masters-dark);
             color: var(--masters-white);
             padding: 10px 16px;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             display: flex;
             align-items: center;
@@ -792,9 +808,10 @@
         .draft-team-header {
             padding: 12px;
             text-align: center;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-weight: bold;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             color: var(--masters-white);
         }
@@ -827,10 +844,11 @@
             color: var(--masters-yellow);
             padding: 12px;
             text-align: center;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-weight: bold;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .draft-pool-indicator {
@@ -876,9 +894,10 @@
             background: var(--masters-green);
             color: var(--masters-yellow);
             padding: 12px 16px;
-            font-family: 'Azalea', 'Georgia', serif;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.8rem;
+            font-weight: bold;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
@@ -894,8 +913,10 @@
             color: var(--masters-yellow);
             padding: 6px 8px;
             text-align: center;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-size: 0.7rem;
-            letter-spacing: 1px;
+            font-weight: bold;
+            letter-spacing: 0.3px;
             text-transform: uppercase;
         }
         .course-table td {
@@ -922,10 +943,11 @@
 
         .form-group label {
             display: block;
-            font-size: 0.8rem;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.3px;
             color: #666;
             margin-bottom: 4px;
         }
@@ -964,12 +986,12 @@
             padding: 10px 20px;
             border: none;
             border-radius: var(--radius);
-            font-family: 'Georgia', serif;
-            font-size: 0.85rem;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.8rem;
             font-weight: bold;
             cursor: pointer;
             transition: var(--transition);
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             text-transform: uppercase;
         }
 
@@ -993,10 +1015,12 @@
            UTILITIES
            ═══════════════════════════════════════════════════════ */
         .section-title {
-            font-family: 'Azalea', 'Georgia', serif;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             color: var(--masters-green);
-            font-size: 1.2rem;
-            letter-spacing: 2px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
             margin-bottom: 16px;
         }
 
@@ -1054,9 +1078,11 @@
             background: var(--masters-green);
             color: var(--masters-yellow);
             padding: 14px 16px;
-            font-family: 'Azalea', 'Georgia', serif;
-            font-size: 1rem;
-            letter-spacing: 2px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1112,7 +1138,7 @@
             font-family: 'Azalea', 'Georgia', serif;
             color: var(--masters-yellow);
             font-size: 2.4rem;
-            letter-spacing: 5px;
+            letter-spacing: 2px;
             margin-top: 20px;
             opacity: 0;
             animation: splashFadeIn 1s ease-out 0.8s forwards;
@@ -1120,8 +1146,9 @@
 
         .splash-subtitle {
             color: var(--masters-white);
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-size: 0.85rem;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             margin-top: 8px;
             opacity: 0;
@@ -1130,9 +1157,10 @@
 
         .splash-year {
             color: var(--masters-gold);
-            font-family: 'Azalea', 'Georgia', serif;
-            font-size: 1.1rem;
-            letter-spacing: 3px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
             margin-top: 24px;
             opacity: 0;
             animation: splashFadeIn 1s ease-out 1.5s forwards;
@@ -1151,8 +1179,10 @@
             color: var(--masters-white);
             text-align: center;
             padding: 6px 12px;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.7rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
             display: none;
             align-items: center;
             justify-content: center;
