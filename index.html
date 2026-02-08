@@ -9,6 +9,9 @@
     <meta name="theme-color" content="#00432e">
     <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
     <title>The Smashters - Dumpster Fire Golf Club</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         /* ═══════════════════════════════════════════════════════
            FONTS
@@ -1141,6 +1144,114 @@
         }
 
         /* ═══════════════════════════════════════════════════════
+           LIVE SHARING
+           ═══════════════════════════════════════════════════════ */
+        .live-banner {
+            background: var(--masters-red);
+            color: var(--masters-white);
+            text-align: center;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .live-banner.active { display: flex; }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            animation: livePulse 1.5s infinite;
+            flex-shrink: 0;
+        }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .live-banner-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-family: 'Georgia', serif;
+        }
+        .live-banner-btn:hover { background: rgba(255,255,255,0.35); }
+
+        /* Viewer mode: disable score editing */
+        .viewer-mode .score-adj-btn { pointer-events: none; opacity: 0.3; }
+        .viewer-mode .scoring-clear-btn { display: none; }
+        .viewer-mode .btn-danger { display: none; }
+        .viewer-mode .match-setup-header .btn { display: none; }
+        .viewer-mode .match-day-header .btn { display: none; }
+        .viewer-mode .player-actions { display: none; }
+
+        /* Scorer mode: only allow their match */
+        .scorer-mode .score-adj-btn.disabled-scorer { pointer-events: none; opacity: 0.3; }
+        .scorer-mode .scoring-clear-btn.disabled-scorer { display: none; }
+
+        /* Join live card */
+        .join-live-card {
+            background: var(--masters-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid var(--masters-green);
+        }
+        .join-live-card h3 {
+            color: var(--masters-green);
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+        .join-live-input {
+            width: 100%;
+            max-width: 200px;
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: var(--radius);
+            font-family: 'Georgia', serif;
+            font-size: 1.1rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+        .join-live-input:focus { outline: none; border-color: var(--masters-green); }
+        .join-live-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+        /* Match code display */
+        .match-code-list { margin-top: 12px; }
+        .match-code-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #f5f5f0;
+            border-radius: var(--radius);
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        .match-code-value {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--masters-green);
+            letter-spacing: 2px;
+            background: var(--masters-white);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        /* ═══════════════════════════════════════════════════════
            RESPONSIVE
            ═══════════════════════════════════════════════════════ */
         @media (max-width: 600px) {
@@ -1196,6 +1307,9 @@
         </nav>
     </header>
     <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Live Banner -->
+    <div class="live-banner" id="liveBanner"></div>
 
     <section class="tab-content active" id="tab-leaderboard"><div id="leaderboard-content"></div></section>
     <section class="tab-content" id="tab-scoring"><div id="scoring-content"></div></section>
@@ -1300,6 +1414,10 @@
     function saveState() {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }
         catch (e) { console.error('Save state error:', e); }
+        // Sync to Firebase if live
+        if (LiveSync.isAdmin || LiveSync.isScorer) {
+            LiveSync.syncToFirebase();
+        }
     }
 
     function genId() {
@@ -1509,9 +1627,25 @@
     function renderLeaderboard() {
         const el = document.getElementById('leaderboard-content');
         const allMatches = Object.values(S.matches);
+        let joinHtml = '';
+
+        // Show Join Live card if not already connected
+        if (!LiveSync.isAdmin && !LiveSync.isViewer && !LiveSync.isScorer) {
+            joinHtml = `
+                <div class="join-live-card">
+                    <h3>Join Live Event</h3>
+                    <input class="join-live-input" id="joinCodeInput" placeholder="CODE" maxlength="6"
+                        onkeydown="if(event.key==='Enter'){document.getElementById('joinViewBtn').click();}">
+                    <div class="join-live-btns">
+                        <button class="btn btn-primary btn-sm" id="joinViewBtn" onclick="handleJoinViewer()">View Leaderboard</button>
+                        <button class="btn btn-gold btn-sm" onclick="handleJoinScorer()">Score a Match</button>
+                    </div>
+                    <p class="text-sm text-muted" style="margin-top:8px;">Enter event code to view, or match code to score.</p>
+                </div>`;
+        }
 
         if (allMatches.length === 0 && Object.keys(S.players).length === 0) {
-            el.innerHTML = `<div class="lb-empty"><h3>Welcome to The Smashters</h3>
+            el.innerHTML = joinHtml + `<div class="lb-empty"><h3>Welcome to The Smashters</h3>
                 <p>Add players in the <strong>Players</strong> tab to get started,<br>then set up matches in the <strong>Matches</strong> tab.</p></div>`;
             return;
         }
@@ -1556,7 +1690,19 @@
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
         }
 
-        el.innerHTML = html;
+        el.innerHTML = joinHtml + html;
+    }
+
+    function handleJoinViewer() {
+        const code = document.getElementById('joinCodeInput')?.value?.trim();
+        if (!code) { showToast('Enter an event code'); return; }
+        LiveSync.joinAsViewer(code);
+    }
+
+    function handleJoinScorer() {
+        const code = document.getElementById('joinCodeInput')?.value?.trim();
+        if (!code) { showToast('Enter a match code'); return; }
+        LiveSync.joinAsScorer(code);
     }
 
     function renderLeaderboardMatch(match) {
@@ -1626,17 +1772,23 @@
 
         let html = '<h2 class="section-title">Live Scoring</h2>';
 
+        // In scorer mode, only show their assigned match
+        const matchesToShow = LiveSync.isScorer
+            ? Object.values(S.matches).filter(m => m.id === LiveSync.scorerMatchId)
+            : Object.values(S.matches);
+
         // Match selector
         html += '<div class="scoring-match-select">';
-        Object.values(S.matches).forEach(m => {
+        matchesToShow.forEach(m => {
             const teamANames = m.teamA.map(id => getPlayerName(id)).join(' / ');
             const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' / ');
             const status = getMatchPlayStatus(m);
             const isActive = S.ui.activeMatchId === m.id;
+            const canEdit = LiveSync.canScore(m.id);
             html += `
                 <button class="scoring-match-btn ${isActive ? 'active-match' : ''}" onclick="selectScoringMatch('${m.id}')">
                     <strong>${teamANames}</strong> vs <strong>${teamBNames}</strong>
-                    <span class="text-muted text-sm" style="float:right;">${status.text}${status.holesPlayed > 0 ? ' &middot; Thru ' + status.holesPlayed : ''}</span>
+                    <span class="text-muted text-sm" style="float:right;">${!canEdit && !LiveSync.isAdmin ? '(view) ' : ''}${status.text}${status.holesPlayed > 0 ? ' &middot; Thru ' + status.holesPlayed : ''}</span>
                 </button>`;
         });
         html += '</div>';
@@ -1809,6 +1961,12 @@
         const match = S.matches[S.ui.activeMatchId];
         if (!match) return;
 
+        // Check permissions
+        if (!LiveSync.canScore(S.ui.activeMatchId)) {
+            showToast('View only - you cannot edit this match');
+            return;
+        }
+
         if (!match.holes[holeNum]) match.holes[holeNum] = {};
         const current = match.holes[holeNum][playerId];
         const par = getHoleInfo(holeNum).par;
@@ -1832,6 +1990,10 @@
     function clearHoleScores(holeNum) {
         const match = S.matches[S.ui.activeMatchId];
         if (!match) return;
+        if (!LiveSync.canScore(S.ui.activeMatchId)) {
+            showToast('View only - you cannot edit this match');
+            return;
+        }
         delete match.holes[holeNum];
         updateMatchStatus(match);
         saveState();
@@ -2310,6 +2472,13 @@
             <button class="btn btn-primary btn-block" onclick="saveSettings()">Save Settings</button>
 
             <div class="settings-section" style="margin-top:24px;">
+                <div class="settings-section-header">Live Sharing</div>
+                <div class="settings-section-body" id="liveSettingsBody">
+                    ${renderLiveSettings()}
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-top:24px;">
                 <div class="settings-section-header" style="background:var(--masters-red);">Danger Zone</div>
                 <div class="settings-section-body">
                     <p class="text-sm text-muted mb-16">Reset all event data including players, matches, and scores.</p>
@@ -2348,6 +2517,84 @@
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
     }
 
+    function renderLiveSettings() {
+        if (LiveSync.isAdmin) {
+            // Currently live - show status and match codes
+            let matchCodeHtml = '<div class="match-code-list">';
+            const allMatches = Object.values(S.matches);
+            if (allMatches.length === 0) {
+                matchCodeHtml += '<p class="text-sm text-muted">No matches created yet.</p>';
+            } else {
+                allMatches.forEach(m => {
+                    const code = LiveSync.matchCodes[m.id] || '----';
+                    const teamANames = m.teamA.map(id => getPlayerName(id)).join(' / ');
+                    const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' / ');
+                    matchCodeHtml += `
+                        <div class="match-code-item">
+                            <span>${teamANames} vs ${teamBNames}</span>
+                            <span class="match-code-value">${code}</span>
+                        </div>`;
+                });
+            }
+            matchCodeHtml += '</div>';
+
+            return `
+                <div style="text-align:center;margin-bottom:16px;">
+                    <p style="color:var(--masters-green);font-weight:bold;font-size:1rem;margin-bottom:4px;">Event is LIVE</p>
+                    <p class="text-sm text-muted">Event Code: <strong style="font-size:1.3rem;color:var(--masters-green);letter-spacing:3px;">${LiveSync.eventCode}</strong></p>
+                    <p class="text-sm text-muted">Share this code with viewers to watch the leaderboard.</p>
+                </div>
+                <p style="font-weight:bold;margin-bottom:8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#666;">Match Codes for Scorers</p>
+                <p class="text-sm text-muted mb-8">Give each match's code to their designated scorer.</p>
+                ${matchCodeHtml}
+                <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-danger btn-sm" onclick="LiveSync.stopLive().then(() => renderSettings())">Stop Live Event</button>
+                    <button class="btn btn-outline btn-sm" onclick="openAdminResetModal()">Reset Scores</button>
+                </div>`;
+        } else {
+            // Not live - show go live controls
+            const hasMatches = Object.keys(S.matches).length > 0;
+            return `
+                <p class="text-sm text-muted mb-16">Go live to share scores in real-time. Scorers enter a match code on their phone to score their assigned match. Everyone else can view the leaderboard live.</p>
+                ${!hasMatches ? '<p style="color:var(--masters-red);font-size:0.85rem;margin-bottom:12px;">Create matches first before going live.</p>' : ''}
+                <div class="form-group">
+                    <label>Admin PIN</label>
+                    <input class="form-input" id="adminPinInput" type="text" placeholder="Set a 4-digit PIN" maxlength="6" value="1234" style="max-width:200px;">
+                    <span class="text-sm text-muted">Used to reset scores. Remember this!</span>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="handleGoLive()" ${!hasMatches ? 'disabled style="opacity:0.5;"' : ''}>Go Live</button>`;
+        }
+    }
+
+    function handleGoLive() {
+        const pin = document.getElementById('adminPinInput')?.value?.trim() || '1234';
+        if (!pin) { showToast('Set an admin PIN first'); return; }
+        LiveSync.goLive(pin).then(success => {
+            if (success) renderSettings();
+        });
+    }
+
+    function openAdminResetModal() {
+        const body = `
+            <p class="mb-16">Enter your admin PIN to reset all match scores. This will clear scores but keep players and match pairings.</p>
+            <div class="form-group">
+                <label>Admin PIN</label>
+                <input class="form-input" id="resetPinInput" type="text" placeholder="Enter PIN" maxlength="6" style="max-width:200px;">
+            </div>`;
+        const footer = `
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-danger" onclick="handleAdminReset()">Reset All Scores</button>`;
+        openModal('Reset Scores', body, footer);
+    }
+
+    function handleAdminReset() {
+        const pin = document.getElementById('resetPinInput')?.value?.trim();
+        if (!pin) { showToast('Enter your admin PIN'); return; }
+        LiveSync.adminReset(pin).then(success => {
+            if (success) { closeModal(); renderSettings(); }
+        });
+    }
+
     function resetAll() {
         if (!confirm('This will delete ALL data - players, matches, scores, everything. Are you sure?')) return;
         if (!confirm('Really? This cannot be undone.')) return;
@@ -2356,6 +2603,405 @@
         saveState(); renderTab(S.ui.activeTab);
         showToast('All data reset');
     }
+
+    // ─────────────────────────────────────────────────────────
+    // FIREBASE & LIVE SYNC
+    // ─────────────────────────────────────────────────────────
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyDZlbkZMkfmFk1CS1i51JQ1NuknlNae0zo",
+        authDomain: "bunchbets.firebaseapp.com",
+        databaseURL: "https://bunchbets-default-rtdb.firebaseio.com",
+        projectId: "bunchbets",
+        storageBucket: "bunchbets.firebasestorage.app",
+        messagingSenderId: "267555779116",
+        appId: "1:267555779116:web:af1e05bacb82f0d4fe5789"
+    };
+
+    const LiveSync = {
+        db: null,
+        eventRef: null,
+        eventCode: null,
+        matchCodes: {},
+        isAdmin: false,
+        isScorer: false,
+        isViewer: false,
+        scorerMatchId: null,
+        adminPin: null,
+        listeners: [],
+        _suppressListener: false,
+
+        init() {
+            if (this.db) return true;
+            try {
+                if (typeof firebase === 'undefined') {
+                    console.warn('Firebase SDK not loaded');
+                    return false;
+                }
+                if (!firebase.apps?.length) firebase.initializeApp(FIREBASE_CONFIG);
+                this.db = firebase.database();
+                return true;
+            } catch (e) {
+                console.error('Firebase init failed:', e);
+                return false;
+            }
+        },
+
+        generateCode(len) {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < len; i++) code += chars[Math.floor(Math.random() * chars.length)];
+            return code;
+        },
+
+        // Admin: Go Live
+        async goLive(pin) {
+            if (!this.init()) { showToast('Firebase not available'); return false; }
+
+            this.eventCode = this.generateCode(5);
+            this.adminPin = pin || '1234';
+            this.isAdmin = true;
+            this.isViewer = false;
+            this.isScorer = false;
+            this.eventRef = this.db.ref('smashters/' + this.eventCode);
+
+            // Generate match codes
+            this.matchCodes = {};
+            const codeToMatch = {};
+            Object.keys(S.matches).forEach(matchId => {
+                const code = this.generateCode(4);
+                this.matchCodes[matchId] = code;
+                codeToMatch[code] = matchId;
+            });
+
+            try {
+                await this.eventRef.set({
+                    config: S.config,
+                    players: S.players,
+                    matches: S.matches,
+                    matchCodes: codeToMatch,
+                    adminPin: this.adminPin,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                });
+
+                // Store match code lookups at top level for scorer access
+                const updates = {};
+                Object.entries(codeToMatch).forEach(([code, matchId]) => {
+                    updates['smashters-codes/' + code] = {
+                        eventCode: this.eventCode,
+                        matchId: matchId,
+                    };
+                });
+                if (Object.keys(updates).length > 0) {
+                    await this.db.ref().update(updates);
+                }
+
+                // Save live state locally
+                localStorage.setItem('smashters-live', JSON.stringify({
+                    eventCode: this.eventCode,
+                    adminPin: this.adminPin,
+                    matchCodes: this.matchCodes,
+                    isAdmin: true,
+                }));
+
+                this.updateBanner();
+                showToast('Event is LIVE! Code: ' + this.eventCode);
+                renderTab(S.ui.activeTab);
+                return true;
+            } catch (e) {
+                console.error('Go live failed:', e);
+                showToast('Failed to go live: ' + e.message);
+                this.isAdmin = false;
+                return false;
+            }
+        },
+
+        // Sync local state to Firebase
+        syncToFirebase() {
+            if (!this.eventRef) return;
+
+            if (this.isAdmin) {
+                this._suppressListener = true;
+                this.eventRef.update({
+                    config: S.config,
+                    players: S.players,
+                    matches: S.matches,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                }).then(() => {
+                    setTimeout(() => { this._suppressListener = false; }, 500);
+                }).catch(e => {
+                    this._suppressListener = false;
+                    console.error('Sync failed:', e);
+                });
+            } else if (this.isScorer && this.scorerMatchId) {
+                const match = S.matches[this.scorerMatchId];
+                if (match) {
+                    this._suppressListener = true;
+                    Promise.all([
+                        this.eventRef.child('matches/' + this.scorerMatchId).set(match),
+                        this.eventRef.child('updatedAt').set(firebase.database.ServerValue.TIMESTAMP),
+                    ]).then(() => {
+                        setTimeout(() => { this._suppressListener = false; }, 500);
+                    }).catch(e => {
+                        this._suppressListener = false;
+                        console.error('Score sync failed:', e);
+                    });
+                }
+            }
+        },
+
+        // Apply remote state to local
+        applyState(val) {
+            if (!val) return;
+            const base = defaultState();
+            if (val.config) {
+                S.config = {
+                    ...base.config, ...val.config,
+                    teamA: { ...base.config.teamA, ...(val.config?.teamA || {}) },
+                    teamB: { ...base.config.teamB, ...(val.config?.teamB || {}) },
+                    courseHoles: val.config?.courseHoles || base.config.courseHoles,
+                };
+            }
+            S.players = val.players || {};
+            S.matches = val.matches || {};
+            document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+            document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+            document.querySelector('.header-titles h1').textContent = S.config.eventName;
+            document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
+        },
+
+        // Join as viewer (leaderboard only)
+        async joinAsViewer(code) {
+            if (!this.init()) { showToast('Firebase not available'); return false; }
+
+            code = code.toUpperCase().trim();
+            if (!code) { showToast('Enter an event code'); return false; }
+
+            const ref = this.db.ref('smashters/' + code);
+            try {
+                const snap = await ref.once('value');
+                if (!snap.exists()) { showToast('Event not found. Check the code.'); return false; }
+
+                this.eventCode = code;
+                this.eventRef = ref;
+                this.isViewer = true;
+                this.isAdmin = false;
+                this.isScorer = false;
+
+                this.applyState(snap.val());
+
+                // Listen for live updates
+                const listener = ref.on('value', (s) => {
+                    if (this._suppressListener) return;
+                    const val = s.val();
+                    if (val) {
+                        this.applyState(val);
+                        renderTab(S.ui.activeTab);
+                    }
+                });
+                this.listeners.push({ ref, event: 'value', callback: listener });
+
+                document.body.classList.add('viewer-mode');
+                this.updateBanner();
+                switchTab('leaderboard');
+                showToast('Connected! Viewing live scores.');
+                return true;
+            } catch (e) {
+                showToast('Connection failed: ' + e.message);
+                return false;
+            }
+        },
+
+        // Join as scorer with match code
+        async joinAsScorer(matchCode) {
+            if (!this.init()) { showToast('Firebase not available'); return false; }
+
+            matchCode = matchCode.toUpperCase().trim();
+            if (!matchCode) { showToast('Enter a match code'); return false; }
+
+            try {
+                const codeSnap = await this.db.ref('smashters-codes/' + matchCode).once('value');
+                if (!codeSnap.exists()) { showToast('Invalid match code.'); return false; }
+
+                const { eventCode, matchId } = codeSnap.val();
+                const ref = this.db.ref('smashters/' + eventCode);
+                const snap = await ref.once('value');
+                if (!snap.exists()) { showToast('Event not found.'); return false; }
+
+                this.eventCode = eventCode;
+                this.eventRef = ref;
+                this.isScorer = true;
+                this.isAdmin = false;
+                this.isViewer = false;
+                this.scorerMatchId = matchId;
+
+                this.applyState(snap.val());
+
+                // Listen for updates
+                const listener = ref.on('value', (s) => {
+                    if (this._suppressListener) return;
+                    const val = s.val();
+                    if (val) {
+                        this.applyState(val);
+                        renderTab(S.ui.activeTab);
+                    }
+                });
+                this.listeners.push({ ref, event: 'value', callback: listener });
+
+                S.ui.activeMatchId = matchId;
+                if (S.matches[matchId]) {
+                    S.ui.scoringHole = findNextUnplayedHole(S.matches[matchId]);
+                }
+
+                document.body.classList.add('scorer-mode');
+                this.updateBanner();
+                switchTab('scoring');
+
+                const match = S.matches[matchId];
+                if (match) {
+                    const names = [...match.teamA, ...match.teamB].map(id => getPlayerName(id)).join(', ');
+                    showToast('Scoring: ' + names);
+                }
+                return true;
+            } catch (e) {
+                showToast('Connection failed: ' + e.message);
+                return false;
+            }
+        },
+
+        // Disconnect from live event
+        disconnect() {
+            this.listeners.forEach(l => l.ref.off(l.event, l.callback));
+            this.listeners = [];
+            this.eventRef = null;
+            this.eventCode = null;
+            this.isAdmin = false;
+            this.isViewer = false;
+            this.isScorer = false;
+            this.scorerMatchId = null;
+            this.matchCodes = {};
+            this.adminPin = null;
+            localStorage.removeItem('smashters-live');
+            document.body.classList.remove('viewer-mode', 'scorer-mode');
+            this.updateBanner();
+            showToast('Disconnected');
+            S = loadState();
+            renderTab(S.ui.activeTab);
+        },
+
+        // Admin: Stop the live event and clean up Firebase
+        async stopLive() {
+            if (!this.isAdmin || !this.eventRef) return;
+
+            try {
+                // Clean up match code lookups
+                const matchCodeUpdates = {};
+                Object.values(this.matchCodes).forEach(code => {
+                    matchCodeUpdates['smashters-codes/' + code] = null;
+                });
+                if (Object.keys(matchCodeUpdates).length > 0) {
+                    await this.db.ref().update(matchCodeUpdates);
+                }
+                await this.eventRef.remove();
+            } catch (e) {
+                console.error('Cleanup error:', e);
+            }
+
+            this.disconnect();
+            showToast('Live event stopped');
+        },
+
+        // Admin: Reset all scores in the live event
+        async adminReset(pin) {
+            if (!this.eventRef) { showToast('Not connected'); return false; }
+
+            try {
+                const snap = await this.eventRef.child('adminPin').once('value');
+                if (snap.val() !== pin) { showToast('Incorrect PIN'); return false; }
+
+                // Reset all match scores
+                Object.values(S.matches).forEach(m => {
+                    m.holes = {};
+                    m.status = 'pending';
+                });
+
+                await this.eventRef.update({
+                    matches: S.matches,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                });
+
+                saveState();
+                renderTab(S.ui.activeTab);
+                showToast('All scores have been reset');
+                return true;
+            } catch (e) {
+                showToast('Reset failed: ' + e.message);
+                return false;
+            }
+        },
+
+        // Restore admin session from localStorage
+        restoreSession() {
+            try {
+                const saved = localStorage.getItem('smashters-live');
+                if (!saved) return;
+                const session = JSON.parse(saved);
+                if (session.isAdmin && session.eventCode) {
+                    if (!this.init()) return;
+                    this.eventCode = session.eventCode;
+                    this.adminPin = session.adminPin;
+                    this.matchCodes = session.matchCodes || {};
+                    this.isAdmin = true;
+                    this.eventRef = this.db.ref('smashters/' + this.eventCode);
+                    this.updateBanner();
+                }
+            } catch (e) {
+                console.error('Restore session error:', e);
+            }
+        },
+
+        // Update the banner display
+        updateBanner() {
+            const banner = document.getElementById('liveBanner');
+            if (!banner) return;
+
+            if (this.isAdmin) {
+                banner.className = 'live-banner active';
+                banner.style.background = '';
+                banner.innerHTML = `
+                    <span class="live-dot"></span>
+                    LIVE &mdash; Event Code: <strong>${this.eventCode}</strong>
+                    <button class="live-banner-btn" onclick="LiveSync.stopLive()">Stop</button>`;
+            } else if (this.isViewer) {
+                banner.className = 'live-banner active';
+                banner.style.background = '';
+                banner.innerHTML = `
+                    <span class="live-dot"></span>
+                    LIVE &mdash; Viewing: <strong>${this.eventCode}</strong>
+                    <button class="live-banner-btn" onclick="LiveSync.disconnect()">Leave</button>`;
+            } else if (this.isScorer) {
+                banner.className = 'live-banner active';
+                banner.style.background = 'var(--masters-green)';
+                const match = S.matches[this.scorerMatchId];
+                const label = match
+                    ? match.teamA.map(id => getPlayerName(id)).join('/') + ' vs ' + match.teamB.map(id => getPlayerName(id)).join('/')
+                    : 'Match';
+                banner.innerHTML = `
+                    <span class="live-dot"></span>
+                    SCORING &mdash; ${label}
+                    <button class="live-banner-btn" onclick="LiveSync.disconnect()">Leave</button>`;
+            } else {
+                banner.className = 'live-banner';
+                banner.innerHTML = '';
+            }
+        },
+
+        // Check if user can edit scores for a given match
+        canScore(matchId) {
+            if (this.isViewer) return false;
+            if (this.isScorer) return this.scorerMatchId === matchId;
+            return true; // Admin or local mode
+        },
+    };
 
     // ─────────────────────────────────────────────────────────
     // INIT
@@ -2399,6 +3045,9 @@
         document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
+
+        // Restore Firebase admin session if exists
+        LiveSync.restoreSession();
 
         if (shouldShowSplash()) {
             showSplash();
