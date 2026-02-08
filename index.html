@@ -84,6 +84,7 @@
             justify-content: center;
             gap: 12px;
             margin-bottom: 8px;
+            position: relative;
         }
 
         .header-logo {
@@ -156,9 +157,9 @@
             cursor: pointer;
             padding: 8px;
             position: absolute;
-            right: 12px;
+            right: 0;
             top: 50%;
-            transform: translateY(-60%);
+            transform: translateY(-50%);
             z-index: 101;
         }
         .hamburger-btn span {
@@ -1175,11 +1176,11 @@
          HEADER & NAVIGATION
          ═══════════════════════════════════════════════════════ -->
     <header class="app-header">
-        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
-            <span></span><span></span><span></span>
-        </button>
         <div class="header-top">
             <img src="assets/images/smashters-logo-green.png" alt="Smashters" class="header-logo">
+            <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
+                <span></span><span></span><span></span>
+            </button>
             <div class="header-titles">
                 <h1>The Smashters</h1>
                 <div class="subtitle">Dumpster Fire Golf Club</div>
