@@ -24,7 +24,7 @@
             --masters-dark: #00432e;
             --masters-darkest: #002a1c;
             --masters-light-green: #1a8a5c;
-            --masters-yellow: #FBD116;
+            --masters-yellow: #FFE234;
             --masters-gold: #C8A951;
             --masters-cream: #F5F1E8;
             --masters-red: #CE1141;
@@ -82,8 +82,8 @@
         }
 
         .header-logo {
-            width: 50px;
-            height: 50px;
+            width: 64px;
+            height: 64px;
             object-fit: contain;
             filter: brightness(0) invert(1);
         }
@@ -98,11 +98,12 @@
         }
 
         .header-titles .subtitle {
-            font-size: 0.7rem;
-            color: var(--masters-gold);
+            font-size: 0.75rem;
+            color: var(--masters-white);
             letter-spacing: 2px;
             text-transform: uppercase;
             font-family: 'Georgia', serif;
+            opacity: 0.9;
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -1000,7 +1001,7 @@
 
         @media (min-width: 768px) {
             .tab-content { padding: 24px; }
-            .header-logo { width: 60px; height: 60px; }
+            .header-logo { width: 72px; height: 72px; }
             .header-titles h1 { font-size: 2rem; }
         }
     </style>
