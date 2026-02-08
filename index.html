@@ -1071,6 +1071,67 @@
         }
 
         /* ═══════════════════════════════════════════════════════
+           SPLASH SCREEN
+           ═══════════════════════════════════════════════════════ */
+        .splash-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(160deg, var(--masters-dark) 0%, var(--masters-green) 40%, var(--masters-dark) 100%);
+            transition: opacity 0.6s ease;
+        }
+        .splash-overlay.fade-out { opacity: 0; pointer-events: none; }
+        .splash-overlay.hidden { display: none; }
+
+        .splash-logo {
+            width: 55%;
+            max-width: 300px;
+            height: auto;
+            filter: brightness(0) invert(1);
+            opacity: 0;
+            animation: splashFadeIn 1.2s ease-out 0.2s forwards;
+        }
+
+        .splash-title {
+            font-family: 'Azalea', 'Georgia', serif;
+            color: var(--masters-yellow);
+            font-size: 2.4rem;
+            letter-spacing: 5px;
+            margin-top: 20px;
+            opacity: 0;
+            animation: splashFadeIn 1s ease-out 0.8s forwards;
+        }
+
+        .splash-subtitle {
+            color: var(--masters-white);
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 8px;
+            opacity: 0;
+            animation: splashFadeIn 1s ease-out 1.2s forwards;
+        }
+
+        .splash-year {
+            color: var(--masters-gold);
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            margin-top: 24px;
+            opacity: 0;
+            animation: splashFadeIn 1s ease-out 1.5s forwards;
+        }
+
+        @keyframes splashFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ═══════════════════════════════════════════════════════
            RESPONSIVE
            ═══════════════════════════════════════════════════════ */
         @media (max-width: 600px) {
@@ -1091,6 +1152,16 @@
     </style>
 </head>
 <body>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SPLASH SCREEN
+         ═══════════════════════════════════════════════════════ -->
+    <div class="splash-overlay" id="splashOverlay">
+        <img src="assets/images/smashters-logo-green.png" alt="" class="splash-logo">
+        <div class="splash-title">The Smashters</div>
+        <div class="splash-subtitle">Dumpster Fire Golf Club</div>
+        <div class="splash-year" id="splashYear"></div>
+    </div>
 
     <!-- ═══════════════════════════════════════════════════════
          HEADER & NAVIGATION
@@ -2280,11 +2351,52 @@
     // ─────────────────────────────────────────────────────────
     // INIT
     // ─────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────
+    // SPLASH SCREEN
+    // ─────────────────────────────────────────────────────────
+    const SPLASH_KEY = 'smashters-splash-date';
+
+    function shouldShowSplash() {
+        const today = new Date().toISOString().slice(0, 10);
+        const lastShown = localStorage.getItem(SPLASH_KEY);
+        return lastShown !== today;
+    }
+
+    function showSplash() {
+        const splash = document.getElementById('splashOverlay');
+        document.getElementById('splashYear').textContent = S.config.year;
+        splash.classList.remove('hidden', 'fade-out');
+
+        // Mark as shown today
+        localStorage.setItem(SPLASH_KEY, new Date().toISOString().slice(0, 10));
+
+        // Hold for 3 seconds, then fade out
+        setTimeout(() => {
+            splash.classList.add('fade-out');
+            setTimeout(() => splash.classList.add('hidden'), 600);
+        }, 3000);
+    }
+
+    function hideSplash() {
+        const splash = document.getElementById('splashOverlay');
+        splash.classList.add('hidden');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────────────────
     function init() {
         document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
         document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
+
+        if (shouldShowSplash()) {
+            showSplash();
+        } else {
+            hideSplash();
+        }
+
         switchTab(S.ui.activeTab || 'leaderboard');
     }
 
