@@ -143,6 +143,86 @@
             border-bottom-color: var(--masters-yellow);
         }
 
+        /* Hamburger button - hidden on desktop */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            position: absolute;
+            right: 12px;
+            top: 16px;
+            z-index: 101;
+        }
+        .hamburger-btn span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--masters-white);
+            margin: 5px 0;
+            transition: var(--transition);
+            border-radius: 1px;
+        }
+        .hamburger-btn.open span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        .hamburger-btn.open span:nth-child(2) { opacity: 0; }
+        .hamburger-btn.open span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        /* Mobile menu overlay */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 99;
+        }
+        .mobile-menu-overlay.active { display: block; }
+
+        /* Mobile nav styles */
+        @media (max-width: 768px) {
+            .hamburger-btn { display: block; }
+
+            .app-header { position: sticky; }
+
+            .tab-nav {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--masters-dark);
+                border-bottom: 3px solid var(--masters-yellow);
+                box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+                overflow: visible;
+                z-index: 100;
+                gap: 0;
+            }
+
+            .tab-nav.open { display: flex; }
+
+            .tab-btn {
+                padding: 14px 20px;
+                font-size: 0.9rem;
+                border-bottom: none;
+                border-left: 3px solid transparent;
+                margin-bottom: 0;
+                text-align: left;
+            }
+
+            .tab-btn:hover { background: rgba(255,255,255,0.05); }
+
+            .tab-btn.active {
+                border-bottom: none;
+                border-left-color: var(--masters-yellow);
+                background: rgba(255,255,255,0.08);
+            }
+        }
+
         /* ═══════════════════════════════════════════════════════
            MAIN CONTENT
            ═══════════════════════════════════════════════════════ */
@@ -990,7 +1070,6 @@
            ═══════════════════════════════════════════════════════ */
         @media (max-width: 600px) {
             .header-titles h1 { font-size: 1.3rem; }
-            .tab-btn { padding: 8px 12px; font-size: 0.7rem; }
             .lb-team-pts { font-size: 2.2rem; }
             .form-row { grid-template-columns: 1fr; }
             .draft-board { grid-template-columns: 1fr; }
@@ -1012,6 +1091,9 @@
          HEADER & NAVIGATION
          ═══════════════════════════════════════════════════════ -->
     <header class="app-header">
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
         <div class="header-top">
             <img src="assets/images/smashters-logo-green.png" alt="Smashters" class="header-logo">
             <div class="header-titles">
@@ -1028,6 +1110,7 @@
             <button class="tab-btn" data-tab="settings">Settings</button>
         </nav>
     </header>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
 
     <section class="tab-content active" id="tab-leaderboard"><div id="leaderboard-content"></div></section>
     <section class="tab-content" id="tab-scoring"><div id="scoring-content"></div></section>
@@ -1177,8 +1260,30 @@
     }
 
     document.getElementById('tabNav').addEventListener('click', e => {
-        if (e.target.classList.contains('tab-btn')) switchTab(e.target.dataset.tab);
+        if (e.target.classList.contains('tab-btn')) {
+            switchTab(e.target.dataset.tab);
+            closeMobileMenu();
+        }
     });
+
+    // ─────────────────────────────────────────────────────────
+    // MOBILE HAMBURGER MENU
+    // ─────────────────────────────────────────────────────────
+    function toggleMobileMenu() {
+        const nav = document.getElementById('tabNav');
+        const btn = document.getElementById('hamburgerBtn');
+        const overlay = document.getElementById('mobileMenuOverlay');
+        const isOpen = nav.classList.contains('open');
+        nav.classList.toggle('open', !isOpen);
+        btn.classList.toggle('open', !isOpen);
+        overlay.classList.toggle('active', !isOpen);
+    }
+
+    function closeMobileMenu() {
+        document.getElementById('tabNav').classList.remove('open');
+        document.getElementById('hamburgerBtn').classList.remove('open');
+        document.getElementById('mobileMenuOverlay').classList.remove('active');
+    }
 
     function renderTab(tabId) {
         const r = { leaderboard: renderLeaderboard, scoring: renderScoring, matches: renderMatches,
