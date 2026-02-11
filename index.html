@@ -424,6 +424,76 @@
             border-radius: 4px;
         }
 
+        /* Session breakdown row */
+        .lb-breakdown-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 10px 12px;
+            font-size: 0.75rem;
+            background: rgba(0, 0, 0, 0.05);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .lb-breakdown-side {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .lb-breakdown-side:first-child {
+            text-align: left;
+            padding-right: 8px;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .lb-breakdown-side:last-child {
+            text-align: right;
+            padding-left: 8px;
+        }
+
+        /* Projected totals row */
+        .lb-projected-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 8px 12px;
+            background: rgba(200, 169, 81, 0.15);
+            border-top: 1px solid rgba(200, 169, 81, 0.3);
+            font-size: 0.8rem;
+        }
+
+        .lb-projected-side {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lb-projected-side:first-child {
+            justify-content: flex-start;
+            padding-right: 8px;
+        }
+
+        .lb-projected-side:last-child {
+            justify-content: flex-end;
+            padding-left: 8px;
+        }
+
+        .lb-projected-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--masters-gold);
+            font-weight: bold;
+        }
+
+        .lb-projected-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--masters-gold);
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+        }
+
         .lb-empty { text-align: center; padding: 60px 20px; color: #999; }
         .lb-empty h3 { color: var(--masters-green); margin-bottom: 8px; font-size: 1.3rem; }
 
@@ -434,6 +504,10 @@
             .lb-cell-thru { font-size: 0.65rem; }
             .lb-total-pts { font-size: 1.3rem; }
             .lb-total-team-name { font-size: 0.65rem; }
+            .lb-breakdown-row { font-size: 0.65rem; padding: 8px 8px; }
+            .lb-projected-row { font-size: 0.7rem; padding: 6px 8px; }
+            .lb-projected-value { font-size: 0.95rem; }
+            .lb-projected-label { font-size: 0.6rem; }
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -1385,6 +1459,78 @@
             .header-logo { width: 72px; height: 72px; }
             .header-titles h1 { font-size: 2rem; }
         }
+
+        /* ═══════════════════════════════════════════════════════
+           BIRDIE FLAMES 🔥
+           ═══════════════════════════════════════════════════════ */
+        .flame-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .flame {
+            position: absolute;
+            font-size: 3rem;
+            animation: floatFlame 2s ease-out forwards;
+            filter: drop-shadow(0 0 10px rgba(255, 100, 0, 0.8));
+        }
+
+        @keyframes floatFlame {
+            0% {
+                transform: translateY(0) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-150px) scale(1.2) rotate(10deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-300px) scale(1.5) rotate(20deg);
+                opacity: 0;
+            }
+        }
+
+        .birdie-burst {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: bold;
+            color: var(--masters-red);
+            text-shadow: 0 0 20px rgba(206, 17, 65, 0.8),
+                         0 0 40px rgba(206, 17, 65, 0.6);
+            animation: birdiePopBurst 1.5s ease-out forwards;
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        @keyframes birdiePopBurst {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            20% {
+                transform: translate(-50%, -50%) scale(1.3);
+                opacity: 1;
+            }
+            60% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1489,6 +1635,10 @@
             eventDate: '',
             courseHoles: JSON.parse(JSON.stringify(DEFAULT_COURSE_HOLES)),
             useHandicaps: true,
+            sessions: [
+                { id: 'session-1', name: 'Day 1', format: 'fourball', order: 1 },
+                { id: 'session-2', name: 'Day 2', format: 'singles', order: 2 }
+            ],
         },
         players: {},
         draft: {
@@ -1514,15 +1664,25 @@
             if (saved) {
                 const parsed = JSON.parse(saved);
                 const base = defaultState();
+
+                // Migrate old day-based matches to session-based
+                const matches = parsed.matches || {};
+                Object.values(matches).forEach(match => {
+                    if (match.day && !match.sessionId) {
+                        match.sessionId = `session-${match.day}`;
+                    }
+                });
+
                 return {
                     config: { ...base.config, ...parsed.config,
                         teamA: { ...base.config.teamA, ...(parsed.config?.teamA || {}) },
                         teamB: { ...base.config.teamB, ...(parsed.config?.teamB || {}) },
                         courseHoles: parsed.config?.courseHoles || base.config.courseHoles,
+                        sessions: parsed.config?.sessions || base.config.sessions,
                     },
                     players: parsed.players || {},
                     draft: { ...base.draft, ...parsed.draft },
-                    matches: parsed.matches || {},
+                    matches,
                     ui: { ...base.ui, ...parsed.ui },
                 };
             }
@@ -1620,7 +1780,8 @@
     function getPlayerName(id) { return S.players[id]?.name || 'Unknown'; }
     function getPlayerHcp(id) { return parseInt(S.players[id]?.handicap) || 0; }
     function getTeamPlayers(team) { return Object.values(S.players).filter(p => p.team === team); }
-    function getMatchesByDay(day) { return Object.values(S.matches).filter(m => m.day === day).sort((a, b) => a.order - b.order); }
+    function getMatchesByDay(day) { return Object.values(S.matches).filter(m => m.day === day || m.sessionId === `session-${day}`).sort((a, b) => a.order - b.order); }
+    function getMatchesBySession(sessionId) { return Object.values(S.matches).filter(m => m.sessionId === sessionId).sort((a, b) => a.order - b.order); }
 
     function getHoleInfo(holeNum) {
         return S.config.courseHoles[holeNum - 1] || { hole: holeNum, par: 4, hcp: holeNum };
@@ -1740,54 +1901,107 @@
         return { A: a, B: b };
     }
 
+    function getSessionScores(sessionId) {
+        let a = 0, b = 0;
+        const matches = getMatchesBySession(sessionId);
+        matches.forEach(m => {
+            const pts = getMatchPoints(m);
+            a += pts.A; b += pts.B;
+        });
+        return { A: a, B: b };
+    }
+
+    function getProjectedMatchPoints(match) {
+        const status = getMatchPlayStatus(match);
+
+        // If match is complete, return actual points
+        if (status.isComplete) {
+            return getMatchPoints(match);
+        }
+
+        // If no holes played yet, no projection
+        if (status.holesPlayed === 0) {
+            return { A: 0, B: 0, settled: false };
+        }
+
+        // Project based on current leader
+        if (status.text === 'ALL SQUARE') {
+            return { A: 0.5, B: 0.5, settled: false }; // Projected halved
+        } else if (status.leader === 'A') {
+            return { A: 1, B: 0, settled: false }; // Projected Team A win
+        } else if (status.leader === 'B') {
+            return { A: 0, B: 1, settled: false }; // Projected Team B win
+        }
+
+        return { A: 0, B: 0, settled: false };
+    }
+
+    function getProjectedTeamScores() {
+        let a = 0, b = 0;
+        let hasProjections = false;
+
+        Object.values(S.matches).forEach(m => {
+            const pts = getProjectedMatchPoints(m);
+            a += pts.A;
+            b += pts.B;
+            if (!pts.settled) hasProjections = true;
+        });
+
+        return { A: a, B: b, hasProjections };
+    }
+
     // ─────────────────────────────────────────────────────────
     // RENDER: LEADERBOARD
     // ─────────────────────────────────────────────────────────
     function renderLeaderboard() {
         const el = document.getElementById('leaderboard-content');
         const allMatches = Object.values(S.matches);
-        let joinHtml = '';
-
-        // Show Join Live card if not already connected
-        if (!LiveSync.isAdmin && !LiveSync.isViewer && !LiveSync.isScorer) {
-            joinHtml = `
-                <div class="join-live-card">
-                    <h3>Join Live Event</h3>
-                    <input class="join-live-input" id="joinCodeInput" placeholder="CODE" maxlength="6"
-                        onkeydown="if(event.key==='Enter'){document.getElementById('joinViewBtn').click();}">
-                    <div class="join-live-btns">
-                        <button class="btn btn-primary btn-sm" id="joinViewBtn" onclick="handleJoinViewer()">View Leaderboard</button>
-                        <button class="btn btn-gold btn-sm" onclick="handleJoinScorer()">Score a Match</button>
-                    </div>
-                    <p class="text-sm text-muted" style="margin-top:8px;">Enter event code to view, or match code to score.</p>
-                </div>`;
-        }
 
         if (allMatches.length === 0 && Object.keys(S.players).length === 0) {
-            el.innerHTML = joinHtml + `<div class="lb-empty"><h3>Welcome to The Smashters</h3>
+            el.innerHTML = `<div class="lb-empty"><h3>Welcome to The Smashters</h3>
                 <p>Add players in the <strong>Players</strong> tab to get started,<br>then set up matches in the <strong>Matches</strong> tab.</p></div>`;
             return;
         }
 
         const scores = getTeamScores();
-        const day1 = getMatchesByDay(1);
-        const day2 = getMatchesByDay(2);
         let html = '';
 
-        if (day1.length > 0) {
-            html += `<div class="lb-board">`;
-            html += `<div class="lb-section-header">Day 1 &mdash; Four Ball</div>`;
-            html += day1.map(m => renderLeaderboardMatch(m)).join('');
-            html += `</div>`;
-        }
-        if (day2.length > 0) {
-            html += `<div class="lb-board" style="margin-top:16px;">`;
-            html += `<div class="lb-section-header">Day 2 &mdash; Singles</div>`;
-            html += day2.map(m => renderLeaderboardMatch(m)).join('');
-            html += `</div>`;
-        }
+        // Loop through sessions dynamically
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        sessions.forEach((session, index) => {
+            const matches = getMatchesBySession(session.id);
+            if (matches.length > 0) {
+                const formatLabel = {
+                    fourball: 'Four Ball',
+                    foursomes: 'Foursomes',
+                    singles: 'Singles',
+                    other: 'Other'
+                }[session.format] || 'Match';
 
-        // Team totals bar
+                html += `<div class="lb-board" ${index > 0 ? 'style="margin-top:16px;"' : ''}>`;
+                html += `<div class="lb-section-header">${session.name} &mdash; ${formatLabel}</div>`;
+                html += matches.map(m => renderLeaderboardMatch(m)).join('');
+                html += `</div>`;
+            }
+        });
+
+        // Build session subtotals breakdown
+        let sessionBreakdownA = '';
+        let sessionBreakdownB = '';
+        sessions.forEach((session, idx) => {
+            const matches = getMatchesBySession(session.id);
+            if (matches.length > 0) {
+                const sessionScores = getSessionScores(session.id);
+                sessionBreakdownA += `${idx > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.A)}`;
+                sessionBreakdownB += `${idx > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.B)}`;
+            }
+        });
+
+        // Get projected scores
+        const projected = getProjectedTeamScores();
+        const showProjected = projected.hasProjections && (projected.A !== scores.A || projected.B !== scores.B);
+
+        // Team totals bar with subtotals and projections
         html += `
             <div class="lb-board" style="margin-top:16px;">
                 <div class="lb-totals-row">
@@ -1802,14 +2016,39 @@
                         <span class="lb-total-pts">${formatScore(scores.B)}</span>
                         <span class="lb-total-team-name">${S.config.teamB.name}</span>
                     </div>
-                </div>
-            </div>`;
+                </div>`;
+
+        // Session breakdown row
+        if (sessionBreakdownA && sessionBreakdownB) {
+            html += `
+                <div class="lb-breakdown-row">
+                    <div class="lb-breakdown-side">${sessionBreakdownA}</div>
+                    <div class="lb-breakdown-side">${sessionBreakdownB}</div>
+                </div>`;
+        }
+
+        // Projected totals row (if matches in progress)
+        if (showProjected) {
+            html += `
+                <div class="lb-projected-row">
+                    <div class="lb-projected-side">
+                        <span class="lb-projected-label">Projected:</span>
+                        <span class="lb-projected-value">${formatScore(projected.A)}</span>
+                    </div>
+                    <div class="lb-projected-side">
+                        <span class="lb-projected-value">${formatScore(projected.B)}</span>
+                        <span class="lb-projected-label">Projected:</span>
+                    </div>
+                </div>`;
+        }
+
+        html += `</div>`;
 
         if (allMatches.length === 0) {
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
         }
 
-        el.innerHTML = joinHtml + html;
+        el.innerHTML = html;
     }
 
     function handleJoinViewer() {
@@ -1892,9 +2131,42 @@
         let html = '<h2 class="section-title">Live Scoring</h2>';
 
         // In scorer mode, only show their assigned match
-        const matchesToShow = LiveSync.isScorer
+        const allMatches = LiveSync.isScorer
             ? Object.values(S.matches).filter(m => m.id === LiveSync.scorerMatchId)
             : Object.values(S.matches);
+
+        // Initialize scoring session filter if not set
+        if (!S.ui.scoringSessionFilter) {
+            S.ui.scoringSessionFilter = S.config.sessions[0]?.id || null;
+        }
+
+        // Group matches by session
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        const sessionsWithMatches = sessions.filter(session =>
+            allMatches.some(m => m.sessionId === session.id)
+        );
+        const hasMultipleSessions = sessionsWithMatches.length > 1;
+
+        // Session filter tabs (only show if multiple sessions have matches)
+        if (hasMultipleSessions) {
+            html += `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">`;
+            sessionsWithMatches.forEach(session => {
+                const formatLabel = {
+                    fourball: 'Four Ball',
+                    foursomes: 'Foursomes',
+                    singles: 'Singles',
+                    other: 'Other'
+                }[session.format] || 'Match';
+                html += `<button class="btn ${S.ui.scoringSessionFilter === session.id ? 'btn-primary' : 'btn-outline'}"
+                        onclick="setScoringSessionFilter('${session.id}')" style="flex:1;">${session.name} - ${formatLabel}</button>`;
+            });
+            html += `</div>`;
+        }
+
+        // Filter matches based on selected session
+        const matchesToShow = hasMultipleSessions
+            ? allMatches.filter(m => m.sessionId === S.ui.scoringSessionFilter)
+            : allMatches;
 
         // Match selector
         html += '<div class="scoring-match-select">';
@@ -2069,6 +2341,12 @@
         renderScoring();
     }
 
+    function setScoringSessionFilter(sessionId) {
+        S.ui.scoringSessionFilter = sessionId;
+        saveState();
+        renderScoring();
+    }
+
     function findNextUnplayedHole(match) {
         for (let h = 1; h <= 18; h++) {
             if (!getHoleWinner(match, h)) return h;
@@ -2134,11 +2412,109 @@
     function prevHole() {
         if (S.ui.scoringHole > 1) { S.ui.scoringHole--; saveState(); renderScoring(); }
     }
+
     function nextHole() {
-        if (S.ui.scoringHole < 18) { S.ui.scoringHole++; saveState(); renderScoring(); }
+        if (S.ui.scoringHole >= 18) return;
+
+        // Check for birdies on current hole before advancing
+        const match = S.matches[S.ui.activeMatchId];
+        if (match) {
+            checkForBirdiesAndCelebrate(match, S.ui.scoringHole);
+        }
+
+        S.ui.scoringHole++;
+        saveState();
+        renderScoring();
     }
+
     function jumpToHole(h) {
         S.ui.scoringHole = h; saveState(); renderScoring();
+    }
+
+    function checkForBirdiesAndCelebrate(match, holeNum) {
+        const holeInfo = getHoleInfo(holeNum);
+        const par = holeInfo.par;
+        const holeScores = match.holes[holeNum] || {};
+        const allPlayers = [...match.teamA, ...match.teamB];
+
+        const birdies = [];
+        const eagles = [];
+
+        allPlayers.forEach(playerId => {
+            const score = holeScores[playerId];
+            if (score !== undefined && score !== null) {
+                const diff = score - par;
+                if (diff === -1) birdies.push(playerId);
+                if (diff <= -2) eagles.push(playerId);
+            }
+        });
+
+        // If we have birdies or eagles, LIGHT IT UP! 🔥
+        if (birdies.length > 0 || eagles.length > 0) {
+            launchFlames(birdies, eagles);
+        }
+    }
+
+    function launchFlames(birdies, eagles) {
+        // Create flame container if it doesn't exist
+        let container = document.getElementById('flameContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'flameContainer';
+            container.className = 'flame-container';
+            document.body.appendChild(container);
+        }
+
+        // Calculate number of flames based on scores
+        const totalFlames = (birdies.length * 5) + (eagles.length * 10);
+
+        // Launch flames from random positions
+        for (let i = 0; i < totalFlames; i++) {
+            setTimeout(() => {
+                const flame = document.createElement('div');
+                flame.className = 'flame';
+                flame.textContent = '🔥';
+
+                // Random starting position (bottom half of screen)
+                const startX = Math.random() * window.innerWidth;
+                const startY = window.innerHeight * 0.5 + (Math.random() * window.innerHeight * 0.3);
+
+                flame.style.left = startX + 'px';
+                flame.style.top = startY + 'px';
+
+                container.appendChild(flame);
+
+                // Remove flame after animation
+                setTimeout(() => {
+                    flame.remove();
+                }, 2000);
+            }, i * 50); // Stagger the flames
+        }
+
+        // Show BIRDIE! or EAGLE! burst text
+        if (eagles.length > 0) {
+            showBurst('🦅 EAGLE! 🦅');
+        } else if (birdies.length > 0) {
+            showBurst('🔥 BIRDIE! 🔥');
+        }
+
+        // Clean up container after all animations
+        setTimeout(() => {
+            if (container.children.length === 0) {
+                container.remove();
+            }
+        }, 3000);
+    }
+
+    function showBurst(text) {
+        const burst = document.createElement('div');
+        burst.className = 'birdie-burst';
+        burst.textContent = text;
+        document.body.appendChild(burst);
+
+        setTimeout(() => {
+            burst.remove();
+        }, 1500);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -2146,8 +2522,6 @@
     // ─────────────────────────────────────────────────────────
     function renderMatches() {
         const el = document.getElementById('matches-content');
-        const day1 = getMatchesByDay(1);
-        const day2 = getMatchesByDay(2);
         const teamAPlayers = getTeamPlayers('A');
         const teamBPlayers = getTeamPlayers('B');
 
@@ -2158,15 +2532,28 @@
 
         let html = '<h2 class="section-title">Match Setup</h2>';
 
-        html += `<div class="match-day-header"><h3>Day 1 &mdash; Four Ball</h3>
-            <button class="btn btn-gold btn-sm" onclick="openCreateMatch(1, 'fourball')">+ Add Match</button></div>`;
-        if (day1.length === 0) { html += `<div class="empty-state mb-16"><p>No four ball matches yet.</p></div>`; }
-        else { html += day1.map(m => renderMatchCard(m)).join(''); }
+        // Loop through sessions dynamically
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        sessions.forEach((session, index) => {
+            const matches = getMatchesBySession(session.id);
+            const formatLabel = {
+                fourball: 'Four Ball',
+                foursomes: 'Foursomes',
+                singles: 'Singles',
+                other: 'Other'
+            }[session.format] || 'Match';
 
-        html += `<div class="match-day-header" style="margin-top:20px;"><h3>Day 2 &mdash; Singles</h3>
-            <button class="btn btn-gold btn-sm" onclick="openCreateMatch(2, 'singles')">+ Add Match</button></div>`;
-        if (day2.length === 0) { html += `<div class="empty-state"><p>No singles matches yet.</p></div>`; }
-        else { html += day2.map(m => renderMatchCard(m)).join(''); }
+            html += `<div class="match-day-header" ${index > 0 ? 'style="margin-top:20px;"' : ''}>
+                <h3>${session.name} &mdash; ${formatLabel}</h3>
+                <button class="btn btn-gold btn-sm" onclick="openCreateMatch('${session.id}', '${session.format}')">+ Add Match</button>
+            </div>`;
+
+            if (matches.length === 0) {
+                html += `<div class="empty-state mb-16"><p>No ${formatLabel.toLowerCase()} matches yet.</p></div>`;
+            } else {
+                html += matches.map(m => renderMatchCard(m)).join('');
+            }
+        });
 
         el.innerHTML = html;
     }
@@ -2174,7 +2561,12 @@
     function renderMatchCard(match) {
         const teamANames = match.teamA.map(id => getPlayerName(id)).join(' & ');
         const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' & ');
-        const label = match.type === 'fourball' ? 'Four Ball' : 'Singles';
+        const label = {
+            fourball: 'Four Ball',
+            foursomes: 'Foursomes',
+            singles: 'Singles',
+            other: 'Other'
+        }[match.type] || 'Match';
 
         return `
             <div class="match-setup-card">
@@ -2196,32 +2588,51 @@
             </div>`;
     }
 
-    function openCreateMatch(day, type) {
+    function openCreateMatch(sessionId, format) {
+        const session = S.config.sessions.find(s => s.id === sessionId);
+        if (!session) return;
+
         const teamAPlayers = getTeamPlayers('A');
         const teamBPlayers = getTeamPlayers('B');
-        const numPlayers = type === 'fourball' ? 2 : 1;
-        const label = type === 'fourball' ? 'Four Ball' : 'Singles';
+        const numPlayers = (format === 'fourball' || format === 'foursomes') ? 2 : 1;
+        const formatLabel = {
+            fourball: 'Four Ball',
+            foursomes: 'Foursomes',
+            singles: 'Singles',
+            other: 'Other'
+        }[format] || 'Match';
 
-        let body = `<p class="mb-16">Create a Day ${day} ${label} match.</p>`;
+        // Get already-assigned players for this session to filter them out
+        const assignedPlayerIds = new Set();
+        getMatchesBySession(sessionId).forEach(match => {
+            match.teamA.forEach(pid => assignedPlayerIds.add(pid));
+            match.teamB.forEach(pid => assignedPlayerIds.add(pid));
+        });
+
+        // Filter out already-assigned players
+        const availableTeamA = teamAPlayers.filter(p => !assignedPlayerIds.has(p.id));
+        const availableTeamB = teamBPlayers.filter(p => !assignedPlayerIds.has(p.id));
+
+        let body = `<p class="mb-16">Create a ${session.name} ${formatLabel} match.</p>`;
         body += `<div class="form-group"><label style="color:${S.config.teamA.color}">${S.config.teamA.name} Player${numPlayers > 1 ? 's' : ''}</label>`;
         for (let i = 0; i < numPlayers; i++) {
             body += `<select class="form-input mb-8" id="matchTeamA${i}"><option value="">-- Select Player --</option>
-                ${teamAPlayers.map(p => `<option value="${p.id}">${p.name} (HCP ${p.handicap || 'N/A'})</option>`).join('')}</select>`;
+                ${availableTeamA.map(p => `<option value="${p.id}">${p.name} (HCP ${p.handicap || 'N/A'})</option>`).join('')}</select>`;
         }
         body += '</div>';
         body += `<div class="form-group"><label style="color:${S.config.teamB.color}">${S.config.teamB.name} Player${numPlayers > 1 ? 's' : ''}</label>`;
         for (let i = 0; i < numPlayers; i++) {
             body += `<select class="form-input mb-8" id="matchTeamB${i}"><option value="">-- Select Player --</option>
-                ${teamBPlayers.map(p => `<option value="${p.id}">${p.name} (HCP ${p.handicap || 'N/A'})</option>`).join('')}</select>`;
+                ${availableTeamB.map(p => `<option value="${p.id}">${p.name} (HCP ${p.handicap || 'N/A'})</option>`).join('')}</select>`;
         }
         body += '</div>';
 
         const footer = `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="createMatch(${day}, '${type}', ${numPlayers})">Create Match</button>`;
-        openModal(`New ${label} Match`, body, footer);
+            <button class="btn btn-primary" onclick="createMatch('${sessionId}', '${format}', ${numPlayers})">Create Match</button>`;
+        openModal(`New ${formatLabel} Match`, body, footer);
     }
 
-    function createMatch(day, type, numPlayers) {
+    function createMatch(sessionId, format, numPlayers) {
         const teamA = [], teamB = [];
         for (let i = 0; i < numPlayers; i++) {
             const aVal = document.getElementById(`matchTeamA${i}`).value;
@@ -2232,8 +2643,10 @@
         if (teamA.length === 0 || teamB.length === 0) { showToast('Please select at least one player per team'); return; }
 
         const match = {
-            id: genId(), type, day,
-            order: getMatchesByDay(day).length + 1,
+            id: genId(),
+            sessionId,
+            type: format,
+            order: getMatchesBySession(sessionId).length + 1,
             teamA, teamB, holes: {}, status: 'pending',
         };
         S.matches[match.id] = match;
@@ -2478,8 +2891,15 @@
         const team = S.draft.currentTeam;
         S.draft.picks.push({ team, playerId, order: S.draft.picks.length + 1 });
         S.players[playerId].team = team;
-        const nextPick = S.draft.picks.length + 1;
-        S.draft.currentTeam = (Math.floor((nextPick - 1) / 2) % 2 === 0) ? 'A' : 'B';
+
+        // Snake draft logic: A, B, B, A, A, B, B, A, A, B...
+        const pickIndex = S.draft.picks.length; // 0-based index of next pick
+        const roundNum = Math.floor(pickIndex / 2);
+        const isFirstInRound = (pickIndex % 2 === 0);
+        S.draft.currentTeam = (roundNum % 2 === 0)
+            ? (isFirstInRound ? 'A' : 'B')  // Even rounds: A, B
+            : (isFirstInRound ? 'B' : 'A'); // Odd rounds: B, A
+
         saveState(); renderDraft();
         showToast(`${team === 'A' ? S.config.teamA.name : S.config.teamB.name} selects ${S.players[playerId].name}`);
     }
@@ -2566,6 +2986,30 @@
             </div>
 
             <div class="settings-section">
+                <div class="settings-section-header">Sessions / Formats</div>
+                <div class="settings-section-body">
+                    <p class="text-sm text-muted mb-16">Configure match play sessions (e.g., Day 1, Day 2, bonus events) and their formats.</p>
+                    <div id="sessionsListSettings">
+                        ${S.config.sessions.sort((a, b) => a.order - b.order).map(session => `
+                            <div class="session-config-row" style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+                                <input class="form-input" value="${session.name}" id="session_name_${session.id}" style="flex:2;" placeholder="Session name">
+                                <select class="form-input" id="session_format_${session.id}" style="flex:2;">
+                                    <option value="fourball" ${session.format === 'fourball' ? 'selected' : ''}>Four Ball</option>
+                                    <option value="foursomes" ${session.format === 'foursomes' ? 'selected' : ''}>Foursomes</option>
+                                    <option value="singles" ${session.format === 'singles' ? 'selected' : ''}>Singles</option>
+                                    <option value="other" ${session.format === 'other' ? 'selected' : ''}>Other</option>
+                                </select>
+                                <button class="btn btn-sm" onclick="moveSessionUp('${session.id}')" style="padding:4px 8px;" title="Move up">▲</button>
+                                <button class="btn btn-sm" onclick="moveSessionDown('${session.id}')" style="padding:4px 8px;" title="Move down">▼</button>
+                                <button class="btn btn-sm" onclick="deleteSession('${session.id}')" style="background:var(--masters-red);color:#fff;padding:4px 8px;" title="Delete">×</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="addSession()" style="margin-top:8px;">+ Add Session</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <div class="settings-section-header">Scoring</div>
                 <div class="settings-section-body">
                     <div class="form-group">
@@ -2618,6 +3062,14 @@
         S.config.teamB.color = document.getElementById('cfgTeamBColor').value;
         S.config.teamSize = parseInt(document.getElementById('cfgTeamSize').value) || 6;
         S.config.useHandicaps = document.getElementById('cfgUseHandicaps').checked;
+
+        // Save sessions
+        S.config.sessions.forEach(session => {
+            const nameInput = document.getElementById(`session_name_${session.id}`);
+            const formatInput = document.getElementById(`session_format_${session.id}`);
+            if (nameInput) session.name = nameInput.value.trim() || session.name;
+            if (formatInput) session.format = formatInput.value;
+        });
 
         // Save course holes
         for (let i = 0; i < 18; i++) {
@@ -2712,6 +3164,57 @@
         LiveSync.adminReset(pin).then(success => {
             if (success) { closeModal(); renderSettings(); }
         });
+    }
+
+    function addSession() {
+        const newId = `session-${Date.now()}`;
+        const maxOrder = Math.max(...S.config.sessions.map(s => s.order), 0);
+        S.config.sessions.push({
+            id: newId,
+            name: `Session ${S.config.sessions.length + 1}`,
+            format: 'singles',
+            order: maxOrder + 1
+        });
+        saveState();
+        renderSettings();
+        showToast('Session added');
+    }
+
+    function deleteSession(sessionId) {
+        const matchesInSession = Object.values(S.matches).filter(m => m.sessionId === sessionId);
+        if (matchesInSession.length > 0) {
+            if (!confirm(`This session has ${matchesInSession.length} match(es). Delete anyway?`)) return;
+        }
+        S.config.sessions = S.config.sessions.filter(s => s.id !== sessionId);
+        // Remove matches in this session
+        Object.keys(S.matches).forEach(matchId => {
+            if (S.matches[matchId].sessionId === sessionId) {
+                delete S.matches[matchId];
+            }
+        });
+        saveState();
+        renderSettings();
+        showToast('Session deleted');
+    }
+
+    function moveSessionUp(sessionId) {
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        const index = sessions.findIndex(s => s.id === sessionId);
+        if (index > 0) {
+            [sessions[index].order, sessions[index - 1].order] = [sessions[index - 1].order, sessions[index].order];
+            saveState();
+            renderSettings();
+        }
+    }
+
+    function moveSessionDown(sessionId) {
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        const index = sessions.findIndex(s => s.id === sessionId);
+        if (index < sessions.length - 1) {
+            [sessions[index].order, sessions[index + 1].order] = [sessions[index + 1].order, sessions[index].order];
+            saveState();
+            renderSettings();
+        }
     }
 
     function resetAll() {
