@@ -102,7 +102,7 @@
             filter: brightness(0) invert(1);
         }
 
-        .header-titles { text-align: left; }
+        .header-titles { text-align: center; }
 
         .header-titles h1 {
             font-size: 1.6rem;
@@ -1653,6 +1653,7 @@
             activeTab: 'leaderboard',
             activeMatchId: null,
             scoringHole: 1,
+            settingsUnlocked: false,
         },
     });
 
@@ -1734,6 +1735,17 @@
     // TAB NAVIGATION
     // ─────────────────────────────────────────────────────────
     function switchTab(tabId) {
+        // Password protect settings tab
+        if (tabId === 'settings' && !S.ui.settingsUnlocked) {
+            const password = prompt('Enter settings password:');
+            if (password !== '1313') {
+                showToast('Incorrect password');
+                return;
+            }
+            S.ui.settingsUnlocked = true;
+            saveState();
+        }
+
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
         document.querySelectorAll('.tab-content').forEach(s => s.classList.toggle('active', s.id === `tab-${tabId}`));
         S.ui.activeTab = tabId;
@@ -2051,16 +2063,17 @@
         el.innerHTML = html;
     }
 
-    function handleJoinViewer() {
-        const code = document.getElementById('joinCodeInput')?.value?.trim();
-        if (!code) { showToast('Enter an event code'); return; }
-        LiveSync.joinAsViewer(code);
-    }
-
-    function handleJoinScorer() {
-        const code = document.getElementById('joinCodeInput')?.value?.trim();
-        if (!code) { showToast('Enter a match code'); return; }
-        LiveSync.joinAsScorer(code);
+    function enableScoring() {
+        const code = prompt('Enter scorer code:');
+        if (code === '6969') {
+            LiveSync.isScorer = true;
+            LiveSync.scorerMatchId = null; // Can score all matches
+            LiveSync.updateBanner();
+            showToast('Scoring enabled!');
+            switchTab('scoring');
+        } else {
+            showToast('Incorrect scorer code');
+        }
     }
 
     function renderLeaderboardMatch(match) {
@@ -2128,10 +2141,23 @@
             return;
         }
 
+        // Check if user needs to enable scoring
+        if (!LiveSync.isAdmin && !LiveSync.isScorer) {
+            el.innerHTML = `
+                <h2 class="section-title">Live Scoring</h2>
+                <div class="empty-state">
+                    <h3>Scorer Authentication Required</h3>
+                    <p>Enter the scorer code to enable scoring for all matches.</p>
+                    <button class="btn btn-primary" onclick="enableScoring()" style="margin-top:16px;">Enable Scoring</button>
+                </div>`;
+            return;
+        }
+
         let html = '<h2 class="section-title">Live Scoring</h2>';
 
-        // In scorer mode, only show their assigned match
-        const allMatches = LiveSync.isScorer
+        // In scorer mode with a specific match, only show that match
+        // If scorerMatchId is null, show all matches (all-scorer role)
+        const allMatches = (LiveSync.isScorer && LiveSync.scorerMatchId !== null)
             ? Object.values(S.matches).filter(m => m.id === LiveSync.scorerMatchId)
             : Object.values(S.matches);
 
@@ -2664,6 +2690,12 @@
     // ─────────────────────────────────────────────────────────
     // RENDER: PLAYERS
     // ─────────────────────────────────────────────────────────
+    // TODO: Add "Import from Contacts" feature
+    // - Requires HTTPS deployment
+    // - Use Contact Picker API for iOS/Android
+    // - Add button next to "+ Add Player"
+    // - Map contact names to player names
+    // - Reference: https://developer.mozilla.org/en-US/docs/Web/API/Contact_Picker_API
     function renderPlayers() {
         const el = document.getElementById('players-content');
         const allPlayers = Object.values(S.players);
@@ -2818,7 +2850,9 @@
         const drafted = new Set(S.draft.picks.map(p => p.playerId));
         if (S.draft.captainA) drafted.add(S.draft.captainA);
         if (S.draft.captainB) drafted.add(S.draft.captainB);
-        const available = Object.values(S.players).filter(p => !drafted.has(p.id));
+        const available = Object.values(S.players)
+            .filter(p => !drafted.has(p.id))
+            .sort((a, b) => (a.handicap || 999) - (b.handicap || 999));
         const teamAPicks = S.draft.picks.filter(p => p.team === 'A');
         const teamBPicks = S.draft.picks.filter(p => p.team === 'B');
         const ct = S.draft.currentTeam;
@@ -2947,6 +2981,41 @@
         el.innerHTML = `
             <h2 class="section-title">Event Settings</h2>
 
+            <div class="settings-section" style="background:#f0f8f0;border:2px solid var(--masters-green);">
+                <div class="settings-section-header" style="background:var(--masters-green);color:#fff;">Access Codes</div>
+                <div class="settings-section-body">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div style="text-align:center;padding:12px;background:#fff;border-radius:8px;">
+                            <p style="font-size:0.75rem;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Settings Password</p>
+                            <p style="font-size:2rem;font-weight:bold;color:var(--masters-green);letter-spacing:3px;">1313</p>
+                        </div>
+                        <div style="text-align:center;padding:12px;background:#fff;border-radius:8px;">
+                            <p style="font-size:0.75rem;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Scorer Code</p>
+                            <p style="font-size:2rem;font-weight:bold;color:var(--masters-green);letter-spacing:3px;">6969</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-muted" style="margin-top:12px;text-align:center;">Settings Password: admin access • Scorer Code: score all matches</p>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-header">Communications</div>
+                <div class="settings-section-body">
+                    <p class="text-sm text-muted mb-16">Send messages to all participants with contact information.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <button class="btn btn-primary" onclick="sendEmailToParticipants()">
+                            <span style="font-size:1.2rem;margin-right:8px;">&#9993;</span> Send Email
+                        </button>
+                        <button class="btn btn-primary" onclick="sendTextToParticipants()">
+                            <span style="font-size:1.2rem;margin-right:8px;">&#128172;</span> Send Text
+                        </button>
+                    </div>
+                    <p class="text-sm text-muted" style="margin-top:12px;text-align:center;font-style:italic;">
+                        Use for tee times, pairings, round summaries, etc.
+                    </p>
+                </div>
+            </div>
+
             <div class="settings-section">
                 <div class="settings-section-header">Event Info</div>
                 <div class="settings-section-body">
@@ -3035,13 +3104,6 @@
             <button class="btn btn-primary btn-block" onclick="saveSettings()">Save Settings</button>
 
             <div class="settings-section" style="margin-top:24px;">
-                <div class="settings-section-header">Live Sharing</div>
-                <div class="settings-section-body" id="liveSettingsBody">
-                    ${renderLiveSettings()}
-                </div>
-            </div>
-
-            <div class="settings-section" style="margin-top:24px;">
                 <div class="settings-section-header" style="background:var(--masters-red);">Danger Zone</div>
                 <div class="settings-section-body">
                     <p class="text-sm text-muted mb-16">Reset all event data including players, matches, and scores.</p>
@@ -3088,36 +3150,145 @@
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
     }
 
+    // ─────────────────────────────────────────────────────────
+    // COMMUNICATIONS: Email & Text Messaging
+    // ─────────────────────────────────────────────────────────
+    function sendEmailToParticipants() {
+        // Collect all players with email addresses
+        const playersWithEmail = Object.values(S.players).filter(p => p.email && p.email.trim());
+
+        if (playersWithEmail.length === 0) {
+            showToast('No players have email addresses on file');
+            return;
+        }
+
+        // Collect all email addresses
+        const emails = playersWithEmail.map(p => p.email.trim()).join(',');
+
+        // Create default subject and body
+        const subject = encodeURIComponent(`${S.config.eventName} - ${S.config.clubName}`);
+        const body = encodeURIComponent(`Hello Smashters,\n\n[Your message here]\n\nEvent: ${S.config.eventName}\nCourse: ${S.config.courseName || 'TBD'}\nDate: ${S.config.eventDate || 'TBD'}\n\nSee you on the course!`);
+
+        // Open email client with BCC (to protect privacy)
+        // Note: Using BCC means the emails won't be visible to recipients
+        const mailtoLink = `mailto:?bcc=${emails}&subject=${subject}&body=${body}`;
+
+        // Open in new window/tab
+        window.location.href = mailtoLink;
+
+        showToast(`Opening email client for ${playersWithEmail.length} participants`);
+    }
+
+    function sendTextToParticipants() {
+        // Collect all players with phone numbers
+        const playersWithPhone = Object.values(S.players).filter(p => p.phone && p.phone.trim());
+
+        if (playersWithPhone.length === 0) {
+            showToast('No players have phone numbers on file');
+            return;
+        }
+
+        // For SMS, we'll show a modal with options since sms: protocol has limited support
+        const playerList = playersWithPhone.map(p =>
+            `<div style="padding:8px;border-bottom:1px solid #eee;">
+                <strong>${p.name}</strong><br>
+                <span style="color:#666;font-size:0.9rem;">${p.phone}</span>
+            </div>`
+        ).join('');
+
+        const body = `
+            <p class="mb-16">Text messaging from web browsers has limited support. Choose an option below:</p>
+
+            <div style="margin-bottom:20px;">
+                <h4 style="margin-bottom:12px;">Option 1: Copy Phone Numbers</h4>
+                <p class="text-sm text-muted mb-8">Copy all phone numbers and paste into your messaging app (recommended for group texts)</p>
+                <textarea id="phoneNumberList" readonly style="width:100%;height:80px;padding:8px;border:1px solid #ccc;border-radius:4px;font-family:monospace;font-size:0.9rem;">${playersWithPhone.map(p => p.phone).join(', ')}</textarea>
+                <button class="btn btn-outline btn-sm mt-8" onclick="copyPhoneNumbers()">Copy to Clipboard</button>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <h4 style="margin-bottom:12px;">Option 2: Individual Texts</h4>
+                <p class="text-sm text-muted mb-12">Send texts one-by-one (opens messaging app for each)</p>
+                <div style="max-height:200px;overflow-y:auto;border:1px solid #eee;border-radius:4px;">
+                    ${playerList}
+                </div>
+            </div>
+        `;
+
+        const footer = `
+            <button class="btn btn-outline" onclick="closeModal()">Close</button>
+            <button class="btn btn-primary" onclick="sendIndividualTexts()">Send Individual Texts</button>
+        `;
+
+        openModal(`Send Text Messages (${playersWithPhone.length} participants)`, body, footer);
+    }
+
+    function copyPhoneNumbers() {
+        const textarea = document.getElementById('phoneNumberList');
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+            document.execCommand('copy');
+            showToast('Phone numbers copied to clipboard!');
+        } catch (err) {
+            // Fallback for modern browsers
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                showToast('Phone numbers copied to clipboard!');
+            }).catch(() => {
+                showToast('Failed to copy. Please copy manually.');
+            });
+        }
+    }
+
+    function sendIndividualTexts() {
+        const playersWithPhone = Object.values(S.players).filter(p => p.phone && p.phone.trim());
+
+        if (playersWithPhone.length === 0) {
+            showToast('No players have phone numbers on file');
+            closeModal();
+            return;
+        }
+
+        // Create a default message template
+        const defaultMessage = `${S.config.eventName} - ${S.config.clubName}\n\nEvent Date: ${S.config.eventDate || 'TBD'}\nCourse: ${S.config.courseName || 'TBD'}\n\n[Your message here]`;
+        const message = encodeURIComponent(defaultMessage);
+
+        // Warning that this will open multiple windows
+        if (!confirm(`This will open ${playersWithPhone.length} messaging windows. Continue?`)) {
+            return;
+        }
+
+        closeModal();
+
+        // Open SMS link for each player with a delay to avoid blocking
+        playersWithPhone.forEach((player, index) => {
+            setTimeout(() => {
+                // Clean phone number (remove special characters)
+                const cleanPhone = player.phone.replace(/[^0-9+]/g, '');
+                // Note: iOS supports sms: with body, Android may not
+                const smsLink = `sms:${cleanPhone}?&body=${message}`;
+                window.open(smsLink, '_blank');
+            }, index * 1000); // 1 second delay between each
+        });
+
+        showToast(`Opening ${playersWithPhone.length} messaging windows...`);
+    }
+
     function renderLiveSettings() {
         if (LiveSync.isAdmin) {
-            // Currently live - show status and match codes
-            let matchCodeHtml = '<div class="match-code-list">';
-            const allMatches = Object.values(S.matches);
-            if (allMatches.length === 0) {
-                matchCodeHtml += '<p class="text-sm text-muted">No matches created yet.</p>';
-            } else {
-                allMatches.forEach(m => {
-                    const code = LiveSync.matchCodes[m.id] || '----';
-                    const teamANames = m.teamA.map(id => getPlayerName(id)).join(' / ');
-                    const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' / ');
-                    matchCodeHtml += `
-                        <div class="match-code-item">
-                            <span>${teamANames} vs ${teamBNames}</span>
-                            <span class="match-code-value">${code}</span>
-                        </div>`;
-                });
-            }
-            matchCodeHtml += '</div>';
-
+            // Currently live - show status and scorer code
             return `
-                <div style="text-align:center;margin-bottom:16px;">
+                <div style="text-align:center;margin-bottom:20px;">
                     <p style="color:var(--masters-green);font-weight:bold;font-size:1rem;margin-bottom:4px;">Event is LIVE</p>
                     <p class="text-sm text-muted">Event Code: <strong style="font-size:1.3rem;color:var(--masters-green);letter-spacing:3px;">${LiveSync.eventCode}</strong></p>
-                    <p class="text-sm text-muted">Share this code with viewers to watch the leaderboard.</p>
+                    <p class="text-sm text-muted mb-4">Share this code with viewers to watch the leaderboard.</p>
                 </div>
-                <p style="font-weight:bold;margin-bottom:8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#666;">Match Codes for Scorers</p>
-                <p class="text-sm text-muted mb-8">Give each match's code to their designated scorer.</p>
-                ${matchCodeHtml}
+                <div style="background:#f0f8f0;border:2px solid var(--masters-green);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center;">
+                    <p style="font-weight:bold;margin-bottom:8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--masters-green);">Scorer Code</p>
+                    <p style="font-size:2rem;font-weight:bold;color:var(--masters-green);letter-spacing:4px;margin:8px 0;">${LiveSync.scorerCode}</p>
+                    <p class="text-sm text-muted">Give this code to your designated scorers. They can score all matches.</p>
+                </div>
                 <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-danger btn-sm" onclick="LiveSync.stopLive().then(() => renderSettings())">Stop Live Event</button>
                     <button class="btn btn-outline btn-sm" onclick="openAdminResetModal()">Reset Scores</button>
@@ -3126,21 +3297,14 @@
             // Not live - show go live controls
             const hasMatches = Object.keys(S.matches).length > 0;
             return `
-                <p class="text-sm text-muted mb-16">Go live to share scores in real-time. Scorers enter a match code on their phone to score their assigned match. Everyone else can view the leaderboard live.</p>
+                <p class="text-sm text-muted mb-16">Go live to share scores in real-time. You'll get a scorer code to share with designated scorers who can score all matches.</p>
                 ${!hasMatches ? '<p style="color:var(--masters-red);font-size:0.85rem;margin-bottom:12px;">Create matches first before going live.</p>' : ''}
-                <div class="form-group">
-                    <label>Admin PIN</label>
-                    <input class="form-input" id="adminPinInput" type="text" placeholder="Set a 4-digit PIN" maxlength="6" value="1234" style="max-width:200px;">
-                    <span class="text-sm text-muted">Used to reset scores. Remember this!</span>
-                </div>
                 <button class="btn btn-primary btn-block" onclick="handleGoLive()" ${!hasMatches ? 'disabled style="opacity:0.5;"' : ''}>Go Live</button>`;
         }
     }
 
     function handleGoLive() {
-        const pin = document.getElementById('adminPinInput')?.value?.trim() || '1234';
-        if (!pin) { showToast('Set an admin PIN first'); return; }
-        LiveSync.goLive(pin).then(success => {
+        LiveSync.goLive('1313').then(success => {
             if (success) renderSettings();
         });
     }
@@ -3376,6 +3540,7 @@
         db: null,
         eventRef: null,
         eventCode: null,
+        scorerCode: null,
         matchCodes: {},
         isAdmin: false,
         isScorer: false,
@@ -3408,18 +3573,66 @@
             return code;
         },
 
+        // Auto-start: Always live with hardcoded event
+        async autoStart() {
+            if (!this.init()) return false;
+
+            this.eventCode = 'smashsters-live'; // Hardcoded event ID
+            this.scorerCode = '6969';
+            this.adminPin = '1313';
+            this.isAdmin = true;
+            this.isViewer = false;
+            this.isScorer = false;
+            this.eventRef = this.db.ref('smashters/' + this.eventCode);
+
+            try {
+                // Push current state to Firebase
+                await this.eventRef.set({
+                    config: S.config,
+                    players: S.players,
+                    matches: S.matches,
+                    scorerCode: this.scorerCode,
+                    adminPin: this.adminPin,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                });
+
+                // Store scorer code lookup
+                await this.db.ref('smashters-scorer-codes/6969').set({
+                    eventCode: this.eventCode,
+                    isAllScorer: true,
+                });
+
+                // Listen for updates from other devices
+                const listener = this.eventRef.on('value', (snap) => {
+                    if (this._suppressListener) return;
+                    const val = snap.val();
+                    if (val) {
+                        this.applyState(val);
+                        renderTab(S.ui.activeTab);
+                    }
+                });
+                this.listeners.push({ ref: this.eventRef, event: 'value', callback: listener });
+
+                return true;
+            } catch (e) {
+                console.error('Auto-start failed:', e);
+                return false;
+            }
+        },
+
         // Admin: Go Live
         async goLive(pin) {
             if (!this.init()) { showToast('Firebase not available'); return false; }
 
             this.eventCode = this.generateCode(5);
+            this.scorerCode = '6969'; // Hardcoded scorer code
             this.adminPin = pin || '1234';
             this.isAdmin = true;
             this.isViewer = false;
             this.isScorer = false;
             this.eventRef = this.db.ref('smashters/' + this.eventCode);
 
-            // Generate match codes
+            // Generate match codes (kept for backward compatibility, but scorer code is preferred)
             this.matchCodes = {};
             const codeToMatch = {};
             Object.keys(S.matches).forEach(matchId => {
@@ -3434,6 +3647,7 @@
                     players: S.players,
                     matches: S.matches,
                     matchCodes: codeToMatch,
+                    scorerCode: this.scorerCode,
                     adminPin: this.adminPin,
                     updatedAt: firebase.database.ServerValue.TIMESTAMP,
                 });
@@ -3446,6 +3660,11 @@
                         matchId: matchId,
                     };
                 });
+                // Store scorer code lookup (grants access to all matches)
+                updates['smashters-scorer-codes/' + this.scorerCode] = {
+                    eventCode: this.eventCode,
+                    isAllScorer: true,
+                };
                 if (Object.keys(updates).length > 0) {
                     await this.db.ref().update(updates);
                 }
@@ -3454,6 +3673,7 @@
                 localStorage.setItem('smashters-live', JSON.stringify({
                     eventCode: this.eventCode,
                     adminPin: this.adminPin,
+                    scorerCode: this.scorerCode,
                     matchCodes: this.matchCodes,
                     isAdmin: true,
                 }));
@@ -3487,19 +3707,34 @@
                     this._suppressListener = false;
                     console.error('Sync failed:', e);
                 });
-            } else if (this.isScorer && this.scorerMatchId) {
-                const match = S.matches[this.scorerMatchId];
-                if (match) {
+            } else if (this.isScorer) {
+                if (this.scorerMatchId === null) {
+                    // All-scorer: sync all matches
                     this._suppressListener = true;
-                    Promise.all([
-                        this.eventRef.child('matches/' + this.scorerMatchId).set(match),
-                        this.eventRef.child('updatedAt').set(firebase.database.ServerValue.TIMESTAMP),
-                    ]).then(() => {
+                    this.eventRef.update({
+                        matches: S.matches,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                    }).then(() => {
                         setTimeout(() => { this._suppressListener = false; }, 500);
                     }).catch(e => {
                         this._suppressListener = false;
                         console.error('Score sync failed:', e);
                     });
+                } else {
+                    // Single-match scorer: sync only their match
+                    const match = S.matches[this.scorerMatchId];
+                    if (match) {
+                        this._suppressListener = true;
+                        Promise.all([
+                            this.eventRef.child('matches/' + this.scorerMatchId).set(match),
+                            this.eventRef.child('updatedAt').set(firebase.database.ServerValue.TIMESTAMP),
+                        ]).then(() => {
+                            setTimeout(() => { this._suppressListener = false; }, 500);
+                        }).catch(e => {
+                            this._suppressListener = false;
+                            console.error('Score sync failed:', e);
+                        });
+                    }
                 }
             }
         },
@@ -3566,18 +3801,33 @@
             }
         },
 
-        // Join as scorer with match code
-        async joinAsScorer(matchCode) {
+        // Join as scorer with scorer code (all matches) or match code (single match)
+        async joinAsScorer(code) {
             if (!this.init()) { showToast('Firebase not available'); return false; }
 
-            matchCode = matchCode.toUpperCase().trim();
-            if (!matchCode) { showToast('Enter a match code'); return false; }
+            code = code.toUpperCase().trim();
+            if (!code) { showToast('Enter a scorer code'); return false; }
 
             try {
-                const codeSnap = await this.db.ref('smashters-codes/' + matchCode).once('value');
-                if (!codeSnap.exists()) { showToast('Invalid match code.'); return false; }
+                // First check if this is an all-scorer code
+                const scorerCodeSnap = await this.db.ref('smashters-scorer-codes/' + code).once('value');
+                let eventCode, matchId = null;
 
-                const { eventCode, matchId } = codeSnap.val();
+                if (scorerCodeSnap.exists()) {
+                    // All-scorer code - can score any match
+                    eventCode = scorerCodeSnap.val().eventCode;
+                } else {
+                    // Check if it's a match-specific code (backward compatibility)
+                    const matchCodeSnap = await this.db.ref('smashters-codes/' + code).once('value');
+                    if (!matchCodeSnap.exists()) {
+                        showToast('Invalid scorer code.');
+                        return false;
+                    }
+                    const data = matchCodeSnap.val();
+                    eventCode = data.eventCode;
+                    matchId = data.matchId;
+                }
+
                 const ref = this.db.ref('smashters/' + eventCode);
                 const snap = await ref.once('value');
                 if (!snap.exists()) { showToast('Event not found.'); return false; }
@@ -3587,7 +3837,7 @@
                 this.isScorer = true;
                 this.isAdmin = false;
                 this.isViewer = false;
-                this.scorerMatchId = matchId;
+                this.scorerMatchId = matchId; // null = can score all matches
 
                 this.applyState(snap.val());
 
@@ -3602,20 +3852,25 @@
                 });
                 this.listeners.push({ ref, event: 'value', callback: listener });
 
-                S.ui.activeMatchId = matchId;
-                if (S.matches[matchId]) {
-                    S.ui.scoringHole = findNextUnplayedHole(S.matches[matchId]);
+                if (matchId) {
+                    // Single match scorer
+                    S.ui.activeMatchId = matchId;
+                    if (S.matches[matchId]) {
+                        S.ui.scoringHole = findNextUnplayedHole(S.matches[matchId]);
+                    }
+                    const match = S.matches[matchId];
+                    if (match) {
+                        const names = [...match.teamA, ...match.teamB].map(id => getPlayerName(id)).join(', ');
+                        showToast('Scoring: ' + names);
+                    }
+                } else {
+                    // All-match scorer
+                    showToast('Connected as scorer - you can score all matches!');
                 }
 
                 document.body.classList.add('scorer-mode');
                 this.updateBanner();
                 switchTab('scoring');
-
-                const match = S.matches[matchId];
-                if (match) {
-                    const names = [...match.teamA, ...match.teamB].map(id => getPlayerName(id)).join(', ');
-                    showToast('Scoring: ' + names);
-                }
                 return true;
             } catch (e) {
                 showToast('Connection failed: ' + e.message);
@@ -3629,6 +3884,7 @@
             this.listeners = [];
             this.eventRef = null;
             this.eventCode = null;
+            this.scorerCode = null;
             this.isAdmin = false;
             this.isViewer = false;
             this.isScorer = false;
@@ -3648,13 +3904,16 @@
             if (!this.isAdmin || !this.eventRef) return;
 
             try {
-                // Clean up match code lookups
-                const matchCodeUpdates = {};
+                // Clean up code lookups
+                const codeUpdates = {};
                 Object.values(this.matchCodes).forEach(code => {
-                    matchCodeUpdates['smashters-codes/' + code] = null;
+                    codeUpdates['smashters-codes/' + code] = null;
                 });
-                if (Object.keys(matchCodeUpdates).length > 0) {
-                    await this.db.ref().update(matchCodeUpdates);
+                if (this.scorerCode) {
+                    codeUpdates['smashters-scorer-codes/' + this.scorerCode] = null;
+                }
+                if (Object.keys(codeUpdates).length > 0) {
+                    await this.db.ref().update(codeUpdates);
                 }
                 await this.eventRef.remove();
             } catch (e) {
@@ -3703,6 +3962,7 @@
                 if (session.isAdmin && session.eventCode) {
                     if (!this.init()) return;
                     this.eventCode = session.eventCode;
+                    this.scorerCode = session.scorerCode || null;
                     this.adminPin = session.adminPin;
                     this.matchCodes = session.matchCodes || {};
                     this.isAdmin = true;
@@ -3719,41 +3979,37 @@
             const banner = document.getElementById('liveBanner');
             if (!banner) return;
 
-            if (this.isAdmin) {
-                banner.className = 'live-banner active';
-                banner.style.background = '';
-                banner.innerHTML = `
-                    <span class="live-dot"></span>
-                    LIVE &mdash; Event Code: <strong>${this.eventCode}</strong>
-                    <button class="live-banner-btn" onclick="LiveSync.stopLive()">Stop</button>`;
-            } else if (this.isViewer) {
-                banner.className = 'live-banner active';
-                banner.style.background = '';
-                banner.innerHTML = `
-                    <span class="live-dot"></span>
-                    LIVE &mdash; Viewing: <strong>${this.eventCode}</strong>
-                    <button class="live-banner-btn" onclick="LiveSync.disconnect()">Leave</button>`;
-            } else if (this.isScorer) {
+            if (this.isScorer) {
                 banner.className = 'live-banner active';
                 banner.style.background = 'var(--masters-green)';
-                const match = S.matches[this.scorerMatchId];
-                const label = match
-                    ? match.teamA.map(id => getPlayerName(id)).join('/') + ' vs ' + match.teamB.map(id => getPlayerName(id)).join('/')
-                    : 'Match';
                 banner.innerHTML = `
                     <span class="live-dot"></span>
-                    SCORING &mdash; ${label}
-                    <button class="live-banner-btn" onclick="LiveSync.disconnect()">Leave</button>`;
+                    SCORING MODE — All Matches
+                    <button class="live-banner-btn" onclick="LiveSync.disableScoring()">Exit Scoring</button>`;
             } else {
                 banner.className = 'live-banner';
                 banner.innerHTML = '';
             }
         },
 
+        // Disable scoring mode
+        disableScoring() {
+            this.isScorer = false;
+            this.scorerMatchId = null;
+            this.updateBanner();
+            showToast('Scoring disabled');
+            switchTab('leaderboard');
+        },
+
         // Check if user can edit scores for a given match
         canScore(matchId) {
             if (this.isViewer) return false;
-            if (this.isScorer) return this.scorerMatchId === matchId;
+            if (this.isScorer) {
+                // If scorerMatchId is null, can score all matches
+                if (this.scorerMatchId === null) return true;
+                // Otherwise, can only score the assigned match
+                return this.scorerMatchId === matchId;
+            }
             return true; // Admin or local mode
         },
     };
@@ -3801,8 +4057,8 @@
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
 
-        // Restore Firebase admin session if exists
-        LiveSync.restoreSession();
+        // Auto-start Firebase sync (always live)
+        LiveSync.autoStart();
 
         if (shouldShowSplash()) {
             showSplash();
