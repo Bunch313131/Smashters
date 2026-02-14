@@ -1692,6 +1692,8 @@
     }
 
     function saveState() {
+        // Update local timestamp
+        S._lastSync = Date.now();
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }
         catch (e) { console.error('Save state error:', e); }
         // Sync to Firebase if live
@@ -3586,15 +3588,52 @@
             this.eventRef = this.db.ref('smashters/' + this.eventCode);
 
             try {
-                // Push current state to Firebase
-                await this.eventRef.set({
-                    config: S.config,
-                    players: S.players,
-                    matches: S.matches,
-                    scorerCode: this.scorerCode,
-                    adminPin: this.adminPin,
-                    updatedAt: firebase.database.ServerValue.TIMESTAMP,
-                });
+                // FIRST: Check if Firebase already has data
+                const snapshot = await this.eventRef.once('value');
+                const firebaseData = snapshot.val();
+
+                if (firebaseData && firebaseData.updatedAt) {
+                    // Firebase has data - check if it's newer than local
+                    const localTimestamp = S._lastSync || 0;
+                    const firebaseTimestamp = firebaseData.updatedAt || 0;
+
+                    console.log('Firebase sync: Found existing data', {
+                        firebaseTimestamp,
+                        localTimestamp,
+                        hasPlayers: Object.keys(firebaseData.players || {}).length > 0,
+                        localPlayers: Object.keys(S.players || {}).length > 0
+                    });
+
+                    // If Firebase has data and it's newer OR local is empty, pull from Firebase
+                    if (firebaseTimestamp > localTimestamp || Object.keys(S.players || {}).length === 0) {
+                        console.log('Pulling data FROM Firebase...');
+                        this.applyState(firebaseData);
+                        renderTab(S.ui.activeTab);
+                        showToast('Synced from cloud');
+                    } else {
+                        // Local is newer, push to Firebase
+                        console.log('Pushing local data TO Firebase...');
+                        await this.eventRef.set({
+                            config: S.config,
+                            players: S.players,
+                            matches: S.matches,
+                            scorerCode: this.scorerCode,
+                            adminPin: this.adminPin,
+                            updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                        });
+                    }
+                } else {
+                    // No Firebase data yet - push current state
+                    console.log('No Firebase data found, pushing local data...');
+                    await this.eventRef.set({
+                        config: S.config,
+                        players: S.players,
+                        matches: S.matches,
+                        scorerCode: this.scorerCode,
+                        adminPin: this.adminPin,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                    });
+                }
 
                 // Store scorer code lookup
                 await this.db.ref('smashters-scorer-codes/6969').set({
@@ -3606,7 +3645,8 @@
                 const listener = this.eventRef.on('value', (snap) => {
                     if (this._suppressListener) return;
                     const val = snap.val();
-                    if (val) {
+                    if (val && val.updatedAt !== S._lastSync) {
+                        console.log('Received update from Firebase');
                         this.applyState(val);
                         renderTab(S.ui.activeTab);
                     }
@@ -3753,6 +3793,9 @@
             }
             S.players = val.players || {};
             S.matches = val.matches || {};
+            // Store the timestamp of this sync
+            S._lastSync = val.updatedAt || Date.now();
+            saveState(); // Save to localStorage with timestamp
             document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
             document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
             document.querySelector('.header-titles h1').textContent = S.config.eventName;
