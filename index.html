@@ -3614,26 +3614,46 @@
                 const firebaseData = snapshot.val();
 
                 if (firebaseData && firebaseData.updatedAt) {
-                    // Firebase has data - check if it's newer than local
+                    // Firebase has data - compare with local
+                    const localPlayerCount = Object.keys(S.players || {}).length;
+                    const firebasePlayerCount = Object.keys(firebaseData.players || {}).length;
                     const localTimestamp = S._lastSync || 0;
                     const firebaseTimestamp = firebaseData.updatedAt || 0;
 
                     console.log('Firebase sync: Found existing data', {
                         firebaseTimestamp,
                         localTimestamp,
-                        hasPlayers: Object.keys(firebaseData.players || {}).length > 0,
-                        localPlayers: Object.keys(S.players || {}).length > 0
+                        firebasePlayerCount,
+                        localPlayerCount
                     });
 
-                    // If Firebase has data and it's newer OR local is empty, pull from Firebase
-                    if (firebaseTimestamp > localTimestamp || Object.keys(S.players || {}).length === 0) {
-                        console.log('Pulling data FROM Firebase...');
+                    // PRIORITY 1: If Firebase has more players, always pull from Firebase
+                    if (firebasePlayerCount > localPlayerCount) {
+                        console.log('Pulling from Firebase (has more players)...');
+                        this.applyState(firebaseData);
+                        renderTab(S.ui.activeTab);
+                        showToast('Synced from cloud');
+                    }
+                    // PRIORITY 2: If local has more players, push to Firebase
+                    else if (localPlayerCount > firebasePlayerCount) {
+                        console.log('Pushing to Firebase (local has more players)...');
+                        await this.eventRef.set({
+                            config: S.config,
+                            players: S.players,
+                            matches: S.matches,
+                            scorerCode: this.scorerCode,
+                            adminPin: this.adminPin,
+                            updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                        });
+                    }
+                    // PRIORITY 3: Same player count - use timestamp
+                    else if (firebaseTimestamp > localTimestamp) {
+                        console.log('Pulling from Firebase (newer timestamp)...');
                         this.applyState(firebaseData);
                         renderTab(S.ui.activeTab);
                         showToast('Synced from cloud');
                     } else {
-                        // Local is newer, push to Firebase
-                        console.log('Pushing local data TO Firebase...');
+                        console.log('Pushing to Firebase (local is newer)...');
                         await this.eventRef.set({
                             config: S.config,
                             players: S.players,
