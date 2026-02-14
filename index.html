@@ -2777,16 +2777,37 @@
         setTimeout(() => document.getElementById('playerName')?.focus(), 100);
     }
 
+    function formatPhoneNumber(input) {
+        if (!input) return '';
+
+        // Remove all non-numeric characters
+        let digits = input.replace(/\D/g, '');
+
+        // Remove leading 1 if present (US country code)
+        if (digits.length === 11 && digits[0] === '1') {
+            digits = digits.substring(1);
+        }
+
+        // Format as (999) 999-9999
+        if (digits.length === 10) {
+            return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6, 10)}`;
+        }
+
+        // If not 10 digits, return as-is
+        return input;
+    }
+
     function savePlayer(existingId) {
         const name = document.getElementById('playerName').value.trim();
         if (!name) { showToast('Name is required'); return; }
         const id = existingId || genId();
+        const phoneInput = document.getElementById('playerPhone').value.trim();
         S.players[id] = {
             id, name,
             handicap: document.getElementById('playerHcp').value || '',
             team: document.getElementById('playerTeam').value || null,
             email: document.getElementById('playerEmail').value.trim(),
-            phone: document.getElementById('playerPhone').value.trim(),
+            phone: formatPhoneNumber(phoneInput),
         };
         saveState(); closeModal(); renderPlayers();
         showToast(existingId ? 'Player updated' : 'Player added');
