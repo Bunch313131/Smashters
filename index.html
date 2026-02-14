@@ -1691,13 +1691,13 @@
         return defaultState();
     }
 
-    function saveState() {
+    function saveState(skipFirebaseSync = false) {
         // Update local timestamp
         S._lastSync = Date.now();
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }
         catch (e) { console.error('Save state error:', e); }
-        // Sync to Firebase if live
-        if (LiveSync.isAdmin || LiveSync.isScorer) {
+        // Sync to Firebase if live (unless explicitly skipped)
+        if (!skipFirebaseSync && (LiveSync.isAdmin || LiveSync.isScorer)) {
             LiveSync.syncToFirebase();
         }
     }
@@ -3781,6 +3781,13 @@
         syncToFirebase() {
             if (!this.eventRef) return;
 
+            // SAFETY: Never push empty player data
+            const localPlayerCount = Object.keys(S.players || {}).length;
+            if (localPlayerCount === 0) {
+                console.log('Sync blocked: Local data is empty, not pushing to Firebase');
+                return;
+            }
+
             if (this.isAdmin) {
                 this._suppressListener = true;
                 this.eventRef.update({
@@ -3842,7 +3849,7 @@
             S.matches = val.matches || {};
             // Store the timestamp of this sync
             S._lastSync = val.updatedAt || Date.now();
-            saveState(); // Save to localStorage with timestamp
+            saveState(true); // Save to localStorage, skip Firebase sync (we're already pulling FROM Firebase)
             document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
             document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
             document.querySelector('.header-titles h1').textContent = S.config.eventName;
