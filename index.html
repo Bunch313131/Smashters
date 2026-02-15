@@ -13,6 +13,9 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- PDF/Image Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* ═══════════════════════════════════════════════════════
            FONTS
@@ -1561,7 +1564,9 @@
         </div>
         <nav class="tab-nav" id="tabNav">
             <button class="tab-btn active" data-tab="leaderboard">Leaderboard</button>
+            <button class="tab-btn" data-tab="individual">Individual</button>
             <button class="tab-btn" data-tab="scoring">Scoring</button>
+            <button class="tab-btn" data-tab="schedule">Schedule</button>
             <button class="tab-btn" data-tab="matches">Matches</button>
             <button class="tab-btn" data-tab="players">Players</button>
             <button class="tab-btn" data-tab="draft">Draft</button>
@@ -1577,7 +1582,9 @@
     <div class="install-banner" id="installBanner"></div>
 
     <section class="tab-content active" id="tab-leaderboard"><div id="leaderboard-content"></div></section>
+    <section class="tab-content" id="tab-individual"><div id="individual-content"></div></section>
     <section class="tab-content" id="tab-scoring"><div id="scoring-content"></div></section>
+    <section class="tab-content" id="tab-schedule"><div id="schedule-content"></div></section>
     <section class="tab-content" id="tab-matches"><div id="matches-content"></div></section>
     <section class="tab-content" id="tab-players"><div id="players-content"></div></section>
     <section class="tab-content" id="tab-draft"><div id="draft-content"></div></section>
@@ -1636,8 +1643,8 @@
             courseHoles: JSON.parse(JSON.stringify(DEFAULT_COURSE_HOLES)),
             useHandicaps: true,
             sessions: [
-                { id: 'session-1', name: 'Day 1', format: 'fourball', order: 1 },
-                { id: 'session-2', name: 'Day 2', format: 'singles', order: 2 }
+                { id: 'session-1', name: 'Day 1', format: 'fourball', order: 1, date: '' },
+                { id: 'session-2', name: 'Day 2', format: 'singles', order: 2, date: '' }
             ],
         },
         players: {},
@@ -1654,6 +1661,9 @@
             activeMatchId: null,
             scoringHole: 1,
             settingsUnlocked: false,
+            individualView: 'daily',
+            individualType: 'gross',
+            individualSession: 'all',
         },
     });
 
@@ -1704,6 +1714,23 @@
 
     function genId() {
         return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function requireAdmin(operation) {
+        if (LiveSync.isAdmin || S.ui.settingsUnlocked) {
+            return true;
+        }
+        const code = prompt(`Admin access required to ${operation}.\nEnter admin code:`);
+        if (code === '1313') {
+            S.ui.settingsUnlocked = true;
+            saveState();
+            showToast('Admin access granted');
+            return true;
+        }
+        if (code !== null) {
+            showToast('Incorrect admin code');
+        }
+        return false;
     }
 
     // ─────────────────────────────────────────────────────────
@@ -1782,8 +1809,8 @@
     }
 
     function renderTab(tabId) {
-        const r = { leaderboard: renderLeaderboard, scoring: renderScoring, matches: renderMatches,
-            players: renderPlayers, draft: renderDraft, settings: renderSettings };
+        const r = { leaderboard: renderLeaderboard, individual: renderIndividual, scoring: renderScoring,
+            schedule: renderSchedule, matches: renderMatches, players: renderPlayers, draft: renderDraft, settings: renderSettings };
         if (r[tabId]) r[tabId]();
     }
 
@@ -1965,6 +1992,126 @@
     }
 
     // ─────────────────────────────────────────────────────────
+    // INDIVIDUAL STATISTICS
+    // ─────────────────────────────────────────────────────────
+    const IndividualStats = {
+        calculatePlayerStats(playerId, sessionId = null) {
+            const matches = sessionId ?
+                Object.values(S.matches).filter(m => m.sessionId === sessionId) :
+                Object.values(S.matches);
+
+            const stats = {
+                playerId,
+                playerName: getPlayerName(playerId),
+                team: S.players[playerId]?.team,
+                holesPlayed: 0,
+                grossTotal: 0,
+                netTotal: 0,
+                birdiesGross: 0,
+                birdiesNet: 0,
+                eaglesGross: 0,
+                eaglesNet: 0,
+                parsGross: 0,
+                parsNet: 0,
+                bogeysGross: 0,
+                bogeysNet: 0,
+                doubleBogeysGross: 0,
+                doubleBogeysNet: 0,
+                bestHoleGross: null,
+                bestHoleNet: null,
+                worstHoleGross: null,
+                worstHoleNet: null
+            };
+
+            // Find all matches this player participated in
+            const playerMatches = matches.filter(m =>
+                m.teamA.includes(playerId) || m.teamB.includes(playerId)
+            );
+
+            playerMatches.forEach(match => {
+                Object.keys(match.holes || {}).forEach(holeNum => {
+                    const grossScore = match.holes[holeNum][playerId];
+                    if (grossScore === undefined || grossScore === null) return;
+
+                    const holeInfo = getHoleInfo(parseInt(holeNum));
+                    const par = holeInfo.par;
+                    const netScore = getNetScore(playerId, parseInt(holeNum), grossScore);
+
+                    stats.holesPlayed++;
+                    stats.grossTotal += grossScore;
+                    stats.netTotal += netScore;
+
+                    // Gross classification
+                    const grossDiff = grossScore - par;
+                    if (grossDiff <= -2) stats.eaglesGross++;
+                    else if (grossDiff === -1) stats.birdiesGross++;
+                    else if (grossDiff === 0) stats.parsGross++;
+                    else if (grossDiff === 1) stats.bogeysGross++;
+                    else stats.doubleBogeysGross++;
+
+                    // Net classification
+                    const netDiff = netScore - par;
+                    if (netDiff <= -2) stats.eaglesNet++;
+                    else if (netDiff === -1) stats.birdiesNet++;
+                    else if (netDiff === 0) stats.parsNet++;
+                    else if (netDiff === 1) stats.bogeysNet++;
+                    else stats.doubleBogeysNet++;
+
+                    // Track best/worst
+                    if (stats.bestHoleGross === null || grossDiff < (stats.bestHoleGross.gross - stats.bestHoleGross.par)) {
+                        stats.bestHoleGross = { hole: parseInt(holeNum), gross: grossScore, par };
+                    }
+                    if (stats.bestHoleNet === null || netDiff < (stats.bestHoleNet.net - stats.bestHoleNet.par)) {
+                        stats.bestHoleNet = { hole: parseInt(holeNum), net: netScore, par };
+                    }
+                    if (stats.worstHoleGross === null || grossDiff > (stats.worstHoleGross.gross - stats.worstHoleGross.par)) {
+                        stats.worstHoleGross = { hole: parseInt(holeNum), gross: grossScore, par };
+                    }
+                    if (stats.worstHoleNet === null || netDiff > (stats.worstHoleNet.net - stats.worstHoleNet.par)) {
+                        stats.worstHoleNet = { hole: parseInt(holeNum), net: netScore, par };
+                    }
+                });
+            });
+
+            // Calculate averages
+            stats.grossAverage = stats.holesPlayed > 0 ? (stats.grossTotal / stats.holesPlayed).toFixed(2) : '0.00';
+            stats.netAverage = stats.holesPlayed > 0 ? (stats.netTotal / stats.holesPlayed).toFixed(2) : '0.00';
+
+            return stats;
+        },
+
+        getAllPlayerStats(sessionId = null) {
+            const allPlayers = Object.keys(S.players);
+            return allPlayers
+                .map(playerId => this.calculatePlayerStats(playerId, sessionId))
+                .filter(stats => stats.holesPlayed > 0);
+        },
+
+        getBirdieLeaders(type = 'gross', sessionId = null) {
+            const allStats = this.getAllPlayerStats(sessionId);
+            const field = type === 'gross' ? 'birdiesGross' : 'birdiesNet';
+            return allStats.sort((a, b) => b[field] - a[field]).slice(0, 10);
+        },
+
+        getEagleLeaders(type = 'gross', sessionId = null) {
+            const allStats = this.getAllPlayerStats(sessionId);
+            const field = type === 'gross' ? 'eaglesGross' : 'eaglesNet';
+            return allStats
+                .filter(s => s[field] > 0)
+                .sort((a, b) => b[field] - a[field]);
+        },
+
+        getScoringLeaders(type = 'gross', sessionId = null) {
+            const allStats = this.getAllPlayerStats(sessionId);
+            const field = type === 'gross' ? 'grossAverage' : 'netAverage';
+            return allStats
+                .filter(s => s.holesPlayed >= 9) // Minimum 9 holes
+                .sort((a, b) => parseFloat(a[field]) - parseFloat(b[field]))
+                .slice(0, 10);
+        }
+    };
+
+    // ─────────────────────────────────────────────────────────
     // RENDER: LEADERBOARD
     // ─────────────────────────────────────────────────────────
     function renderLeaderboard() {
@@ -2060,6 +2207,10 @@
 
         if (allMatches.length === 0) {
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
+        } else {
+            html += `<div style="text-align:center;margin:24px 0;">
+                <button class="btn btn-primary" onclick="openExportMenu()">📤 Share Results</button>
+            </div>`;
         }
 
         el.innerHTML = html;
@@ -2130,6 +2281,301 @@
                     ${scoreB ? `<span class="lb-match-score">${scoreB}</span>` : ''}
                 </div>
             </div>`;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: INDIVIDUAL STATS
+    // ─────────────────────────────────────────────────────────
+    function renderIndividual() {
+        const el = document.getElementById('individual-content');
+
+        // Tab selector for different views
+        const selectedView = S.ui.individualView || 'daily';
+        const selectedType = S.ui.individualType || 'gross';
+        const selectedSession = S.ui.individualSession || 'all';
+
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+
+        let html = `<h2 class="section-title">Individual Performance</h2>`;
+
+        // View selector
+        html += `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+            <button class="btn ${selectedView === 'daily' ? 'btn-primary' : 'btn-outline'} btn-sm"
+                onclick="setIndividualView('daily')">Daily Scores</button>
+            <button class="btn ${selectedView === 'birdies' ? 'btn-primary' : 'btn-outline'} btn-sm"
+                onclick="setIndividualView('birdies')">Birdie Leaders</button>
+            <button class="btn ${selectedView === 'eagles' ? 'btn-primary' : 'btn-outline'} btn-sm"
+                onclick="setIndividualView('eagles')">Eagle Leaders</button>
+            <button class="btn ${selectedView === 'average' ? 'btn-primary' : 'btn-outline'} btn-sm"
+                onclick="setIndividualView('average')">Scoring Average</button>
+            <button class="btn ${selectedView === 'stats' ? 'btn-primary' : 'btn-outline'} btn-sm"
+                onclick="setIndividualView('stats')">All Stats</button>
+        </div>`;
+
+        // Gross/Net selector
+        html += `<div style="display:flex;gap:8px;margin-bottom:16px;">
+            <button class="btn ${selectedType === 'gross' ? 'btn-gold' : 'btn-outline'} btn-sm"
+                onclick="setIndividualType('gross')">Gross</button>
+            <button class="btn ${selectedType === 'net' ? 'btn-gold' : 'btn-outline'} btn-sm"
+                onclick="setIndividualType('net')">Net</button>
+        </div>`;
+
+        // Session filter
+        html += `<div style="margin-bottom:16px;">
+            <select class="form-input" onchange="setIndividualSession(this.value)" style="width:auto;">
+                <option value="all" ${selectedSession === 'all' ? 'selected' : ''}>All Sessions</option>
+                ${sessions.map(s => `<option value="${s.id}" ${selectedSession === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+            </select>
+        </div>`;
+
+        // Render selected view
+        const sessionFilter = selectedSession === 'all' ? null : selectedSession;
+
+        if (selectedView === 'daily') {
+            html += renderDailyScores(selectedType, sessionFilter);
+        } else if (selectedView === 'birdies') {
+            html += renderBirdieLeaders(selectedType, sessionFilter);
+        } else if (selectedView === 'eagles') {
+            html += renderEagleLeaders(selectedType, sessionFilter);
+        } else if (selectedView === 'average') {
+            html += renderScoringAverage(selectedType, sessionFilter);
+        } else if (selectedView === 'stats') {
+            html += renderAllStats(selectedType, sessionFilter);
+        }
+
+        el.innerHTML = html;
+    }
+
+    function setIndividualView(view) {
+        S.ui.individualView = view;
+        saveState();
+        renderIndividual();
+    }
+
+    function setIndividualType(type) {
+        S.ui.individualType = type;
+        saveState();
+        renderIndividual();
+    }
+
+    function setIndividualSession(sessionId) {
+        S.ui.individualSession = sessionId;
+        saveState();
+        renderIndividual();
+    }
+
+    function renderDailyScores(type, sessionId) {
+        const allStats = IndividualStats.getAllPlayerStats(sessionId);
+        if (allStats.length === 0) {
+            return `<div class="empty-state"><h3>No Scores Yet</h3><p>Scores will appear here once matches are played.</p></div>`;
+        }
+
+        const field = type === 'gross' ? 'grossTotal' : 'netTotal';
+        const avgField = type === 'gross' ? 'grossAverage' : 'netAverage';
+        const sorted = allStats.sort((a, b) => parseFloat(a[avgField]) - parseFloat(b[avgField]));
+
+        let html = `<div class="lb-board">
+            <div class="lb-section-header">Daily Scoring - ${type === 'gross' ? 'Gross' : 'Net'}</div>
+            <div style="padding:12px;overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #ddd;">
+                            <th style="padding:8px;text-align:left;font-weight:600;">Rank</th>
+                            <th style="padding:8px;text-align:left;font-weight:600;">Player</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Holes</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Total</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Avg</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        sorted.forEach((stats, i) => {
+            const teamColor = stats.team === 'A' ? S.config.teamA.color : stats.team === 'B' ? S.config.teamB.color : '#666';
+            html += `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;">${i + 1}</td>
+                <td style="padding:8px;">
+                    <span style="color:${teamColor};font-weight:bold;">${stats.playerName}</span>
+                </td>
+                <td style="padding:8px;text-align:center;">${stats.holesPlayed}</td>
+                <td style="padding:8px;text-align:center;font-weight:bold;">${stats[field]}</td>
+                <td style="padding:8px;text-align:center;font-weight:bold;">${stats[avgField]}</td>
+            </tr>`;
+        });
+
+        return html + '</tbody></table></div></div>';
+    }
+
+    function renderBirdieLeaders(type, sessionId) {
+        const leaders = IndividualStats.getBirdieLeaders(type, sessionId);
+        const field = type === 'gross' ? 'birdiesGross' : 'birdiesNet';
+
+        if (leaders.length === 0 || leaders.every(s => s[field] === 0)) {
+            return `<div class="empty-state"><h3>No Birdies Yet</h3><p>Birdie leaders will appear here once scored.</p></div>`;
+        }
+
+        let html = `<div class="lb-board">
+            <div class="lb-section-header">🔥 Birdie Leaders - ${type === 'gross' ? 'Gross' : 'Net'}</div>
+            <div style="padding:12px;overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #ddd;">
+                            <th style="padding:8px;text-align:left;font-weight:600;">Rank</th>
+                            <th style="padding:8px;text-align:left;font-weight:600;">Player</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Birdies</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Holes Played</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        leaders.forEach((stats, i) => {
+            if (stats[field] === 0) return;
+            const teamColor = stats.team === 'A' ? S.config.teamA.color : stats.team === 'B' ? S.config.teamB.color : '#666';
+            const birdieRate = ((stats[field] / stats.holesPlayed) * 100).toFixed(1);
+
+            html += `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;">${i + 1}</td>
+                <td style="padding:8px;">
+                    <span style="color:${teamColor};font-weight:bold;">${stats.playerName}</span>
+                </td>
+                <td style="padding:8px;text-align:center;font-size:1.2em;font-weight:bold;color:var(--birdie-color);">
+                    ${stats[field]}
+                </td>
+                <td style="padding:8px;text-align:center;">${stats.holesPlayed} (${birdieRate}%)</td>
+            </tr>`;
+        });
+
+        return html + '</tbody></table></div></div>';
+    }
+
+    function renderEagleLeaders(type, sessionId) {
+        const leaders = IndividualStats.getEagleLeaders(type, sessionId);
+        const field = type === 'gross' ? 'eaglesGross' : 'eaglesNet';
+
+        if (leaders.length === 0) {
+            return `<div class="empty-state"><h3>No Eagles Yet</h3><p>Eagle leaders will appear here once scored.</p></div>`;
+        }
+
+        let html = `<div class="lb-board">
+            <div class="lb-section-header">🦅 Eagle Leaders - ${type === 'gross' ? 'Gross' : 'Net'}</div>
+            <div style="padding:12px;overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #ddd;">
+                            <th style="padding:8px;text-align:left;font-weight:600;">Rank</th>
+                            <th style="padding:8px;text-align:left;font-weight:600;">Player</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Eagles</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Holes Played</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        leaders.forEach((stats, i) => {
+            const teamColor = stats.team === 'A' ? S.config.teamA.color : stats.team === 'B' ? S.config.teamB.color : '#666';
+
+            html += `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;">${i + 1}</td>
+                <td style="padding:8px;">
+                    <span style="color:${teamColor};font-weight:bold;">${stats.playerName}</span>
+                </td>
+                <td style="padding:8px;text-align:center;font-size:1.2em;font-weight:bold;color:var(--eagle-color);">
+                    ${stats[field]}
+                </td>
+                <td style="padding:8px;text-align:center;">${stats.holesPlayed}</td>
+            </tr>`;
+        });
+
+        return html + '</tbody></table></div></div>';
+    }
+
+    function renderScoringAverage(type, sessionId) {
+        const leaders = IndividualStats.getScoringLeaders(type, sessionId);
+        const avgField = type === 'gross' ? 'grossAverage' : 'netAverage';
+
+        if (leaders.length === 0) {
+            return `<div class="empty-state"><h3>Not Enough Data</h3><p>Scoring averages require at least 9 holes played.</p></div>`;
+        }
+
+        let html = `<div class="lb-board">
+            <div class="lb-section-header">Scoring Average - ${type === 'gross' ? 'Gross' : 'Net'} (min. 9 holes)</div>
+            <div style="padding:12px;overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #ddd;">
+                            <th style="padding:8px;text-align:left;font-weight:600;">Rank</th>
+                            <th style="padding:8px;text-align:left;font-weight:600;">Player</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Average</th>
+                            <th style="padding:8px;text-align:center;font-weight:600;">Holes</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        leaders.forEach((stats, i) => {
+            const teamColor = stats.team === 'A' ? S.config.teamA.color : stats.team === 'B' ? S.config.teamB.color : '#666';
+
+            html += `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;">${i + 1}</td>
+                <td style="padding:8px;">
+                    <span style="color:${teamColor};font-weight:bold;">${stats.playerName}</span>
+                </td>
+                <td style="padding:8px;text-align:center;font-size:1.1em;font-weight:bold;">
+                    ${stats[avgField]}
+                </td>
+                <td style="padding:8px;text-align:center;">${stats.holesPlayed}</td>
+            </tr>`;
+        });
+
+        return html + '</tbody></table></div></div>';
+    }
+
+    function renderAllStats(type, sessionId) {
+        const allStats = IndividualStats.getAllPlayerStats(sessionId);
+        if (allStats.length === 0) {
+            return `<div class="empty-state"><h3>No Stats Yet</h3><p>Statistics will appear here once matches are played.</p></div>`;
+        }
+
+        const sorted = allStats.sort((a, b) => a.playerName.localeCompare(b.playerName));
+
+        const avgField = type === 'gross' ? 'grossAverage' : 'netAverage';
+        const birdieField = type === 'gross' ? 'birdiesGross' : 'birdiesNet';
+        const eagleField = type === 'gross' ? 'eaglesGross' : 'eaglesNet';
+        const parField = type === 'gross' ? 'parsGross' : 'parsNet';
+        const bogeyField = type === 'gross' ? 'bogeysGross' : 'bogeysNet';
+
+        let html = `<div class="lb-board">
+            <div class="lb-section-header">Complete Statistics - ${type === 'gross' ? 'Gross' : 'Net'}</div>
+            <div style="padding:12px;overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.85em;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #ddd;">
+                            <th style="padding:6px;text-align:left;font-weight:600;">Player</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">Holes</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">Avg</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">🦅</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">🔥</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">Par</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">Bogey+</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        sorted.forEach(stats => {
+            const teamColor = stats.team === 'A' ? S.config.teamA.color : stats.team === 'B' ? S.config.teamB.color : '#666';
+            const bogeyPlus = stats[bogeyField] + stats.doubleBogeysGross;
+
+            html += `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:6px;">
+                    <span style="color:${teamColor};font-weight:bold;">${stats.playerName}</span>
+                </td>
+                <td style="padding:6px;text-align:center;">${stats.holesPlayed}</td>
+                <td style="padding:6px;text-align:center;font-weight:bold;">${stats[avgField]}</td>
+                <td style="padding:6px;text-align:center;">${stats[eagleField] || '-'}</td>
+                <td style="padding:6px;text-align:center;">${stats[birdieField] || '-'}</td>
+                <td style="padding:6px;text-align:center;">${stats[parField] || '-'}</td>
+                <td style="padding:6px;text-align:center;">${bogeyPlus || '-'}</td>
+            </tr>`;
+        });
+
+        return html + '</tbody></table></div></div>';
     }
 
     // ─────────────────────────────────────────────────────────
@@ -2558,9 +3004,13 @@
             return;
         }
 
-        let html = '<h2 class="section-title">Match Setup</h2>';
+        let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 class="section-title" style="margin-bottom:0;">Match Setup</h2>
+            <button class="btn btn-outline btn-sm" onclick="ExportManager.generateMatchSchedule(null, 'pdf')">📤 Export Schedule</button>
+        </div>`;
 
         // Loop through sessions dynamically
+        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
         const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
         sessions.forEach((session, index) => {
             const matches = getMatchesBySession(session.id);
@@ -2573,7 +3023,10 @@
 
             html += `<div class="match-day-header" ${index > 0 ? 'style="margin-top:20px;"' : ''}>
                 <h3>${session.name} &mdash; ${formatLabel}</h3>
-                <button class="btn btn-gold btn-sm" onclick="openCreateMatch('${session.id}', '${session.format}')">+ Add Match</button>
+                ${canEdit ?
+                    `<button class="btn btn-gold btn-sm" onclick="openCreateMatch('${session.id}', '${session.format}')">+ Add Match</button>` :
+                    `<button class="btn btn-outline btn-sm" onclick="if(requireAdmin('add matches')) renderMatches()">🔒 Add Match (Admin)</button>`
+                }
             </div>`;
 
             if (matches.length === 0) {
@@ -2587,6 +3040,7 @@
     }
 
     function renderMatchCard(match) {
+        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
         const teamANames = match.teamA.map(id => getPlayerName(id)).join(' & ');
         const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' & ');
         const label = {
@@ -2600,7 +3054,7 @@
             <div class="match-setup-card">
                 <div class="match-setup-header">
                     <span>Match ${match.order} &middot; ${label}</span>
-                    <button class="btn btn-sm" style="background:var(--masters-red);color:#fff;padding:4px 10px;" onclick="deleteMatch('${match.id}')">Remove</button>
+                    ${canEdit ? `<button class="btn btn-sm" style="background:var(--masters-red);color:#fff;padding:4px 10px;" onclick="deleteMatch('${match.id}')">Remove</button>` : ''}
                 </div>
                 <div class="match-setup-body">
                     <div class="match-team-col">
@@ -2617,6 +3071,7 @@
     }
 
     function openCreateMatch(sessionId, format) {
+        if (!requireAdmin('create matches')) return;
         const session = S.config.sessions.find(s => s.id === sessionId);
         if (!session) return;
 
@@ -2661,6 +3116,7 @@
     }
 
     function createMatch(sessionId, format, numPlayers) {
+        if (!requireAdmin('create match')) return;
         const teamA = [], teamB = [];
         for (let i = 0; i < numPlayers; i++) {
             const aVal = document.getElementById(`matchTeamA${i}`).value;
@@ -2676,6 +3132,7 @@
             type: format,
             order: getMatchesBySession(sessionId).length + 1,
             teamA, teamB, holes: {}, status: 'pending',
+            teeTime: '',
         };
         S.matches[match.id] = match;
         saveState(); closeModal(); renderMatches();
@@ -2683,6 +3140,7 @@
     }
 
     function deleteMatch(matchId) {
+        if (!requireAdmin('delete match')) return;
         if (!confirm('Remove this match?')) return;
         delete S.matches[matchId];
         saveState(); renderMatches();
@@ -2702,9 +3160,17 @@
         const el = document.getElementById('players-content');
         const allPlayers = Object.values(S.players);
 
+        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
         let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <h2 class="section-title" style="margin-bottom:0;">Players</h2>
-            <button class="btn btn-primary btn-sm" onclick="openPlayerModal()">+ Add Player</button></div>`;
+            <div style="display:flex;gap:8px;">
+                ${allPlayers.length > 0 ? '<button class="btn btn-outline btn-sm" onclick="ExportManager.generateTeamRoster(\'pdf\')">📤 Export Roster</button>' : ''}
+                ${canEdit ?
+                    '<button class="btn btn-primary btn-sm" onclick="openPlayerModal()">+ Add Player</button>' :
+                    '<button class="btn btn-outline btn-sm" onclick="if(requireAdmin(\'add players\')) renderPlayers()">🔒 Add Player (Admin)</button>'
+                }
+            </div>
+        </div>`;
 
         if (allPlayers.length === 0) {
             html += `<div class="empty-state"><h3>No Players Yet</h3><p>Add players to get started.</p></div>`;
@@ -2732,6 +3198,7 @@
     function renderPlayerCard(player) {
         const initials = player.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
         const teamClass = player.team === 'A' ? 'team-a' : player.team === 'B' ? 'team-b' : 'no-team';
+        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
         const details = [];
         if (player.handicap) details.push(`HCP: ${player.handicap}`);
         if (player.email) details.push(player.email);
@@ -2744,14 +3211,15 @@
                     <div class="player-name">${player.name}</div>
                     <div class="player-detail">${details.join(' &middot; ') || 'No details'}</div>
                 </div>
-                <div class="player-actions">
+                ${canEdit ? `<div class="player-actions">
                     <button class="btn btn-outline btn-icon btn-sm" onclick="openPlayerModal('${player.id}')" title="Edit">&#9998;</button>
                     <button class="btn btn-danger btn-icon btn-sm" onclick="deletePlayer('${player.id}')" title="Delete">&times;</button>
-                </div>
+                </div>` : ''}
             </div>`;
     }
 
     function openPlayerModal(playerId) {
+        if (!requireAdmin('edit players')) return;
         const player = playerId ? S.players[playerId] : null;
         const title = player ? 'Edit Player' : 'Add Player';
         const body = `
@@ -2798,6 +3266,7 @@
     }
 
     function savePlayer(existingId) {
+        if (!requireAdmin('save player')) return;
         const name = document.getElementById('playerName').value.trim();
         if (!name) { showToast('Name is required'); return; }
         const id = existingId || genId();
@@ -2814,6 +3283,7 @@
     }
 
     function deletePlayer(playerId) {
+        if (!requireAdmin('delete player')) return;
         const player = S.players[playerId];
         if (!confirm(`Remove ${player?.name}?`)) return;
         delete S.players[playerId];
@@ -2848,12 +3318,14 @@
     }
 
     function renderDraftSetup() {
+        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
         const allPlayers = Object.values(S.players);
         return `
             <div class="settings-section">
                 <div class="settings-section-header">Draft Setup</div>
                 <div class="settings-section-body">
                     <p class="mb-16">Snake draft format: Team A picks first, then alternates (A, B, B, A, A, B, ...).</p>
+                    ${canEdit ? `
                     <div class="form-row">
                         <div class="form-group"><label>${S.config.teamA.name} Captain</label>
                             <select class="form-input" id="draftCaptainA"><option value="">-- Select --</option>
@@ -2865,11 +3337,18 @@
                             </select></div>
                     </div>
                     <button class="btn btn-primary btn-block mt-16" onclick="startDraft()">Start Draft</button>
+                    ` : `
+                    <div class="text-center" style="padding:20px;">
+                        <p class="text-muted mb-16">Admin access required to start draft</p>
+                        <button class="btn btn-outline" onclick="if(requireAdmin('start draft')) renderDraft()">🔒 Unlock Draft (Admin)</button>
+                    </div>
+                    `}
                 </div>
             </div>`;
     }
 
     function renderDraftActive() {
+        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
         const drafted = new Set(S.draft.picks.map(p => p.playerId));
         if (S.draft.captainA) drafted.add(S.draft.captainA);
         if (S.draft.captainB) drafted.add(S.draft.captainB);
@@ -2900,24 +3379,27 @@
 
         if (available.length === 0) {
             html += `<div class="text-center mt-16"><p style="font-size:1.1rem;color:var(--masters-green);font-weight:bold;margin-bottom:12px;">Draft Complete!</p>
-                <button class="btn btn-primary" onclick="finalizeDraft()">Finalize Teams</button></div>`;
+                ${canEdit ? `<button class="btn btn-primary" onclick="finalizeDraft()">Finalize Teams</button>` : ''}</div>`;
         } else {
             html += `<div class="draft-pool"><div class="draft-pool-header">Available Players</div>
-                <div class="draft-pool-indicator"><span class="picking-team" style="color:${ct === 'A' ? S.config.teamA.color : S.config.teamB.color}">
-                    ${ct === 'A' ? S.config.teamA.name : S.config.teamB.name} picks</span></div>
+                ${canEdit ? `<div class="draft-pool-indicator"><span class="picking-team" style="color:${ct === 'A' ? S.config.teamA.color : S.config.teamB.color}">
+                    ${ct === 'A' ? S.config.teamA.name : S.config.teamB.name} picks</span></div>` : ''}
                 <div class="draft-pool-list">
-                    ${available.map(p => `<button class="draft-player-btn" onclick="makeDraftPick('${p.id}')">
-                        ${p.name} <span class="player-hcp">${p.handicap ? 'HCP: ' + p.handicap : ''}</span></button>`).join('')}
+                    ${available.map(p => canEdit ?
+                        `<button class="draft-player-btn" onclick="makeDraftPick('${p.id}')">${p.name} <span class="player-hcp">${p.handicap ? 'HCP: ' + p.handicap : ''}</span></button>` :
+                        `<div style="padding:12px;border:1px solid #ddd;margin-bottom:8px;border-radius:6px;">${p.name} <span class="text-muted">${p.handicap ? 'HCP: ' + p.handicap : ''}</span></div>`
+                    ).join('')}
                 </div></div>
-                <div class="mt-16" style="display:flex;gap:8px;">
+                ${canEdit ? `<div class="mt-16" style="display:flex;gap:8px;">
                     <button class="btn btn-outline btn-sm" onclick="undoDraftPick()" ${S.draft.picks.length === 0 ? 'disabled' : ''}>Undo Last Pick</button>
                     <button class="btn btn-danger btn-sm" onclick="resetDraft()">Reset Draft</button>
-                </div>`;
+                </div>` : ''}`;
         }
         return html;
     }
 
     function renderDraftComplete() {
+        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
         const teamA = getTeamPlayers('A');
         const teamB = getTeamPlayers('B');
         return `
@@ -2927,10 +3409,11 @@
                 <div class="draft-team-col"><div class="draft-team-header team-b">${S.config.teamB.name}</div>
                     <div class="draft-team-list">${teamB.map(p => `<div class="draft-pick-item">${p.name}</div>`).join('')}</div></div>
             </div>
-            <div class="mt-16 text-center"><button class="btn btn-danger btn-sm" onclick="resetDraft()">Reset Draft</button></div>`;
+            ${canEdit ? `<div class="mt-16 text-center"><button class="btn btn-danger btn-sm" onclick="resetDraft()">Reset Draft</button></div>` : ''}`;
     }
 
     function startDraft() {
+        if (!requireAdmin('start draft')) return;
         const captainA = document.getElementById('draftCaptainA').value;
         const captainB = document.getElementById('draftCaptainB').value;
         if (!captainA || !captainB) { showToast('Select both captains'); return; }
@@ -2945,6 +3428,7 @@
     }
 
     function makeDraftPick(playerId) {
+        if (!requireAdmin('make draft pick')) return;
         const team = S.draft.currentTeam;
         S.draft.picks.push({ team, playerId, order: S.draft.picks.length + 1 });
         S.players[playerId].team = team;
@@ -2962,6 +3446,7 @@
     }
 
     function undoDraftPick() {
+        if (!requireAdmin('undo draft pick')) return;
         if (S.draft.picks.length === 0) return;
         const last = S.draft.picks.pop();
         S.players[last.playerId].team = null;
@@ -2970,6 +3455,7 @@
     }
 
     function resetDraft() {
+        if (!requireAdmin('reset draft')) return;
         if (!confirm('Reset the entire draft? All team assignments will be cleared.')) return;
         Object.values(S.players).forEach(p => p.team = null);
         S.draft = { status: 'pending', captainA: null, captainB: null, picks: [], currentTeam: 'A' };
@@ -2978,9 +3464,127 @@
     }
 
     function finalizeDraft() {
+        if (!requireAdmin('finalize draft')) return;
         S.draft.status = 'complete';
         saveState(); renderDraft();
         showToast('Teams finalized!');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: SCHEDULE
+    // ─────────────────────────────────────────────────────────
+    function renderSchedule() {
+        const el = document.getElementById('schedule-content');
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
+
+        let html = `<h2 class="section-title">Tournament Schedule</h2>`;
+
+        // Admin controls for dates and times
+        if (canEdit) {
+            html += `<div class="settings-section" style="margin-bottom:20px;">
+                <div class="settings-section-header">Schedule Settings</div>
+                <div class="settings-section-body">
+                    ${sessions.map(session => `
+                        <div style="margin-bottom:16px;">
+                            <label style="font-weight:bold;display:block;margin-bottom:4px;">${session.name} Date</label>
+                            <input type="date" class="form-input" id="session_date_${session.id}" value="${session.date || ''}"
+                                onchange="updateSessionDate('${session.id}', this.value)">
+                        </div>
+                    `).join('')}
+                    <p class="text-sm text-muted">Set tee times for individual matches below.</p>
+                </div>
+            </div>`;
+        }
+
+        // Display schedule by session
+        sessions.forEach(session => {
+            const matches = getMatchesBySession(session.id);
+            const formatLabel = {
+                fourball: 'Four Ball',
+                foursomes: 'Foursomes',
+                singles: 'Singles',
+                other: 'Other'
+            }[session.format] || 'Match';
+
+            html += `<div class="lb-board" style="margin-bottom:20px;">
+                <div class="lb-section-header">
+                    ${session.name} - ${formatLabel}
+                    ${session.date ? ` - ${formatDate(session.date)}` : ' (Date TBD)'}
+                </div>`;
+
+            if (matches.length === 0) {
+                html += `<div style="padding:20px;text-align:center;color:#999;">No matches scheduled</div>`;
+            } else {
+                html += `<div style="padding:12px;overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:2px solid #ddd;">
+                                <th style="padding:8px;text-align:left;font-weight:600;">Tee Time</th>
+                                <th style="padding:8px;text-align:left;font-weight:600;">Match</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                matches.forEach(match => {
+                    const teamANames = match.teamA.map(id => getPlayerName(id)).join(' & ');
+                    const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' & ');
+                    const teeTimeDisplay = match.teeTime || 'TBD';
+
+                    html += `<tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:8px;vertical-align:top;">
+                            ${canEdit ?
+                                `<input type="time" class="form-input" style="width:120px;padding:6px;" value="${match.teeTime || ''}"
+                                    onchange="updateMatchTeeTime('${match.id}', this.value)">` :
+                                `<strong>${teeTimeDisplay}</strong>`
+                            }
+                        </td>
+                        <td style="padding:8px;">
+                            <div style="font-weight:600;">${teamANames}</div>
+                            <div style="font-size:0.85em;color:#666;">vs ${teamBNames}</div>
+                        </td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table></div>`;
+            }
+
+            html += `</div>`;
+        });
+
+        el.innerHTML = html;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    function updateSessionDate(sessionId, dateValue) {
+        if (!requireAdmin('update schedule')) return;
+        const session = S.config.sessions.find(s => s.id === sessionId);
+        if (session) {
+            session.date = dateValue;
+            saveState();
+            renderSchedule();
+            showToast('Date updated');
+        }
+    }
+
+    function updateMatchTeeTime(matchId, timeValue) {
+        if (!requireAdmin('update schedule')) return;
+        const match = S.matches[matchId];
+        if (match) {
+            match.teeTime = timeValue;
+            saveState();
+            renderSchedule();
+            showToast('Tee time updated');
+        }
     }
 
     // ─────────────────────────────────────────────────────────
@@ -4143,6 +4747,319 @@
     function hideSplash() {
         const splash = document.getElementById('splashOverlay');
         splash.classList.add('hidden');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // EXPORT MANAGER
+    // ─────────────────────────────────────────────────────────
+    const ExportManager = {
+        async htmlToImage(htmlString, filename) {
+            const container = document.createElement('div');
+            container.innerHTML = htmlString;
+            container.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;padding:40px;width:800px;';
+            document.body.appendChild(container);
+
+            try {
+                const canvas = await html2canvas(container, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    logging: false,
+                    useCORS: true
+                });
+
+                document.body.removeChild(container);
+
+                return new Promise((resolve) => {
+                    canvas.toBlob(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        showToast('Image downloaded!');
+                        resolve(blob);
+                    });
+                });
+            } catch (e) {
+                document.body.removeChild(container);
+                showToast('Export failed');
+                console.error('Export error:', e);
+            }
+        },
+
+        async htmlToPDF(htmlString, filename) {
+            const container = document.createElement('div');
+            container.innerHTML = htmlString;
+            container.style.cssText = 'position:absolute;left:-9999px;top:0;background:white;padding:40px;width:800px;';
+            document.body.appendChild(container);
+
+            try {
+                const canvas = await html2canvas(container, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    logging: false,
+                    useCORS: true
+                });
+
+                document.body.removeChild(container);
+
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+                    unit: 'px',
+                    format: [canvas.width / 2, canvas.height / 2]
+                });
+
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+                pdf.save(filename);
+                showToast('PDF downloaded!');
+            } catch (e) {
+                document.body.removeChild(container);
+                showToast('Export failed');
+                console.error('Export error:', e);
+            }
+        },
+
+        buildTeamRosterHTML() {
+            const teamA = getTeamPlayers('A');
+            const teamB = getTeamPlayers('B');
+
+            return `
+                <style>
+                    @font-face {
+                        font-family: 'Azalea';
+                        src: url('assets/fonts/Azalea.otf') format('opentype');
+                    }
+                </style>
+                <div style="font-family:Georgia,serif;max-width:750px;">
+                    <div style="text-align:center;margin-bottom:30px;">
+                        <img src="assets/images/smashters-logo-green.png" alt="Smashters Logo" style="width:120px;height:auto;margin-bottom:20px;">
+                        <h1 style="color:#006747;margin-bottom:8px;font-size:2.5rem;font-family:'Azalea',Georgia,serif;">${S.config.eventName}</h1>
+                        <h2 style="color:#666;font-size:1.5rem;font-weight:normal;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">${S.config.clubName} • ${S.config.year}</h2>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:30px;">
+                        <div>
+                            <h3 style="color:${S.config.teamA.color};font-size:1.8rem;margin-bottom:20px;border-bottom:3px solid ${S.config.teamA.color};padding-bottom:8px;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">${S.config.teamA.name}</h3>
+                            ${teamA.map((p, i) => `<div style="padding:12px 8px;border-bottom:1px solid #eee;font-size:1.1rem;">
+                                <strong>${i + 1}. ${p.name}</strong> ${p.handicap ? `<span style="color:#666;">(HCP: ${p.handicap})</span>` : ''}
+                            </div>`).join('')}
+                        </div>
+                        <div>
+                            <h3 style="color:${S.config.teamB.color};font-size:1.8rem;margin-bottom:20px;border-bottom:3px solid ${S.config.teamB.color};padding-bottom:8px;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">${S.config.teamB.name}</h3>
+                            ${teamB.map((p, i) => `<div style="padding:12px 8px;border-bottom:1px solid #eee;font-size:1.1rem;">
+                                <strong>${i + 1}. ${p.name}</strong> ${p.handicap ? `<span style="color:#666;">(HCP: ${p.handicap})</span>` : ''}
+                            </div>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+        },
+
+        buildMatchScheduleHTML(sessionId = null) {
+            const sessions = sessionId ?
+                [S.config.sessions.find(s => s.id === sessionId)].filter(Boolean) :
+                S.config.sessions.sort((a, b) => a.order - b.order);
+
+            let html = `
+                <style>
+                    @font-face {
+                        font-family: 'Azalea';
+                        src: url('assets/fonts/Azalea.otf') format('opentype');
+                    }
+                </style>
+                <div style="font-family:Georgia,serif;max-width:750px;">
+                <div style="text-align:center;margin-bottom:30px;">
+                    <img src="assets/images/smashters-logo-green.png" alt="Smashters Logo" style="width:120px;height:auto;margin-bottom:20px;">
+                    <h1 style="color:#006747;margin-bottom:8px;font-size:2.5rem;font-family:'Azalea',Georgia,serif;">${S.config.eventName}</h1>
+                    <h2 style="color:#666;font-size:1.5rem;font-weight:normal;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">Match Schedule</h2>
+                </div>`;
+
+            sessions.forEach(session => {
+                const matches = getMatchesBySession(session.id);
+                const sessionDate = session.date ? new Date(session.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'TBD';
+                const formatLabel = {
+                    fourball: 'Four Ball',
+                    foursomes: 'Foursomes',
+                    singles: 'Singles',
+                    other: 'Other'
+                }[session.format] || 'Match';
+
+                html += `<div style="margin-top:30px;">
+                    <h3 style="color:#006747;font-size:1.5rem;margin-bottom:12px;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">${session.name} • ${formatLabel}</h3>
+                    <p style="color:#666;margin-bottom:16px;">${sessionDate}</p>
+                    <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:1rem;">
+                        <thead>
+                            <tr style="background:#f5f5f5;border-bottom:2px solid #006747;">
+                                <th style="padding:10px;text-align:left;font-weight:600;">Tee Time</th>
+                                <th style="padding:10px;text-align:left;font-weight:600;">${S.config.teamA.name}</th>
+                                <th style="padding:10px;text-align:center;">vs</th>
+                                <th style="padding:10px;text-align:left;font-weight:600;">${S.config.teamB.name}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${matches.length > 0 ? matches.map(m => {
+                                const teeTime = m.teeTime || 'TBD';
+                                const teamANames = m.teamA.map(id => getPlayerName(id)).join(' & ');
+                                const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' & ');
+                                return `<tr style="border-bottom:1px solid #eee;">
+                                    <td style="padding:10px;font-weight:600;">${teeTime}</td>
+                                    <td style="padding:10px;">${teamANames}</td>
+                                    <td style="padding:10px;text-align:center;color:#999;">vs</td>
+                                    <td style="padding:10px;">${teamBNames}</td>
+                                </tr>`;
+                            }).join('') : '<tr><td colspan="4" style="padding:20px;text-align:center;color:#999;">No matches scheduled</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>`;
+            });
+
+            return html + '</div>';
+        },
+
+        buildDailySummaryHTML(sessionId) {
+            const session = S.config.sessions.find(s => s.id === sessionId);
+            if (!session) return '<div>Session not found</div>';
+
+            const matches = getMatchesBySession(sessionId);
+            const sessionScores = getSessionScores(sessionId);
+
+            let html = `
+                <style>
+                    @font-face {
+                        font-family: 'Azalea';
+                        src: url('assets/fonts/Azalea.otf') format('opentype');
+                    }
+                </style>
+                <div style="font-family:Georgia,serif;max-width:750px;">
+                <div style="text-align:center;margin-bottom:30px;">
+                    <img src="assets/images/smashters-logo-green.png" alt="Smashters Logo" style="width:120px;height:auto;margin-bottom:20px;">
+                    <h1 style="color:#006747;margin-bottom:8px;font-size:2.5rem;font-family:'Azalea',Georgia,serif;">${S.config.eventName}</h1>
+                    <h2 style="color:#666;font-size:1.5rem;font-weight:normal;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">${session.name} Summary</h2>
+                </div>
+                <div style="text-align:center;font-size:2rem;margin:30px 0;padding:20px;background:#f5f5f5;border-radius:8px;">
+                    <span style="color:${S.config.teamA.color};font-weight:bold;">${S.config.teamA.name}: ${formatScore(sessionScores.A)}</span>
+                    <span style="margin:0 20px;color:#999;">-</span>
+                    <span style="color:${S.config.teamB.color};font-weight:bold;">${S.config.teamB.name}: ${formatScore(sessionScores.B)}</span>
+                </div>
+                <table style="width:100%;border-collapse:collapse;margin-top:20px;font-size:1rem;">
+                    <thead>
+                        <tr style="background:#f5f5f5;">
+                            <th style="padding:10px;text-align:left;font-weight:600;">Match</th>
+                            <th style="padding:10px;text-align:center;font-weight:600;">Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            matches.forEach(m => {
+                const status = getMatchPlayStatus(m);
+                const teamANames = m.teamA.map(id => getPlayerName(id)).join(' & ');
+                const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' & ');
+
+                html += `<tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:12px;">
+                        <div style="font-weight:600;color:${S.config.teamA.color};">${teamANames}</div>
+                        <div style="font-size:0.9rem;color:#666;">vs ${teamBNames}</div>
+                    </td>
+                    <td style="padding:12px;text-align:center;font-weight:bold;font-size:1.1rem;">${status.text}</td>
+                </tr>`;
+            });
+
+            return html + '</tbody></table></div>';
+        },
+
+        buildFinalResultsHTML() {
+            const teamScores = getTeamScores();
+            const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+
+            let html = `
+                <style>
+                    @font-face {
+                        font-family: 'Azalea';
+                        src: url('assets/fonts/Azalea.otf') format('opentype');
+                    }
+                </style>
+                <div style="font-family:Georgia,serif;max-width:750px;">
+                <div style="text-align:center;margin-bottom:30px;">
+                    <img src="assets/images/smashters-logo-green.png" alt="Smashters Logo" style="width:120px;height:auto;margin-bottom:20px;">
+                    <h1 style="color:#006747;margin-bottom:8px;font-size:2.5rem;font-family:'Azalea',Georgia,serif;">${S.config.eventName}</h1>
+                    <h2 style="color:#666;font-size:1.5rem;font-weight:normal;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">Final Results • ${S.config.year}</h2>
+                </div>
+                <div style="text-align:center;font-size:2.5rem;margin:40px 0;padding:30px;background:#006747;color:white;border-radius:12px;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">
+                    <div style="margin-bottom:10px;font-size:1rem;opacity:0.9;text-transform:uppercase;letter-spacing:2px;">Final Score</div>
+                    <div>
+                        <span style="font-weight:bold;">${S.config.teamA.name}: ${formatScore(teamScores.A)}</span>
+                        <span style="margin:0 30px;opacity:0.7;">-</span>
+                        <span style="font-weight:bold;">${S.config.teamB.name}: ${formatScore(teamScores.B)}</span>
+                    </div>
+                </div>`;
+
+            html += '<div style="margin-top:40px;">';
+            sessions.forEach(session => {
+                const sessionScores = getSessionScores(session.id);
+                html += `<div style="padding:16px;border-bottom:1px solid #ddd;">
+                    <h3 style="color:#006747;font-size:1.2rem;margin-bottom:8px;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;">${session.name}</h3>
+                    <p style="font-size:1.1rem;">${S.config.teamA.name}: <strong>${formatScore(sessionScores.A)}</strong> • ${S.config.teamB.name}: <strong>${formatScore(sessionScores.B)}</strong></p>
+                </div>`;
+            });
+            html += '</div>';
+
+            return html + '</div>';
+        },
+
+        async generateTeamRoster(format = 'pdf') {
+            const html = this.buildTeamRosterHTML();
+            if (format === 'pdf') {
+                await this.htmlToPDF(html, 'team-roster.pdf');
+            } else {
+                await this.htmlToImage(html, 'team-roster.png');
+            }
+        },
+
+        async generateMatchSchedule(sessionId = null, format = 'pdf') {
+            const html = this.buildMatchScheduleHTML(sessionId);
+            const filename = sessionId ? `${sessionId}-schedule.pdf` : 'match-schedule.pdf';
+            if (format === 'pdf') {
+                await this.htmlToPDF(html, filename);
+            } else {
+                await this.htmlToImage(html, filename.replace('.pdf', '.png'));
+            }
+        },
+
+        async generateDailySummary(sessionId, format = 'pdf') {
+            const html = this.buildDailySummaryHTML(sessionId);
+            if (format === 'pdf') {
+                await this.htmlToPDF(html, `${sessionId}-summary.pdf`);
+            } else {
+                await this.htmlToImage(html, `${sessionId}-summary.png`);
+            }
+        },
+
+        async generateFinalResults(format = 'pdf') {
+            const html = this.buildFinalResultsHTML();
+            if (format === 'pdf') {
+                await this.htmlToPDF(html, 'final-results.pdf');
+            } else {
+                await this.htmlToImage(html, 'final-results.png');
+            }
+        }
+    };
+
+    function openExportMenu() {
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+
+        let body = `<div style="display:grid;gap:12px;">
+            <button class="btn btn-primary" onclick="ExportManager.generateTeamRoster('pdf');closeModal()">📤 Team Roster (PDF)</button>
+            <button class="btn btn-primary" onclick="ExportManager.generateMatchSchedule(null, 'pdf');closeModal()">📤 Full Schedule (PDF)</button>`;
+
+        sessions.forEach(s => {
+            body += `<button class="btn btn-outline" onclick="ExportManager.generateDailySummary('${s.id}', 'pdf');closeModal()">📊 ${s.name} Summary (PDF)</button>`;
+        });
+
+        body += `<button class="btn btn-gold" onclick="ExportManager.generateFinalResults('pdf');closeModal()">🏆 Final Results (PDF)</button>
+        </div>`;
+
+        openModal('Export & Share', body, '');
     }
 
     // ─────────────────────────────────────────────────────────
