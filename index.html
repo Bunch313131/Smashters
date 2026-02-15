@@ -1608,7 +1608,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.5.0';
+    const APP_VERSION = '2.6.0';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -4361,15 +4361,25 @@
                     }
                     // PRIORITY 2: If local has more players, push to Firebase
                     else if (localPlayerCount > firebasePlayerCount) {
-                        console.log('Pushing to Firebase (local has more players)...');
-                        await this.eventRef.set({
-                            config: S.config,
-                            players: S.players,
-                            matches: S.matches,
-                            scorerCode: this.scorerCode,
-                            adminPin: this.adminPin,
-                            updatedAt: firebase.database.ServerValue.TIMESTAMP,
-                        });
+                        // Validate local data before pushing
+                        const localValidation = this.validateState(S, 'Local');
+                        if (localValidation.valid) {
+                            console.log('Pushing to Firebase (local has more players)...');
+                            await this.eventRef.set({
+                                config: S.config,
+                                players: S.players,
+                                matches: S.matches,
+                                scorerCode: this.scorerCode,
+                                adminPin: this.adminPin,
+                                updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                            });
+                        } else {
+                            console.error(`🛑 BLOCKED pushing corrupted local data: ${localValidation.reason}`);
+                            console.log('Pulling from Firebase instead...');
+                            this.applyState(firebaseData);
+                            renderTab(S.ui.activeTab);
+                            showToast('Local data corrupted - restored from cloud');
+                        }
                     }
                     // PRIORITY 3: Same player count - use timestamp
                     else if (firebaseTimestamp > localTimestamp) {
@@ -4378,15 +4388,25 @@
                         renderTab(S.ui.activeTab);
                         showToast('Synced from cloud');
                     } else {
-                        console.log('Pushing to Firebase (local is newer)...');
-                        await this.eventRef.set({
-                            config: S.config,
-                            players: S.players,
-                            matches: S.matches,
-                            scorerCode: this.scorerCode,
-                            adminPin: this.adminPin,
-                            updatedAt: firebase.database.ServerValue.TIMESTAMP,
-                        });
+                        // Validate local data before pushing
+                        const localValidation = this.validateState(S, 'Local');
+                        if (localValidation.valid) {
+                            console.log('Pushing to Firebase (local is newer)...');
+                            await this.eventRef.set({
+                                config: S.config,
+                                players: S.players,
+                                matches: S.matches,
+                                scorerCode: this.scorerCode,
+                                adminPin: this.adminPin,
+                                updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                            });
+                        } else {
+                            console.error(`🛑 BLOCKED pushing corrupted local data: ${localValidation.reason}`);
+                            console.log('Pulling from Firebase instead...');
+                            this.applyState(firebaseData);
+                            renderTab(S.ui.activeTab);
+                            showToast('Local data corrupted - restored from cloud');
+                        }
                     }
                 } else {
                     // No Firebase data yet - push current state
@@ -4500,10 +4520,11 @@
         syncToFirebase() {
             if (!this.eventRef) return;
 
-            // SAFETY: Never push empty player data
-            const localPlayerCount = Object.keys(S.players || {}).length;
-            if (localPlayerCount === 0) {
-                console.log('Sync blocked: Local data is empty, not pushing to Firebase');
+            // SAFETY: Validate local data before pushing to Firebase
+            const validation = this.validateState(S, 'Local (pre-sync)');
+            if (!validation.valid) {
+                console.error(`🛑 Sync blocked: ${validation.reason} - not pushing to Firebase`);
+                showToast(`Sync blocked: ${validation.reason}`);
                 return;
             }
 
@@ -4552,9 +4573,52 @@
             }
         },
 
+        // Validate state data to detect corruption
+        validateState(state, source = 'unknown') {
+            if (!state) return { valid: false, reason: 'No state data' };
+
+            const playerCount = Object.keys(state.players || {}).length;
+            const matchCount = Object.keys(state.matches || {}).length;
+
+            // Check if we have players
+            if (playerCount === 0) {
+                console.warn(`${source} validation: No players found`);
+                return { valid: false, reason: 'No players' };
+            }
+
+            // Check for corrupted handicaps (all zeros or all null)
+            const players = Object.values(state.players || {});
+            const handicaps = players.map(p => parseInt(p.handicap) || 0);
+            const nonZeroHandicaps = handicaps.filter(h => h > 0).length;
+
+            // If we have more than 2 players and ALL handicaps are 0, it's likely corrupted
+            if (playerCount > 2 && nonZeroHandicaps === 0) {
+                console.error(`${source} validation FAILED: All handicaps are 0 (likely corrupted)`);
+                return { valid: false, reason: 'All handicaps are 0' };
+            }
+
+            // Check config
+            if (!state.config || !state.config.teamA || !state.config.teamB) {
+                console.warn(`${source} validation: Missing config data`);
+                return { valid: false, reason: 'Missing config' };
+            }
+
+            console.log(`${source} validation PASSED: ${playerCount} players, ${matchCount} matches, ${nonZeroHandicaps}/${playerCount} with handicaps`);
+            return { valid: true };
+        },
+
         // Apply remote state to local
         applyState(val) {
             if (!val) return;
+
+            // CRITICAL: Validate incoming data before applying
+            const validation = this.validateState(val, 'Firebase');
+            if (!validation.valid) {
+                console.error(`🛑 BLOCKED corrupted Firebase data: ${validation.reason}`);
+                showToast(`Blocked corrupted sync: ${validation.reason}`);
+                return; // Don't apply corrupted data!
+            }
+
             const base = defaultState();
             if (val.config) {
                 S.config = {
