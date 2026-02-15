@@ -1859,6 +1859,16 @@
         return full + (holeHcpRank <= extra ? 1 : 0);
     }
 
+    // Get match play strokes for a player (spinning off the low handicap in the match)
+    function getMatchPlayStrokes(match, playerId) {
+        if (!match || !S.config.useHandicaps) return 0;
+        const allPlayerIds = [...match.teamA, ...match.teamB];
+        const allHandicaps = allPlayerIds.map(id => getPlayerHcp(id) || 0);
+        const lowHandicap = Math.min(...allHandicaps);
+        const playerHandicap = getPlayerHcp(playerId) || 0;
+        return Math.max(0, playerHandicap - lowHandicap);
+    }
+
     // Get the net score for a player on a hole
     function getNetScore(playerId, holeNum, grossScore) {
         if (grossScore === null || grossScore === undefined) return null;
@@ -3056,8 +3066,17 @@
 
     function renderMatchCard(match) {
         const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
-        const teamANames = match.teamA.map(id => getPlayerName(id)).join(' & ');
-        const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' & ');
+
+        // Build player names with strokes
+        const teamANamesWithStrokes = match.teamA.map(id => {
+            const strokes = getMatchPlayStrokes(match, id);
+            return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+        }).join(' & ');
+        const teamBNamesWithStrokes = match.teamB.map(id => {
+            const strokes = getMatchPlayStrokes(match, id);
+            return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+        }).join(' & ');
+
         const label = {
             fourball: 'Four Ball',
             foursomes: 'Foursomes',
@@ -3067,32 +3086,27 @@
 
         return `
             <div class="match-setup-card">
-                <div class="match-setup-header">
+                <div class="match-setup-header" style="display:flex;align-items:center;justify-content:space-between;">
                     <span>Match ${match.order} &middot; ${label}</span>
-                    ${canEdit ? `<button class="btn btn-sm" style="background:var(--masters-red);color:#fff;padding:4px 10px;" onclick="deleteMatch('${match.id}')">Remove</button>` : ''}
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        ${canEdit ? `
+                            <input type="time" class="form-input" style="width:100px;padding:4px 6px;font-size:0.85rem;" value="${match.teeTime || ''}"
+                                onchange="updateMatchTeeTime('${match.id}', this.value)" placeholder="Tee Time">
+                        ` : match.teeTime ? `<span style="font-size:0.85rem;color:#666;">${match.teeTime}</span>` : ''}
+                        ${canEdit ? `<button class="btn btn-sm" style="background:var(--masters-red);color:#fff;padding:4px 10px;" onclick="deleteMatch('${match.id}')">Remove</button>` : ''}
+                    </div>
                 </div>
                 <div class="match-setup-body">
                     <div class="match-team-col">
                         <label style="color:${S.config.teamA.color}">${S.config.teamA.name}</label>
-                        <strong>${teamANames || 'TBD'}</strong>
+                        <strong>${teamANamesWithStrokes || 'TBD'}</strong>
                     </div>
                     <div class="match-vs-col">vs</div>
                     <div class="match-team-col" style="text-align:right">
                         <label style="color:${S.config.teamB.color}">${S.config.teamB.name}</label>
-                        <strong>${teamBNames || 'TBD'}</strong>
+                        <strong>${teamBNamesWithStrokes || 'TBD'}</strong>
                     </div>
                 </div>
-                ${canEdit ? `
-                    <div style="padding:12px;border-top:1px solid #ddd;background:#f9f9f9;">
-                        <label style="font-size:0.85rem;color:#666;margin-bottom:4px;display:block;">Tee Time</label>
-                        <input type="time" class="form-input" style="width:140px;padding:6px;" value="${match.teeTime || ''}"
-                            onchange="updateMatchTeeTime('${match.id}', this.value)">
-                    </div>
-                ` : match.teeTime ? `
-                    <div style="padding:12px;border-top:1px solid #ddd;background:#f9f9f9;font-size:0.9rem;">
-                        <span style="color:#666;">Tee Time:</span> <strong>${match.teeTime}</strong>
-                    </div>
-                ` : ''}
             </div>`;
     }
 
@@ -3542,17 +3556,27 @@
                         <tbody>`;
 
                 matches.forEach(match => {
-                    const teamANames = match.teamA.map(id => getPlayerName(id)).join(' & ');
-                    const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' & ');
+                    // Build player names with strokes
+                    const teamANamesWithStrokes = match.teamA.map(id => {
+                        const strokes = getMatchPlayStrokes(match, id);
+                        return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+                    }).join(' & ');
+                    const teamBNamesWithStrokes = match.teamB.map(id => {
+                        const strokes = getMatchPlayStrokes(match, id);
+                        return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+                    }).join(' & ');
                     const teeTimeDisplay = match.teeTime || 'TBD';
 
                     html += `<tr style="border-bottom:1px solid #eee;">
-                        <td style="padding:8px;vertical-align:top;">
+                        <td style="padding:8px;vertical-align:middle;white-space:nowrap;">
                             <strong>${teeTimeDisplay}</strong>
                         </td>
                         <td style="padding:8px;">
-                            <div style="font-weight:600;">${teamANames}</div>
-                            <div style="font-size:0.85em;color:#666;">vs ${teamBNames}</div>
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <span style="font-weight:600;color:${S.config.teamA.color};">${teamANamesWithStrokes}</span>
+                                <span style="color:#999;">vs</span>
+                                <span style="font-weight:600;color:${S.config.teamB.color};">${teamBNamesWithStrokes}</span>
+                            </div>
                         </td>
                     </tr>`;
                 });
