@@ -1608,7 +1608,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.4.0';
+    const APP_VERSION = '2.5.0';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -1909,12 +1909,22 @@
         return Math.max(0, playerHandicap - lowHandicap);
     }
 
-    // Get the net score for a player on a hole
+    // Get the net score for a player on a hole (uses full course handicap)
     function getNetScore(playerId, holeNum, grossScore) {
         if (grossScore === null || grossScore === undefined) return null;
         if (!S.config.useHandicaps) return grossScore;
         const holeInfo = getHoleInfo(holeNum);
         const strokes = getStrokesOnHole(getPlayerHcp(playerId), holeInfo.hcp);
+        return grossScore - strokes;
+    }
+
+    // Get the net score for a player on a hole in match play (uses match play strokes - spinning off the low)
+    function getMatchNetScore(match, playerId, holeNum, grossScore) {
+        if (grossScore === null || grossScore === undefined) return null;
+        if (!S.config.useHandicaps) return grossScore;
+        const holeInfo = getHoleInfo(holeNum);
+        const matchPlayHcp = getMatchPlayStrokes(match, playerId);
+        const strokes = getStrokesOnHole(matchPlayHcp, holeInfo.hcp);
         return grossScore - strokes;
     }
 
@@ -1934,9 +1944,9 @@
         if (!allHaveScores) return null;
 
         if (match.type === 'fourball') {
-            // Best ball: lowest net score from each team
-            const teamANets = teamAIds.map(id => getNetScore(id, holeNum, holeScores[id])).filter(s => s !== null);
-            const teamBNets = teamBIds.map(id => getNetScore(id, holeNum, holeScores[id])).filter(s => s !== null);
+            // Best ball: lowest net score from each team (using match play strokes)
+            const teamANets = teamAIds.map(id => getMatchNetScore(match, id, holeNum, holeScores[id])).filter(s => s !== null);
+            const teamBNets = teamBIds.map(id => getMatchNetScore(match, id, holeNum, holeScores[id])).filter(s => s !== null);
             if (teamANets.length === 0 || teamBNets.length === 0) return null;
             const bestA = Math.min(...teamANets);
             const bestB = Math.min(...teamBNets);
@@ -1944,9 +1954,9 @@
             if (bestB < bestA) return 'B';
             return 'halved';
         } else {
-            // Singles: direct comparison
-            const netA = getNetScore(teamAIds[0], holeNum, holeScores[teamAIds[0]]);
-            const netB = getNetScore(teamBIds[0], holeNum, holeScores[teamBIds[0]]);
+            // Singles: direct comparison (using match play strokes)
+            const netA = getMatchNetScore(match, teamAIds[0], holeNum, holeScores[teamAIds[0]]);
+            const netB = getMatchNetScore(match, teamBIds[0], holeNum, holeScores[teamBIds[0]]);
             if (netA === null || netB === null) return null;
             if (netA < netB) return 'A';
             if (netB < netA) return 'B';
@@ -2649,24 +2659,25 @@
     function renderScoring() {
         const el = document.getElementById('scoring-content');
 
-        if (Object.keys(S.matches).length === 0) {
-            el.innerHTML = `<div class="empty-state"><h3>No Matches Yet</h3><p>Set up matches first in the Matches tab.</p></div>`;
-            return;
-        }
+        try {
+            if (Object.keys(S.matches).length === 0) {
+                el.innerHTML = `<div class="empty-state"><h3>No Matches Yet</h3><p>Set up matches first in the Matches tab.</p></div>`;
+                return;
+            }
 
-        // Check if user needs to enable scoring
-        if (!LiveSync.isAdmin && !LiveSync.isScorer) {
-            el.innerHTML = `
-                <h2 class="section-title">Live Scoring</h2>
-                <div class="empty-state">
-                    <h3>Scorer Authentication Required</h3>
-                    <p>Enter the scorer code to enable scoring for all matches.</p>
-                    <button class="btn btn-primary" onclick="enableScoring()" style="margin-top:16px;">Enable Scoring</button>
-                </div>`;
-            return;
-        }
+            // Check if user needs to enable scoring
+            if (!LiveSync.isAdmin && !LiveSync.isScorer) {
+                el.innerHTML = `
+                    <h2 class="section-title">Live Scoring</h2>
+                    <div class="empty-state">
+                        <h3>Scorer Authentication Required</h3>
+                        <p>Enter the scorer code to enable scoring for all matches.</p>
+                        <button class="btn btn-primary" onclick="enableScoring()" style="margin-top:16px;">Enable Scoring</button>
+                    </div>`;
+                return;
+            }
 
-        let html = '<h2 class="section-title">Live Scoring</h2>';
+            let html = '<h2 class="section-title">Live Scoring</h2>';
 
         // In scorer mode with a specific match, only show that match
         // If scorerMatchId is null, show all matches (all-scorer role)
@@ -2723,39 +2734,50 @@
         });
         html += '</div>';
 
-        if (S.ui.activeMatchId && S.matches[S.ui.activeMatchId]) {
-            html += renderScoringInterface(S.matches[S.ui.activeMatchId]);
-        }
+            if (S.ui.activeMatchId && S.matches[S.ui.activeMatchId]) {
+                html += renderScoringInterface(S.matches[S.ui.activeMatchId]);
+            }
 
-        el.innerHTML = html;
+            el.innerHTML = html;
+        } catch (error) {
+            console.error('Scoring render error:', error);
+            el.innerHTML = `
+                <div class="empty-state">
+                    <h3>Error Loading Scoring</h3>
+                    <p>An error occurred while loading the scoring interface. Please try refreshing the page.</p>
+                    <button class="btn btn-primary" onclick="window.location.reload()" style="margin-top:16px;">Refresh Page</button>
+                    <p style="margin-top:16px;font-size:0.85rem;color:#666;">Error: ${error.message}</p>
+                </div>`;
+        }
     }
 
     function renderScoringInterface(match) {
-        const status = getMatchPlayStatus(match);
-        const hole = S.ui.scoringHole || 1;
-        const holeInfo = getHoleInfo(hole);
-        const holeScores = match.holes[hole] || {};
-        const allPlayers = [...match.teamA, ...match.teamB];
-        const holeWinner = getHoleWinner(match, hole);
+        try {
+            const status = getMatchPlayStatus(match);
+            const hole = S.ui.scoringHole || 1;
+            const holeInfo = getHoleInfo(hole);
+            const holeScores = match.holes[hole] || {};
+            const allPlayers = [...match.teamA, ...match.teamB];
+            const holeWinner = getHoleWinner(match, hole);
 
         let statusText = status.text;
         if (status.leader === 'A') statusText = `${S.config.teamA.name} ${status.text}`;
         else if (status.leader === 'B') statusText = `${S.config.teamB.name} ${status.text}`;
 
         // Build player score entry rows for Team A
-        let teamARows = match.teamA.map(id => renderScoreEntryRow(id, hole, holeScores, holeInfo)).join('');
-        let teamBRows = match.teamB.map(id => renderScoreEntryRow(id, hole, holeScores, holeInfo)).join('');
+        let teamARows = match.teamA.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
+        let teamBRows = match.teamB.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
 
         // Best ball indicators for four-ball
         let bestBallA = '', bestBallB = '';
         if (match.type === 'fourball') {
             const aNets = match.teamA.map(id => {
                 const g = holeScores[id];
-                return g != null ? { id, net: getNetScore(id, hole, g), gross: g } : null;
+                return g != null ? { id, net: getMatchNetScore(match, id, hole, g), gross: g } : null;
             }).filter(Boolean);
             const bNets = match.teamB.map(id => {
                 const g = holeScores[id];
-                return g != null ? { id, net: getNetScore(id, hole, g), gross: g } : null;
+                return g != null ? { id, net: getMatchNetScore(match, id, hole, g), gross: g } : null;
             }).filter(Boolean);
 
             if (aNets.length > 0) {
@@ -2826,11 +2848,20 @@
 
                 <button class="scoring-clear-btn" onclick="clearHoleScores(${hole})">Clear Hole ${hole} Scores</button>
 
-                ${status.isComplete ? '<div style="padding:12px;text-align:center;color:var(--masters-green);font-weight:bold;">Match Complete &mdash; ' + status.text + '</div>' : ''}
-            </div>`;
+                    ${status.isComplete ? '<div style="padding:12px;text-align:center;color:var(--masters-green);font-weight:bold;">Match Complete &mdash; ' + status.text + '</div>' : ''}
+                </div>`;
+        } catch (error) {
+            console.error('Scoring interface render error:', error);
+            return `
+                <div class="empty-state">
+                    <h3>Error Rendering Match</h3>
+                    <p>An error occurred while rendering this match. Please try selecting a different match or refreshing the page.</p>
+                    <p style="margin-top:12px;font-size:0.85rem;color:#666;">Error: ${error.message}</p>
+                </div>`;
+        }
     }
 
-    function renderScoreEntryRow(playerId, holeNum, holeScores, holeInfo) {
+    function renderScoreEntryRow(match, playerId, holeNum, holeScores, holeInfo) {
         const player = getPlayer(playerId);
         const name = player?.name || 'Unknown';
         const hcp = getPlayerHcp(playerId);
@@ -2838,8 +2869,9 @@
         const hasScore = grossScore !== undefined && grossScore !== null;
         const par = holeInfo.par;
 
-        // Strokes received on this hole
-        const strokesReceived = S.config.useHandicaps ? getStrokesOnHole(hcp, holeInfo.hcp) : 0;
+        // Strokes received on this hole (using match play strokes - spinning off the low)
+        const matchPlayHcp = getMatchPlayStrokes(match, playerId);
+        const strokesReceived = S.config.useHandicaps ? getStrokesOnHole(matchPlayHcp, holeInfo.hcp) : 0;
 
         // Score display class
         let scoreClass = 'no-score';
@@ -2856,11 +2888,16 @@
         const displayScore = hasScore ? grossScore : '-';
         const strokeDots = strokesReceived > 0 ? ' <span style="color:var(--masters-red);font-size:0.7rem;">' + '\u25CF'.repeat(strokesReceived) + '</span>' : '';
 
+        // Show full handicap and match play handicap
+        const hcpDisplay = matchPlayHcp !== hcp && matchPlayHcp > 0
+            ? `HCP ${hcp} (${matchPlayHcp})`
+            : `HCP ${hcp}`;
+
         return `
             <div class="score-entry-row">
                 <div class="score-entry-name">
                     ${name}${strokeDots}
-                    <span class="hcp-badge">HCP ${hcp}${strokesReceived > 0 ? ' (+' + strokesReceived + ')' : ''}</span>
+                    <span class="hcp-badge">${hcpDisplay}</span>
                 </div>
                 <div class="score-entry-controls">
                     <button class="score-adj-btn" onclick="adjustScore('${playerId}', ${holeNum}, -1)">&minus;</button>
