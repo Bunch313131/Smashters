@@ -3217,17 +3217,14 @@
         const initials = player.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
         const teamClass = player.team === 'A' ? 'team-a' : player.team === 'B' ? 'team-b' : 'no-team';
         const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
-        const details = [];
-        if (player.handicap) details.push(`HCP: ${player.handicap}`);
-        if (player.email) details.push(player.email);
-        if (player.phone) details.push(player.phone);
+        const handicapText = player.handicap ? `HCP: ${player.handicap}` : 'No handicap';
 
         return `
             <div class="player-card">
                 <div class="player-avatar ${teamClass}">${initials}</div>
                 <div class="player-info">
                     <div class="player-name">${player.name}</div>
-                    <div class="player-detail">${details.join(' &middot; ') || 'No details'}</div>
+                    <div class="player-detail">${handicapText}</div>
                 </div>
                 ${canEdit ? `<div class="player-actions">
                     <button class="btn btn-outline btn-icon btn-sm" onclick="openPlayerModal('${player.id}')" title="Edit">&#9998;</button>
