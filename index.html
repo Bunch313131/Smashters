@@ -1608,7 +1608,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.3.0';
+    const APP_VERSION = '2.4.0';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -1691,7 +1691,7 @@
                     }
                 });
 
-                return {
+                const loadedState = {
                     config: { ...base.config, ...parsed.config,
                         teamA: { ...base.config.teamA, ...(parsed.config?.teamA || {}) },
                         teamB: { ...base.config.teamB, ...(parsed.config?.teamB || {}) },
@@ -1703,16 +1703,56 @@
                     matches,
                     ui: { ...base.ui, ...parsed.ui },
                 };
+
+                console.log(`State loaded: ${Object.keys(loadedState.players).length} players, ${Object.keys(loadedState.matches).length} matches`);
+                return loadedState;
             }
-        } catch (e) { console.error('Load state error:', e); }
+        } catch (e) {
+            console.error('Load state error:', e);
+            // Try to load from backup if main state is corrupted
+            try {
+                const backup = localStorage.getItem(STORAGE_KEY + '-backup');
+                if (backup) {
+                    console.warn('Main state corrupted, attempting backup restore...');
+                    const parsed = JSON.parse(backup);
+                    if (parsed && (Object.keys(parsed.players || {}).length > 0 || Object.keys(parsed.matches || {}).length > 0)) {
+                        showToast('Restored from backup');
+                        return loadState(); // Will load from main key after backup is copied
+                    }
+                }
+            } catch (backupError) {
+                console.error('Backup restore failed:', backupError);
+            }
+        }
         return defaultState();
     }
 
     function saveState(skipFirebaseSync = false) {
+        // Validate state before saving - prevent saving empty/corrupted data
+        const playerCount = Object.keys(S.players || {}).length;
+        const matchCount = Object.keys(S.matches || {}).length;
+
+        // If we're about to wipe out data, create a backup first
+        if (playerCount > 0 || matchCount > 0) {
+            try {
+                const backup = localStorage.getItem(STORAGE_KEY);
+                if (backup) {
+                    localStorage.setItem(STORAGE_KEY + '-backup', backup);
+                    localStorage.setItem(STORAGE_KEY + '-backup-time', Date.now().toString());
+                }
+            } catch (e) { console.error('Backup error:', e); }
+        }
+
         // Update local timestamp
         S._lastSync = Date.now();
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }
+
+        // Save to localStorage
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(S));
+            console.log(`State saved: ${playerCount} players, ${matchCount} matches`);
+        }
         catch (e) { console.error('Save state error:', e); }
+
         // Sync to Firebase if live (unless explicitly skipped)
         if (!skipFirebaseSync && (LiveSync.isAdmin || LiveSync.isScorer)) {
             LiveSync.syncToFirebase();
@@ -5099,6 +5139,38 @@
 
         openModal('Export & Share', body, '');
     }
+
+    // ─────────────────────────────────────────────────────────
+    // DATA RECOVERY
+    // ─────────────────────────────────────────────────────────
+    // Manual recovery function - call from console if data is lost
+    window.recoverFromBackup = function() {
+        try {
+            const backup = localStorage.getItem(STORAGE_KEY + '-backup');
+            const backupTime = localStorage.getItem(STORAGE_KEY + '-backup-time');
+            if (!backup) {
+                console.error('No backup found');
+                alert('No backup available');
+                return false;
+            }
+            const parsed = JSON.parse(backup);
+            const playerCount = Object.keys(parsed.players || {}).length;
+            const matchCount = Object.keys(parsed.matches || {}).length;
+            const backupDate = backupTime ? new Date(parseInt(backupTime)).toLocaleString() : 'Unknown';
+
+            if (confirm(`Restore backup from ${backupDate}?\n${playerCount} players, ${matchCount} matches`)) {
+                localStorage.setItem(STORAGE_KEY, backup);
+                console.log('Backup restored successfully');
+                alert('Backup restored! Reloading page...');
+                window.location.reload();
+                return true;
+            }
+        } catch (e) {
+            console.error('Recovery failed:', e);
+            alert('Recovery failed: ' + e.message);
+            return false;
+        }
+    };
 
     // ─────────────────────────────────────────────────────────
     // INIT
