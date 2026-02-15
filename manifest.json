@@ -2,7 +2,7 @@
     "name": "The Smashters - Dumpster Fire Golf Club",
     "short_name": "Smashters",
     "description": "Ryder Cup style golf event manager",
-    "start_url": "/Smashters/",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#00432e",
     "theme_color": "#00432e",
