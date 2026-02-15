@@ -1827,7 +1827,15 @@
     function getPlayer(id) { return S.players[id] || null; }
     function getPlayerName(id) { return S.players[id]?.name || 'Unknown'; }
     function getPlayerHcp(id) { return parseInt(S.players[id]?.handicap) || 0; }
-    function getTeamPlayers(team) { return Object.values(S.players).filter(p => p.team === team); }
+    function getTeamPlayers(team) {
+        return Object.values(S.players)
+            .filter(p => p.team === team)
+            .sort((a, b) => {
+                const hcpA = a.handicap || 999;
+                const hcpB = b.handicap || 999;
+                return hcpA - hcpB;
+            });
+    }
     function getMatchesByDay(day) { return Object.values(S.matches).filter(m => m.day === day || m.sessionId === `session-${day}`).sort((a, b) => a.order - b.order); }
     function getMatchesBySession(sessionId) { return Object.values(S.matches).filter(m => m.sessionId === sessionId).sort((a, b) => a.order - b.order); }
 
@@ -3193,9 +3201,16 @@
         if (allPlayers.length === 0) {
             html += `<div class="empty-state"><h3>No Players Yet</h3><p>Add players to get started.</p></div>`;
         } else {
-            const teamA = allPlayers.filter(p => p.team === 'A');
-            const teamB = allPlayers.filter(p => p.team === 'B');
-            const unassigned = allPlayers.filter(p => !p.team);
+            // Sort by handicap (low to high), with 0/null handicaps at the end
+            const sortByHandicap = (a, b) => {
+                const hcpA = a.handicap || 999;
+                const hcpB = b.handicap || 999;
+                return hcpA - hcpB;
+            };
+
+            const teamA = allPlayers.filter(p => p.team === 'A').sort(sortByHandicap);
+            const teamB = allPlayers.filter(p => p.team === 'B').sort(sortByHandicap);
+            const unassigned = allPlayers.filter(p => !p.team).sort(sortByHandicap);
 
             if (teamA.length > 0) {
                 html += `<div class="text-sm text-muted mb-8" style="color:${S.config.teamA.color};font-weight:bold;text-transform:uppercase;letter-spacing:1px;">${S.config.teamA.name} (${teamA.length})</div>`;
