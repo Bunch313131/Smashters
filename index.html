@@ -2318,8 +2318,9 @@
 
     function renderLeaderboardMatch(match) {
         const status = getMatchPlayStatus(match);
-        const teamANames = match.teamA.map(id => getPlayerName(id)).join(' / ');
-        const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' / ');
+        // Keep each player name together, only allow breaking at separator
+        const teamANames = match.teamA.map(id => `<span style="white-space:nowrap;">${getPlayerName(id)}</span>`).join(' / ');
+        const teamBNames = match.teamB.map(id => `<span style="white-space:nowrap;">${getPlayerName(id)}</span>`).join(' / ');
         const isALeading = status.leader === 'A';
         const isBLeading = status.leader === 'B';
         const isTied = status.text === 'ALL SQUARE' || status.text === 'HALVED';
