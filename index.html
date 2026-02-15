@@ -3179,7 +3179,7 @@
                     <span>Match ${match.order} &middot; ${label}</span>
                     <div style="display:flex;gap:8px;align-items:center;">
                         ${canEdit ? `
-                            <input type="time" class="form-input" style="width:100px;padding:4px 6px;font-size:0.85rem;" value="${match.teeTime || ''}"
+                            <input type="time" class="form-input" style="width:130px;padding:4px 6px;font-size:0.85rem;" value="${match.teeTime || ''}"
                                 onchange="updateMatchTeeTime('${match.id}', this.value)" placeholder="Tee Time">
                         ` : match.teeTime ? `<span style="font-size:0.85rem;color:#666;">${match.teeTime}</span>` : ''}
                         ${canEdit ? `<button class="btn btn-sm" style="background:var(--masters-red);color:#fff;padding:4px 10px;" onclick="deleteMatch('${match.id}')">Remove</button>` : ''}
