@@ -211,8 +211,7 @@
             .app-header { position: sticky; }
 
             .header-top {
-                justify-content: flex-start;
-                padding-right: 48px;
+                /* True center - logo and menu buttons will be asymmetric but title is centered */
             }
 
             .header-titles { text-align: center; flex: 1; }
@@ -1465,6 +1464,23 @@
             .score-entry-name { font-size: 0.8rem; }
             .score-adj-btn { width: 44px; height: 44px; font-size: 1.2rem; }
             .score-value-display { width: 48px; height: 44px; font-size: 1.2rem; }
+
+            /* Sessions section - wrap to multiple lines on mobile */
+            .session-config-row {
+                flex-wrap: wrap !important;
+            }
+            .session-config-row input[id^="session_name_"],
+            .session-config-row select[id^="session_format_"] {
+                flex: 1 1 100% !important;
+                min-width: 100% !important;
+            }
+            .session-config-row input[id^="session_date_"] {
+                flex: 1 1 100% !important;
+                min-width: 100% !important;
+            }
+            .session-config-row button {
+                flex: 0 0 auto !important;
+            }
         }
 
         @media (min-width: 768px) {
@@ -2738,20 +2754,22 @@
             ? allMatches.filter(m => m.sessionId === S.ui.scoringSessionFilter)
             : allMatches;
 
-        // Match selector
-        html += '<div class="scoring-match-select">';
+        // Match selector - dropdown for better mobile UX
+        html += '<div style="margin-bottom:16px;">';
+        html += '<label class="form-group"><strong>Select Match:</strong></label>';
+        html += '<select class="form-input" onchange="selectScoringMatch(this.value)" style="width:100%;font-size:0.9rem;">';
+        html += '<option value="">-- Choose a match --</option>';
         matchesToShow.forEach(m => {
             const teamANames = m.teamA.map(id => getPlayerName(id)).join(' / ');
             const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' / ');
             const status = getMatchPlayStatus(m);
-            const isActive = S.ui.activeMatchId === m.id;
+            const isSelected = S.ui.activeMatchId === m.id;
             const canEdit = LiveSync.canScore(m.id);
-            html += `
-                <button class="scoring-match-btn ${isActive ? 'active-match' : ''}" onclick="selectScoringMatch('${m.id}')">
-                    <strong>${teamANames}</strong> vs <strong>${teamBNames}</strong>
-                    <span class="text-muted text-sm" style="float:right;">${!canEdit && !LiveSync.isAdmin ? '(view) ' : ''}${status.text}${status.holesPlayed > 0 ? ' &middot; Thru ' + status.holesPlayed : ''}</span>
-                </button>`;
+            const viewLabel = !canEdit && !LiveSync.isAdmin ? '(view) ' : '';
+            const statusText = `${viewLabel}${status.text}${status.holesPlayed > 0 ? ' • Thru ' + status.holesPlayed : ''}`;
+            html += `<option value="${m.id}" ${isSelected ? 'selected' : ''}>${teamANames} vs ${teamBNames} - ${statusText}</option>`;
         });
+        html += '</select>';
         html += '</div>';
 
             if (S.ui.activeMatchId && S.matches[S.ui.activeMatchId]) {
