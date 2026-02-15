@@ -1608,7 +1608,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.6.0';
+    const APP_VERSION = '2.6.1';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -2679,11 +2679,18 @@
 
             let html = '<h2 class="section-title">Live Scoring</h2>';
 
-        // In scorer mode with a specific match, only show that match
-        // If scorerMatchId is null, show all matches (all-scorer role)
-        const allMatches = (LiveSync.isScorer && LiveSync.scorerMatchId !== null)
-            ? Object.values(S.matches).filter(m => m.id === LiveSync.scorerMatchId)
-            : Object.values(S.matches);
+            // Clear invalid activeMatchId if match no longer exists
+            if (S.ui.activeMatchId && !S.matches[S.ui.activeMatchId]) {
+                console.warn('Clearing invalid activeMatchId:', S.ui.activeMatchId);
+                S.ui.activeMatchId = null;
+                saveState();
+            }
+
+            // In scorer mode with a specific match, only show that match
+            // If scorerMatchId is null, show all matches (all-scorer role)
+            const allMatches = (LiveSync.isScorer && LiveSync.scorerMatchId !== null)
+                ? Object.values(S.matches).filter(m => m.id === LiveSync.scorerMatchId)
+                : Object.values(S.matches);
 
         // Initialize scoring session filter if not set
         if (!S.ui.scoringSessionFilter) {
