@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Smashters">
@@ -1604,6 +1607,10 @@
     // ─────────────────────────────────────────────────────────
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
+    // App version for cache busting and migration
+    const APP_VERSION = '2.3.0';
+    const VERSION_KEY = 'smashters-version';
+
     const DEFAULT_COURSE_HOLES = [
         { hole: 1,  par: 4, hcp: 15 },
         { hole: 2,  par: 5, hcp: 13 },
@@ -3733,8 +3740,8 @@
 
             <div style="margin-top:32px;padding:16px;text-align:center;border-top:1px solid #eee;">
                 <p style="font-size:0.75rem;color:#999;margin-bottom:4px;">Smashters App</p>
-                <p style="font-size:0.85rem;color:var(--masters-green);font-weight:bold;">v2.2 - Safe Sync</p>
-                <p style="font-size:0.7rem;color:#999;margin-top:4px;">Empty data protection + no push-back</p>
+                <p style="font-size:0.85rem;color:var(--masters-green);font-weight:bold;">v${APP_VERSION}</p>
+                <p style="font-size:0.7rem;color:#999;margin-top:4px;">Admin Protection • PDF Exports • Individual Stats • Schedule</p>
             </div>`;
     }
 
@@ -5061,6 +5068,17 @@
     // INIT
     // ─────────────────────────────────────────────────────────
     function init() {
+        // Version check - force reload if cached old version
+        const savedVersion = localStorage.getItem(VERSION_KEY);
+        if (savedVersion && savedVersion !== APP_VERSION) {
+            console.log(`Version mismatch: ${savedVersion} → ${APP_VERSION}. Reloading...`);
+            localStorage.setItem(VERSION_KEY, APP_VERSION);
+            window.location.reload(true); // Hard reload to bypass cache
+            return;
+        }
+        localStorage.setItem(VERSION_KEY, APP_VERSION);
+        console.log(`Smashters App v${APP_VERSION}`);
+
         document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
         document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
