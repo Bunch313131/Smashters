@@ -1608,7 +1608,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.6.1';
+    const APP_VERSION = '2.6.2';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -1688,6 +1688,10 @@
                 Object.values(matches).forEach(match => {
                     if (match.day && !match.sessionId) {
                         match.sessionId = `session-${match.day}`;
+                    }
+                    // Ensure holes property exists
+                    if (!match.holes) {
+                        match.holes = {};
                     }
                 });
 
@@ -1931,6 +1935,7 @@
     // Determine who wins a hole from the match scores
     // Returns 'A', 'B', 'halved', or null (incomplete)
     function getHoleWinner(match, holeNum) {
+        if (!match || !match.holes) return null; // Guard against undefined match or holes
         const holeScores = match.holes[holeNum];
         if (!holeScores) return null;
 
@@ -4637,6 +4642,14 @@
             }
             S.players = val.players || {};
             S.matches = val.matches || {};
+
+            // Ensure all matches have holes property initialized
+            Object.values(S.matches).forEach(match => {
+                if (!match.holes) {
+                    match.holes = {};
+                }
+            });
+
             // Store the timestamp of this sync
             S._lastSync = val.updatedAt || Date.now();
             saveState(true); // Save to localStorage, skip Firebase sync (we're already pulling FROM Firebase)
