@@ -506,13 +506,20 @@
         @media (max-width: 600px) {
             .lb-match-row { grid-template-columns: 1fr 36px 1fr; font-size: 0.8rem; }
             .lb-totals-row { grid-template-columns: 1fr 36px 1fr; }
-            .lb-cell-a, .lb-cell-b { padding: 8px 8px; }
+            .lb-cell-a, .lb-cell-b { padding: 8px 6px; }
             .lb-cell-thru { font-size: 0.65rem; }
             .lb-total-pts { font-size: 1.3rem; }
             .lb-total-team-name { font-size: 0.65rem; }
             .lb-breakdown-row { font-size: 0.65rem; padding: 8px 8px; }
             .lb-projected-row { font-size: 0.7rem; padding: 6px 8px; }
             .lb-projected-value { font-size: 0.95rem; }
+            /* Allow player names to wrap on mobile */
+            .lb-player-name {
+                white-space: normal;
+                overflow: visible;
+                font-size: 0.75rem;
+                line-height: 1.2;
+            }
             .lb-projected-label { font-size: 0.6rem; }
         }
 
