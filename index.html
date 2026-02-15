@@ -3067,6 +3067,17 @@
                         <strong>${teamBNames || 'TBD'}</strong>
                     </div>
                 </div>
+                ${canEdit ? `
+                    <div style="padding:12px;border-top:1px solid #ddd;background:#f9f9f9;">
+                        <label style="font-size:0.85rem;color:#666;margin-bottom:4px;display:block;">Tee Time</label>
+                        <input type="time" class="form-input" style="width:140px;padding:6px;" value="${match.teeTime || ''}"
+                            onchange="updateMatchTeeTime('${match.id}', this.value)">
+                    </div>
+                ` : match.teeTime ? `
+                    <div style="padding:12px;border-top:1px solid #ddd;background:#f9f9f9;font-size:0.9rem;">
+                        <span style="color:#666;">Tee Time:</span> <strong>${match.teeTime}</strong>
+                    </div>
+                ` : ''}
             </div>`;
     }
 
@@ -3476,26 +3487,11 @@
     function renderSchedule() {
         const el = document.getElementById('schedule-content');
         const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
-        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
 
-        let html = `<h2 class="section-title">Tournament Schedule</h2>`;
-
-        // Admin controls for dates and times
-        if (canEdit) {
-            html += `<div class="settings-section" style="margin-bottom:20px;">
-                <div class="settings-section-header">Schedule Settings</div>
-                <div class="settings-section-body">
-                    ${sessions.map(session => `
-                        <div style="margin-bottom:16px;">
-                            <label style="font-weight:bold;display:block;margin-bottom:4px;">${session.name} Date</label>
-                            <input type="date" class="form-input" id="session_date_${session.id}" value="${session.date || ''}"
-                                onchange="updateSessionDate('${session.id}', this.value)">
-                        </div>
-                    `).join('')}
-                    <p class="text-sm text-muted">Set tee times for individual matches below.</p>
-                </div>
-            </div>`;
-        }
+        let html = `<h2 class="section-title">Tournament Schedule</h2>
+            <p class="text-sm text-muted" style="margin-bottom:20px;text-align:center;">
+                Edit dates in Settings • Edit tee times in Matches tab
+            </p>`;
 
         // Display schedule by session
         sessions.forEach(session => {
@@ -3533,11 +3529,7 @@
 
                     html += `<tr style="border-bottom:1px solid #eee;">
                         <td style="padding:8px;vertical-align:top;">
-                            ${canEdit ?
-                                `<input type="time" class="form-input" style="width:120px;padding:6px;" value="${match.teeTime || ''}"
-                                    onchange="updateMatchTeeTime('${match.id}', this.value)">` :
-                                `<strong>${teeTimeDisplay}</strong>`
-                            }
+                            <strong>${teeTimeDisplay}</strong>
                         </td>
                         <td style="padding:8px;">
                             <div style="font-weight:600;">${teamANames}</div>
@@ -3695,6 +3687,7 @@
                                     <option value="singles" ${session.format === 'singles' ? 'selected' : ''}>Singles</option>
                                     <option value="other" ${session.format === 'other' ? 'selected' : ''}>Other</option>
                                 </select>
+                                <input class="form-input" type="date" id="session_date_${session.id}" value="${session.date || ''}" style="flex:1.5;" placeholder="Date">
                                 <button class="btn btn-sm" onclick="moveSessionUp('${session.id}')" style="padding:4px 8px;" title="Move up">▲</button>
                                 <button class="btn btn-sm" onclick="moveSessionDown('${session.id}')" style="padding:4px 8px;" title="Move down">▼</button>
                                 <button class="btn btn-sm" onclick="deleteSession('${session.id}')" style="background:var(--masters-red);color:#fff;padding:4px 8px;" title="Delete">×</button>
@@ -3762,8 +3755,10 @@
         S.config.sessions.forEach(session => {
             const nameInput = document.getElementById(`session_name_${session.id}`);
             const formatInput = document.getElementById(`session_format_${session.id}`);
+            const dateInput = document.getElementById(`session_date_${session.id}`);
             if (nameInput) session.name = nameInput.value.trim() || session.name;
             if (formatInput) session.format = formatInput.value;
+            if (dateInput) session.date = dateInput.value;
         });
 
         // Save course holes
