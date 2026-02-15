@@ -211,13 +211,19 @@
             .app-header { position: sticky; }
 
             .header-top {
-                /* Slight adjustment for hamburger button on right */
+                /* Use grid for true centering - logo and hamburger take equal space */
+                display: grid;
+                grid-template-columns: 48px 1fr 48px;
+                align-items: center;
+            }
+
+            .header-logo {
+                grid-column: 1;
             }
 
             .header-titles {
+                grid-column: 2;
                 text-align: center;
-                flex: 1;
-                margin-left: -36px; /* Compensate for hamburger button width */
             }
 
             .tab-nav {
@@ -2804,7 +2810,7 @@
         let teamARows = match.teamA.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
         let teamBRows = match.teamB.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
 
-        // Best ball indicators for four-ball
+        // Best ball values for four-ball (inline with team labels)
         let bestBallA = '', bestBallB = '';
         if (match.type === 'fourball') {
             const aNets = match.teamA.map(id => {
@@ -2818,11 +2824,11 @@
 
             if (aNets.length > 0) {
                 const best = aNets.reduce((a, b) => a.net <= b.net ? a : b);
-                bestBallA = `<div class="best-ball-indicator">Best ball: <strong>${best.net}</strong>${S.config.useHandicaps && best.net !== best.gross ? ` (${best.gross} gross)` : ''}</div>`;
+                bestBallA = `<span style="float:right;font-size:0.75rem;font-weight:normal;">Best: <strong>${best.net}</strong>${S.config.useHandicaps && best.net !== best.gross ? ` (${best.gross})` : ''}</span>`;
             }
             if (bNets.length > 0) {
                 const best = bNets.reduce((a, b) => a.net <= b.net ? a : b);
-                bestBallB = `<div class="best-ball-indicator">Best ball: <strong>${best.net}</strong>${S.config.useHandicaps && best.net !== best.gross ? ` (${best.gross} gross)` : ''}</div>`;
+                bestBallB = `<span style="float:right;font-size:0.75rem;font-weight:normal;">Best: <strong>${best.net}</strong>${S.config.useHandicaps && best.net !== best.gross ? ` (${best.gross})` : ''}</span>`;
             }
         }
 
@@ -2867,15 +2873,13 @@
                 </div>
 
                 <div class="scoring-team-section">
-                    <div class="scoring-team-label team-a">${S.config.teamA.name}</div>
+                    <div class="scoring-team-label team-a">${S.config.teamA.name}${bestBallA}</div>
                     ${teamARows}
-                    ${bestBallA}
                 </div>
 
                 <div class="scoring-team-section">
-                    <div class="scoring-team-label team-b">${S.config.teamB.name}</div>
+                    <div class="scoring-team-label team-b">${S.config.teamB.name}${bestBallB}</div>
                     ${teamBRows}
-                    ${bestBallB}
                 </div>
 
                 <div class="hole-result-banner ${bannerClass}">${bannerText}</div>
