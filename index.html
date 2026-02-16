@@ -1940,10 +1940,22 @@
     function getMatchPlayStrokes(match, playerId) {
         if (!match || !S.config.useHandicaps) return 0;
         const allPlayerIds = [...match.teamA, ...match.teamB];
-        const allHandicaps = allPlayerIds.map(id => getPlayerHcp(id) || 0);
+
+        // Four Ball: use 90% of course handicap, Singles: use 100%
+        const handicapPercent = match.type === 'fourball' ? 0.9 : 1.0;
+
+        // Get all adjusted handicaps
+        const allHandicaps = allPlayerIds.map(id => {
+            const courseHcp = getPlayerHcp(id) || 0;
+            return Math.round(courseHcp * handicapPercent);
+        });
+
+        // Spin off the low (from adjusted handicaps)
         const lowHandicap = Math.min(...allHandicaps);
         const playerHandicap = getPlayerHcp(playerId) || 0;
-        return Math.max(0, playerHandicap - lowHandicap);
+        const adjustedHcp = Math.round(playerHandicap * handicapPercent);
+
+        return Math.max(0, adjustedHcp - lowHandicap);
     }
 
     // Get team handicap for alternate shot (average of team members, rounded)
