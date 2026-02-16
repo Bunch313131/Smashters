@@ -1946,6 +1946,24 @@
         return Math.max(0, playerHandicap - lowHandicap);
     }
 
+    // Get team handicap for alternate shot (average of team members, rounded)
+    function getTeamHandicap(teamIds) {
+        const hcps = teamIds.map(id => getPlayerHcp(id) || 0);
+        return Math.round(hcps.reduce((a, b) => a + b, 0) / hcps.length);
+    }
+
+    // Get match play strokes for alternate shot teams (spinning off the low team handicap)
+    function getAlternateShotStrokes(match) {
+        if (!match || !S.config.useHandicaps) return { teamA: 0, teamB: 0 };
+        const teamAHcp = getTeamHandicap(match.teamA);
+        const teamBHcp = getTeamHandicap(match.teamB);
+        const lowTeamHcp = Math.min(teamAHcp, teamBHcp);
+        return {
+            teamA: Math.max(0, teamAHcp - lowTeamHcp),
+            teamB: Math.max(0, teamBHcp - lowTeamHcp)
+        };
+    }
+
     // Get the net score for a player on a hole (uses full course handicap)
     function getNetScore(playerId, holeNum, grossScore) {
         if (grossScore === null || grossScore === undefined) return null;
@@ -1976,9 +1994,17 @@
         const teamAIds = match.teamA;
         const teamBIds = match.teamB;
 
-        // Check if all players have scores entered
-        const allPlayers = [...teamAIds, ...teamBIds];
-        const allHaveScores = allPlayers.every(id => holeScores[id] !== undefined && holeScores[id] !== null);
+        // Check if all required scores are entered
+        let allHaveScores;
+        if (match.type === 'foursomes') {
+            // Foursomes: only need score from first player of each team
+            allHaveScores = (holeScores[teamAIds[0]] !== undefined && holeScores[teamAIds[0]] !== null) &&
+                           (holeScores[teamBIds[0]] !== undefined && holeScores[teamBIds[0]] !== null);
+        } else {
+            // Four Ball or Singles: need scores from all players
+            const allPlayers = [...teamAIds, ...teamBIds];
+            allHaveScores = allPlayers.every(id => holeScores[id] !== undefined && holeScores[id] !== null);
+        }
         if (!allHaveScores) return null;
 
         if (match.type === 'fourball') {
@@ -1990,6 +2016,25 @@
             const bestB = Math.min(...teamBNets);
             if (bestA < bestB) return 'A';
             if (bestB < bestA) return 'B';
+            return 'halved';
+        } else if (match.type === 'foursomes') {
+            // Foursomes (Alternate Shot): one score per team, use team handicap strokes
+            const teamStrokes = getAlternateShotStrokes(match);
+            const holeInfo = getHoleInfo(holeNum);
+
+            // Score is stored under first player of each team
+            const grossA = holeScores[teamAIds[0]];
+            const grossB = holeScores[teamBIds[0]];
+            if (grossA === null || grossA === undefined || grossB === null || grossB === undefined) return null;
+
+            // Apply team strokes
+            const strokesA = getStrokesOnHole(teamStrokes.teamA, holeInfo.hcp);
+            const strokesB = getStrokesOnHole(teamStrokes.teamB, holeInfo.hcp);
+            const netA = S.config.useHandicaps ? grossA - strokesA : grossA;
+            const netB = S.config.useHandicaps ? grossB - strokesB : grossB;
+
+            if (netA < netB) return 'A';
+            if (netB < netA) return 'B';
             return 'halved';
         } else {
             // Singles: direct comparison (using match play strokes)
@@ -2393,6 +2438,59 @@
                 <div class="lb-cell-b ${cellBClass}">
                     <span class="lb-player-name">${teamBNames}</span>
                     ${scoreB ? `<span class="lb-match-score">${scoreB}</span>` : ''}
+                </div>
+            </div>`;
+    }
+
+    function renderFoursomesScoreRow(match, teamIds, holeNum, holeScores, holeInfo, teamLetter) {
+        // Get player names
+        const names = teamIds.map(id => getPlayer(id)?.name || 'Unknown').join(' / ');
+
+        // Get team handicap and strokes
+        const teamHcp = getTeamHandicap(teamIds);
+        const teamStrokes = getAlternateShotStrokes(match);
+        const matchPlayHcp = teamLetter === 'A' ? teamStrokes.teamA : teamStrokes.teamB;
+        const strokesReceived = S.config.useHandicaps ? getStrokesOnHole(matchPlayHcp, holeInfo.hcp) : 0;
+
+        // Score stored under first player
+        const scorePlayerId = teamIds[0];
+        const grossScore = holeScores[scorePlayerId];
+        const hasScore = grossScore !== undefined && grossScore !== null;
+        const par = holeInfo.par;
+
+        // Score display class
+        let scoreClass = 'no-score';
+        let vsParText = '';
+        if (hasScore) {
+            const diff = grossScore - par;
+            if (diff <= -2) { scoreClass = 'eagle'; vsParText = diff; }
+            else if (diff === -1) { scoreClass = 'birdie'; vsParText = '-1'; }
+            else if (diff === 0) { scoreClass = ''; vsParText = 'E'; }
+            else if (diff === 1) { scoreClass = 'bogey'; vsParText = '+1'; }
+            else { scoreClass = 'double-bogey'; vsParText = '+' + diff; }
+        }
+
+        const displayScore = hasScore ? grossScore : '-';
+        const strokeDots = strokesReceived > 0 ? ' <span style="color:var(--masters-red);font-size:0.7rem;">' + '\u25CF'.repeat(strokesReceived) + '</span>' : '';
+
+        // Show team handicap and match play handicap
+        const hcpDisplay = matchPlayHcp !== teamHcp && matchPlayHcp > 0
+            ? `Team HCP ${teamHcp} (${matchPlayHcp})`
+            : `Team HCP ${teamHcp}`;
+
+        return `
+            <div class="score-entry-row">
+                <div class="score-entry-name">
+                    ${names}${strokeDots}
+                    <span class="hcp-badge">${hcpDisplay}</span>
+                </div>
+                <div class="score-entry-controls">
+                    <button class="score-adj-btn" onclick="adjustScore('${scorePlayerId}', ${holeNum}, -1)">&minus;</button>
+                    <div class="score-value-display ${scoreClass}">
+                        ${displayScore}
+                        ${vsParText ? `<span class="score-vs-par">${vsParText}</span>` : ''}
+                    </div>
+                    <button class="score-adj-btn" onclick="adjustScore('${scorePlayerId}', ${holeNum}, 1)">+</button>
                 </div>
             </div>`;
     }
@@ -2806,9 +2904,17 @@
         if (status.leader === 'A') statusText = `${S.config.teamA.name} ${status.text}`;
         else if (status.leader === 'B') statusText = `${S.config.teamB.name} ${status.text}`;
 
-        // Build player score entry rows for Team A
-        let teamARows = match.teamA.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
-        let teamBRows = match.teamB.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
+        // Build player score entry rows
+        let teamARows, teamBRows;
+        if (match.type === 'foursomes') {
+            // Foursomes: one score per team (stored under first player)
+            teamARows = renderFoursomesScoreRow(match, match.teamA, hole, holeScores, holeInfo, 'A');
+            teamBRows = renderFoursomesScoreRow(match, match.teamB, hole, holeScores, holeInfo, 'B');
+        } else {
+            // Four Ball or Singles: individual score rows
+            teamARows = match.teamA.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
+            teamBRows = match.teamB.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
+        }
 
         // Best ball values for four-ball (inline with team labels)
         let bestBallA = '', bestBallB = '';
@@ -2860,7 +2966,7 @@
         return `
             <div class="scoring-interface">
                 <div class="scoring-header">
-                    <div class="match-label">${match.type === 'fourball' ? 'Four Ball' : 'Singles'} &middot; Day ${match.day}</div>
+                    <div class="match-label">${match.type === 'fourball' ? 'Four Ball' : match.type === 'foursomes' ? 'Foursomes' : 'Singles'} &middot; Day ${match.day}</div>
                     <div class="match-status-lg">${statusText}</div>
                 </div>
                 <div class="scoring-hole-nav">
@@ -3185,14 +3291,25 @@
         const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
 
         // Build player names with strokes
-        const teamANamesWithStrokes = match.teamA.map(id => {
-            const strokes = getMatchPlayStrokes(match, id);
-            return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
-        }).join(' & ');
-        const teamBNamesWithStrokes = match.teamB.map(id => {
-            const strokes = getMatchPlayStrokes(match, id);
-            return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
-        }).join(' & ');
+        let teamANamesWithStrokes, teamBNamesWithStrokes;
+        if (match.type === 'foursomes') {
+            // Foursomes: show team strokes, not individual
+            const teamStrokes = getAlternateShotStrokes(match);
+            const teamANames = match.teamA.map(id => getPlayerName(id)).join(' / ');
+            const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' / ');
+            teamANamesWithStrokes = `${teamANames}${teamStrokes.teamA > 0 ? ` (${teamStrokes.teamA})` : ''}`;
+            teamBNamesWithStrokes = `${teamBNames}${teamStrokes.teamB > 0 ? ` (${teamStrokes.teamB})` : ''}`;
+        } else {
+            // Four Ball or Singles: show individual strokes
+            teamANamesWithStrokes = match.teamA.map(id => {
+                const strokes = getMatchPlayStrokes(match, id);
+                return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+            }).join(' & ');
+            teamBNamesWithStrokes = match.teamB.map(id => {
+                const strokes = getMatchPlayStrokes(match, id);
+                return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+            }).join(' & ');
+        }
 
         const label = {
             fourball: 'Four Ball',
