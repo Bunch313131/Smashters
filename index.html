@@ -5190,25 +5190,34 @@
 
                     if (this._stopped) return;
 
-                    // Swap to fire sound and play
+                    // Swap to fire sound — wait for it to load before playing
                     this.el.src = 'assets/audio/soundreality-fire-sound-334130.mp3';
-                    this.el.currentTime = 0;
                     this.el.volume = 1;
-                    this.el.play().catch(() => {});
+                    this.el.currentTime = 0;
 
-                    // Fade fire out over last 1.5s of burn
-                    this._fireTimeoutId = setTimeout(() => {
-                        const fireFade = setInterval(() => {
-                            if (this.el.volume > 0.04) {
-                                this.el.volume -= 0.04;
-                            } else {
-                                this.el.volume = 0;
-                                this.el.pause();
-                                clearInterval(fireFade);
-                            }
-                        }, 60);
-                        this._fadeId = fireFade;
-                    }, 2000);
+                    const onCanPlay = () => {
+                        this.el.removeEventListener('canplay', onCanPlay);
+                        if (this._stopped) return;
+                        this.el.volume = 1;
+                        this.el.play().catch(() => {});
+
+                        // Fade fire out over last 1.5s of burn
+                        this._fireTimeoutId = setTimeout(() => {
+                            const fireFade = setInterval(() => {
+                                if (this.el.volume > 0.04) {
+                                    this.el.volume -= 0.04;
+                                } else {
+                                    this.el.volume = 0;
+                                    this.el.pause();
+                                    clearInterval(fireFade);
+                                }
+                            }, 60);
+                            this._fadeId = fireFade;
+                        }, 2000);
+                    };
+
+                    this.el.addEventListener('canplay', onCanPlay);
+                    this.el.load();
                 }
             }, 50);
         },
@@ -5222,20 +5231,18 @@
         },
     };
 
-    // Stop audio when app is minimized or tab is hidden
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            SplashAudio.stop();
-        }
-    });
 
     function showSplash() {
         const phase1 = document.getElementById('splashPhase1');
         const phase2 = document.getElementById('splashPhase2');
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
         document.getElementById('splashYear').textContent = S.config.year;
 
         // Mark as shown for this session
         sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
+
+        // Set status bar to white for phase 1
+        if (themeMeta) themeMeta.content = '#ffffff';
 
         // Both phases visible from start; phase 1 covers phase 2
         phase1.classList.remove('hidden', 'fade-out');
@@ -5246,6 +5253,9 @@
 
         // After 3.75s, fade out phase 1 to reveal phase 2
         setTimeout(() => {
+            // Set status bar to green for phase 2
+            if (themeMeta) themeMeta.content = '#00432e';
+
             phase2.classList.add('active');
             phase1.classList.add('fade-out');
 
