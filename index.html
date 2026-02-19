@@ -2024,7 +2024,7 @@
     }
 
     function requireAdmin(operation) {
-        if (LiveSync.isAdmin || S.ui.settingsUnlocked) {
+        if (S.ui.settingsUnlocked) {
             return true;
         }
         const code = prompt(`Admin access required to ${operation}.\nEnter admin code:`);
@@ -3646,7 +3646,7 @@
         </div>`;
 
         // Loop through sessions dynamically
-        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
+        const canEdit = S.ui.settingsUnlocked;
         const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
         sessions.forEach((session, index) => {
             const matches = getMatchesBySession(session.id);
@@ -3677,7 +3677,7 @@
     }
 
     function renderMatchCard(match) {
-        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
+        const canEdit = S.ui.settingsUnlocked;
 
         // Build player names with strokes
         let teamANamesWithStrokes, teamBNamesWithStrokes;
@@ -3823,7 +3823,7 @@
         const el = document.getElementById('players-content');
         const allPlayers = Object.values(S.players);
 
-        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
+        const canEdit = S.ui.settingsUnlocked;
         let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <h2 class="section-title" style="margin-bottom:0;">Players</h2>
             <div style="display:flex;gap:8px;">
@@ -3881,7 +3881,7 @@
     function renderPlayerCard(player) {
         const initials = player.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
         const teamClass = player.team === 'A' ? 'team-a' : player.team === 'B' ? 'team-b' : 'no-team';
-        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
+        const canEdit = S.ui.settingsUnlocked;
         const handicapText = player.handicap ? `HCP: ${player.handicap}` : 'No handicap';
 
         return `
@@ -3999,7 +3999,7 @@
     }
 
     function renderDraftSetup() {
-        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
+        const canEdit = S.ui.settingsUnlocked;
         const allPlayers = Object.values(S.players);
         return `
             <div class="settings-section">
@@ -4029,7 +4029,7 @@
     }
 
     function renderDraftActive() {
-        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
+        const canEdit = S.ui.settingsUnlocked;
         const drafted = new Set(S.draft.picks.map(p => p.playerId));
         if (S.draft.captainA) drafted.add(S.draft.captainA);
         if (S.draft.captainB) drafted.add(S.draft.captainB);
@@ -4080,7 +4080,7 @@
     }
 
     function renderDraftComplete() {
-        const canEdit = LiveSync.isAdmin || S.ui.settingsUnlocked;
+        const canEdit = S.ui.settingsUnlocked;
         const teamA = getTeamPlayers('A');
         const teamB = getTeamPlayers('B');
         return `
