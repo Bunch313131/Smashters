@@ -2591,9 +2591,7 @@
         if (allMatches.length === 0) {
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
         } else {
-            html += `<div style="text-align:center;margin:24px 0;">
-                <button class="btn btn-primary" onclick="openExportMenu()">📤 Share Results</button>
-            </div>`;
+            // Share Results button removed for now
         }
 
         el.innerHTML = html;
@@ -5477,7 +5475,6 @@
         // Force final state with !important (overrides animation fill without removing it)
         phase2El.querySelectorAll('.splash-logo, .splash-title, .splash-year').forEach(el => {
             el.style.setProperty('opacity', '1', 'important');
-            el.style.setProperty('transform', 'translateY(0)', 'important');
         });
 
         // Build white logo and pre-load into browser cache (html2canvas ignores CSS filter)
@@ -6146,7 +6143,7 @@
             hideSplash();
         }
 
-        switchTab(S.ui.activeTab || 'leaderboard');
+        switchTab(S.ui.activeTab || 'schedule');
 
         // Check if we should show Add to Home Screen banner
         // (skip if gate is already showing)
