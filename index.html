@@ -1207,6 +1207,137 @@
         }
 
         /* ═══════════════════════════════════════════════════════
+           MOBILE GATE & OPT-IN PAGES
+           ═══════════════════════════════════════════════════════ */
+        .gate-overlay, .optin-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 30px;
+        }
+        .gate-overlay.active, .optin-overlay.active {
+            display: flex;
+        }
+
+        /* Gate page: "Add to Home Screen" */
+        .gate-overlay {
+            background: linear-gradient(160deg, var(--masters-dark) 0%, var(--masters-green) 40%, var(--masters-dark) 100%);
+            color: var(--masters-white);
+        }
+        .gate-logo {
+            width: 50%;
+            max-width: 220px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+        .gate-title {
+            font-family: 'Azalea', 'Georgia', serif;
+            color: var(--masters-yellow);
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .gate-subtitle {
+            font-size: 0.95rem;
+            color: var(--masters-white);
+            opacity: 0.85;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        .gate-instructions {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px 24px;
+            width: 100%;
+            max-width: 340px;
+            text-align: left;
+        }
+        .gate-instructions h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--masters-yellow);
+            margin-bottom: 14px;
+        }
+        .gate-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .gate-step-num {
+            background: var(--masters-yellow);
+            color: var(--masters-dark);
+            min-width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        /* Opt-in page: "Are you sure?" */
+        .optin-overlay {
+            background: linear-gradient(160deg, var(--masters-dark) 0%, #1a1a1a 50%, var(--masters-dark) 100%);
+            color: var(--masters-white);
+        }
+        .optin-logo {
+            width: 45%;
+            max-width: 200px;
+            height: auto;
+            filter: brightness(0) invert(1);
+            margin-bottom: 24px;
+            opacity: 0;
+            animation: splashFadeIn 1.2s ease-out 0.3s forwards;
+        }
+        .optin-title {
+            font-family: 'Azalea', 'Georgia', serif;
+            color: var(--masters-yellow);
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: splashFadeIn 1s ease-out 0.8s forwards;
+        }
+        .optin-text {
+            font-size: 1rem;
+            color: var(--masters-white);
+            opacity: 0;
+            line-height: 1.6;
+            margin-bottom: 36px;
+            max-width: 320px;
+            animation: splashFadeIn 1s ease-out 1.2s forwards;
+        }
+        .optin-btn {
+            background: var(--masters-yellow);
+            color: var(--masters-dark);
+            border: none;
+            padding: 14px 48px;
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0;
+            animation: splashFadeIn 1s ease-out 1.8s forwards;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .optin-btn:active {
+            transform: scale(0.96);
+            background: var(--masters-gold);
+        }
+
+        /* ═══════════════════════════════════════════════════════
            SPLASH SCREEN
            ═══════════════════════════════════════════════════════ */
         .splash-overlay {
@@ -1619,9 +1750,28 @@
 </head>
 <body>
 
-    <!-- Splash audio elements -->
-    <audio id="splashThemeAudio" preload="auto" src="assets/audio/masters_theme_1.mp3"></audio>
-    <audio id="splashFireAudio" preload="metadata" src="assets/audio/soundreality-fire-sound-334130.mp3"></audio>
+    <!-- Single combined splash audio -->
+    <audio id="splashAudio" preload="auto" src="assets/audio/splash_audio.mp3"></audio>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MOBILE GATE: Add to Home Screen
+         ═══════════════════════════════════════════════════════ -->
+    <div class="gate-overlay" id="mobileGate">
+        <img src="assets/images/smashters-logo-green.png" alt="The Smashters" class="gate-logo">
+        <div class="gate-title">The Smashters</div>
+        <div class="gate-subtitle">For the best experience, add this app to your home screen.</div>
+        <div class="gate-instructions" id="gateInstructions"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         OPT-IN PAGE: "Are you ready?"
+         ═══════════════════════════════════════════════════════ -->
+    <div class="optin-overlay" id="optInPage">
+        <img src="assets/images/smashters-logo-green.png" alt="" class="optin-logo">
+        <div class="optin-title">The Smashters</div>
+        <div class="optin-text">This is going to be a wild ride. Are you sure you want to enter?</div>
+        <button class="optin-btn" id="optInBtn">Let's Go</button>
+    </div>
 
     <!-- ═══════════════════════════════════════════════════════
          SPLASH SCREEN - Phase 1: DFGC Presents
@@ -5143,144 +5293,138 @@
     }
 
     // ─────────────────────────────────────────────────────────
-    // SPLASH AUDIO
+    // SPLASH AUDIO (single combined file)
     // ─────────────────────────────────────────────────────────
-
-    // Detect if launched from home screen (standalone PWA) vs in-browser
-    function isStandalone() {
-        return window.navigator.standalone === true
-            || window.matchMedia('(display-mode: standalone)').matches;
-    }
-
     const SplashAudio = {
-        theme: null,        // <audio> for masters theme
-        fire: null,         // <audio> for fire sound
+        el: null,
         _stopped: false,
-        _themeFadeRAF: null,
-        _fireFadeRAF: null,
+        _fadeRAF: null,
 
-        playTheme() {
-            this.theme = document.getElementById('splashThemeAudio');
-            this.fire = document.getElementById('splashFireAudio');
-            if (!this.theme) return;
+        play() {
+            this.el = document.getElementById('splashAudio');
+            if (!this.el) return;
             this._stopped = false;
-            this.theme.currentTime = 0;
-            this.theme.volume = 1;
-
-            const playPromise = this.theme.play();
-            if (playPromise) {
-                playPromise.catch(() => {
-                    // Autoplay blocked — wait for tap
-                    const unlockAudio = () => {
-                        if (!this._stopped) this.theme.play().catch(() => {});
-                        document.removeEventListener('touchstart', unlockAudio);
-                        document.removeEventListener('click', unlockAudio);
-                    };
-                    document.addEventListener('touchstart', unlockAudio, { once: true });
-                    document.addEventListener('click', unlockAudio, { once: true });
-                });
-            }
+            this.el.currentTime = 0;
+            this.el.volume = 1;
+            this.el.play().catch(() => {});
         },
 
-        // Crossfade: theme fades down (ease-out) while fire fades up
-        crossfadeToFire() {
-            if (this._stopped) return;
-
-            // Start fire at volume 0 and ramp up
-            if (this.fire) {
-                this.fire.currentTime = 0;
-                this.fire.volume = 0;
-                this.fire.play().catch(() => {});
-            }
-
-            const crossfadeDuration = 2500;
-            const fadeStart = performance.now();
-
-            const crossfade = (now) => {
-                if (this._stopped) return;
-                const elapsed = now - fadeStart;
-                const t = Math.min(elapsed / crossfadeDuration, 1);
-
-                // Ease-out curve: theme drops slowly at first, then faster
-                const eased = t * (2 - t);
-
-                // Theme fades down with ease-out
-                if (this.theme) this.theme.volume = Math.max(0, 1 - eased);
-                // Fire fades up linearly
-                if (this.fire) this.fire.volume = Math.min(1, t);
-
-                if (t < 1) {
-                    this._themeFadeRAF = requestAnimationFrame(crossfade);
-                } else {
-                    if (this.theme) { this.theme.pause(); this.theme.volume = 0; }
-                }
-            };
-            this._themeFadeRAF = requestAnimationFrame(crossfade);
-        },
-
-        // Fade fire out (called when burn effect nears completion)
-        fadeOutFire(duration) {
-            duration = duration || 1500;
-            if (!this.fire || this._stopped) return;
+        fadeOut(duration) {
+            duration = duration || 2000;
+            if (!this.el || this._stopped) return;
 
             const fadeStart = performance.now();
-            const startVol = this.fire.volume;
+            const startVol = this.el.volume;
 
-            const fadeOut = (now) => {
+            const fade = (now) => {
                 if (this._stopped) return;
-                const elapsed = now - fadeStart;
-                const progress = Math.min(elapsed / duration, 1);
-                if (this.fire) this.fire.volume = Math.max(0, startVol * (1 - progress));
+                const progress = Math.min((now - fadeStart) / duration, 1);
+                this.el.volume = Math.max(0, startVol * (1 - progress));
                 if (progress < 1) {
-                    this._fireFadeRAF = requestAnimationFrame(fadeOut);
+                    this._fadeRAF = requestAnimationFrame(fade);
                 } else {
-                    this._destroyElement(this.fire);
+                    this._destroy();
                 }
             };
-            this._fireFadeRAF = requestAnimationFrame(fadeOut);
+            this._fadeRAF = requestAnimationFrame(fade);
         },
 
-        // Fully destroy an audio element so iOS drops it from media session
-        _destroyElement(el) {
-            if (!el) return;
-            el.pause();
-            el.removeAttribute('src');
-            el.load();
+        _destroy() {
+            if (this.el) {
+                this.el.pause();
+                this.el.removeAttribute('src');
+                this.el.load();
+            }
         },
 
-        // Hard stop everything + remove from iOS media session / lock screen
         stop() {
             this._stopped = true;
-            if (this._themeFadeRAF) { cancelAnimationFrame(this._themeFadeRAF); this._themeFadeRAF = null; }
-            if (this._fireFadeRAF) { cancelAnimationFrame(this._fireFadeRAF); this._fireFadeRAF = null; }
-            this._destroyElement(this.theme);
-            this._destroyElement(this.fire);
+            if (this._fadeRAF) { cancelAnimationFrame(this._fadeRAF); this._fadeRAF = null; }
+            this._destroy();
         },
     };
 
+    // ─────────────────────────────────────────────────────────
+    // MOBILE GATE & OPT-IN LOGIC
+    // ─────────────────────────────────────────────────────────
+    function showMobileGate() {
+        const gate = document.getElementById('mobileGate');
+        const instructions = document.getElementById('gateInstructions');
 
+        if (isIOS()) {
+            instructions.innerHTML = `
+                <h3>How to Install</h3>
+                <div class="gate-step">
+                    <span class="gate-step-num">1</span>
+                    <span>Tap the <strong>Share</strong> button at the bottom of Safari</span>
+                </div>
+                <div class="gate-step">
+                    <span class="gate-step-num">2</span>
+                    <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
+                </div>
+                <div class="gate-step">
+                    <span class="gate-step-num">3</span>
+                    <span>Tap <strong>"Add"</strong> in the top right</span>
+                </div>
+                <div class="gate-step">
+                    <span class="gate-step-num">4</span>
+                    <span>Open the app from your home screen</span>
+                </div>`;
+        } else {
+            instructions.innerHTML = `
+                <h3>How to Install</h3>
+                <div class="gate-step">
+                    <span class="gate-step-num">1</span>
+                    <span>Tap the <strong>menu (&#8942;)</strong> in your browser</span>
+                </div>
+                <div class="gate-step">
+                    <span class="gate-step-num">2</span>
+                    <span>Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong></span>
+                </div>
+                <div class="gate-step">
+                    <span class="gate-step-num">3</span>
+                    <span>Open the app from your home screen</span>
+                </div>`;
+        }
+
+        gate.classList.add('active');
+    }
+
+    function showOptIn() {
+        document.getElementById('optInPage').classList.add('active');
+    }
+
+    function hideOptIn() {
+        const optIn = document.getElementById('optInPage');
+        optIn.classList.remove('active');
+    }
+
+    function isMobile() {
+        return isIOS() || isAndroid() ||
+            /mobile|phone/i.test(navigator.userAgent);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // SPLASH FLOW
+    // ─────────────────────────────────────────────────────────
     function showSplash() {
         const phase1 = document.getElementById('splashPhase1');
         const phase2 = document.getElementById('splashPhase2');
         const themeMeta = document.querySelector('meta[name="theme-color"]');
         document.getElementById('splashYear').textContent = S.config.year;
 
-        // Mark as shown for this session
         sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
 
-        // Set status bar to white for phase 1
         if (themeMeta) themeMeta.content = '#ffffff';
 
-        // Both phases visible from start; phase 1 covers phase 2
         phase1.classList.remove('hidden', 'fade-out');
         phase2.classList.remove('hidden', 'fade-out');
 
-        // Start masters theme immediately with phase 1
-        SplashAudio.playTheme();
+        // Audio starts immediately — already unlocked by opt-in tap
+        SplashAudio.play();
 
         // After 3.75s, fade out phase 1 to reveal phase 2
         setTimeout(() => {
-            // Set status bar to green for phase 2
             if (themeMeta) themeMeta.content = '#00432e';
 
             phase2.classList.add('active');
@@ -5290,12 +5434,7 @@
                 phase1.classList.add('hidden');
             }, 1000);
 
-            // Start crossfade early so theme melts away gradually before burn
-            setTimeout(() => {
-                SplashAudio.crossfadeToFire();
-            }, 2500);
-
-            // Burn starts 1.5s after crossfade begins
+            // Burn starts at 4s into phase 2 (audio crossfade is baked into file)
             setTimeout(() => {
                 startBurnEffect(phase2);
             }, 4000);
@@ -5314,6 +5453,13 @@
         const H = window.innerHeight;
         canvas.width = W;
         canvas.height = H;
+
+        // Force animated elements to their final state so html2canvas captures them
+        phase2El.querySelectorAll('.splash-logo, .splash-title, .splash-year').forEach(el => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+            el.style.animation = 'none';
+        });
 
         // Capture the splash screen as a snapshot image
         let snapshot;
@@ -5363,7 +5509,6 @@
         const BURN_DURATION = 3200;
         const embers = [];
         const flames = [];
-        let burnFireFading = false;
         const startTime = performance.now();
 
         function animate(now) {
@@ -5538,12 +5683,6 @@
                 ctx.fill();
             }
             ctx.restore();
-
-            // Start fading fire audio as burn nears completion
-            if (progress >= 0.85 && !burnFireFading) {
-                burnFireFading = true;
-                SplashAudio.fadeOutFire(2000);
-            }
 
             if (progress < 1 || embers.length > 0 || flames.length > 0) {
                 requestAnimationFrame(animate);
@@ -5928,8 +6067,19 @@
         // Auto-start Firebase sync (always live)
         LiveSync.autoStart();
 
-        if (shouldShowSplash()) {
-            showSplash();
+        // ── Launch flow: gate → opt-in → splash ──
+        if (isMobile() && !isStandalone()) {
+            // Mobile browser: show "Add to Home Screen" gate
+            hideSplash();
+            showMobileGate();
+        } else if (shouldShowSplash()) {
+            // Standalone PWA or desktop: show opt-in, then splash on tap
+            hideSplash();
+            showOptIn();
+            document.getElementById('optInBtn').addEventListener('click', () => {
+                hideOptIn();
+                showSplash();
+            }, { once: true });
         } else {
             hideSplash();
         }
@@ -5937,7 +6087,10 @@
         switchTab(S.ui.activeTab || 'leaderboard');
 
         // Check if we should show Add to Home Screen banner
-        checkInstallBanner();
+        // (skip if gate is already showing)
+        if (!(isMobile() && !isStandalone())) {
+            checkInstallBanner();
+        }
     }
 
     document.getElementById('modalOverlay').addEventListener('click', e => {
