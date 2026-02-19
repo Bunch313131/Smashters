@@ -5324,6 +5324,26 @@
                 .catch(() => {});
         },
 
+        fadeOut(duration) {
+            duration = duration || 2000;
+            if (!this._gain || this._stopped) return;
+
+            const fadeStart = performance.now();
+            const startVol = this._gain.gain.value;
+
+            const fade = (now) => {
+                if (this._stopped) return;
+                const progress = Math.min((now - fadeStart) / duration, 1);
+                if (this._gain) this._gain.gain.value = Math.max(0, startVol * (1 - progress));
+                if (progress < 1) {
+                    this._fadeRAF = requestAnimationFrame(fade);
+                } else {
+                    this.stop();
+                }
+            };
+            this._fadeRAF = requestAnimationFrame(fade);
+        },
+
         stop() {
             this._stopped = true;
             if (this._fadeRAF) { cancelAnimationFrame(this._fadeRAF); this._fadeRAF = null; }
@@ -5453,6 +5473,23 @@
             el.style.animation = 'none';
         });
 
+        // html2canvas doesn't support CSS filter, so pre-render logo as white
+        const logoImg = phase2El.querySelector('.splash-logo');
+        let originalSrc = null;
+        if (logoImg) {
+            try {
+                const offCanvas = document.createElement('canvas');
+                offCanvas.width = logoImg.naturalWidth;
+                offCanvas.height = logoImg.naturalHeight;
+                const offCtx = offCanvas.getContext('2d');
+                offCtx.filter = 'brightness(0) invert(1)';
+                offCtx.drawImage(logoImg, 0, 0);
+                originalSrc = logoImg.src;
+                logoImg.src = offCanvas.toDataURL();
+                logoImg.style.filter = 'none';
+            } catch(e) {}
+        }
+
         // Capture the splash screen as a snapshot image
         let snapshot;
         try {
@@ -5461,9 +5498,11 @@
                 backgroundColor: null, logging: false
             });
         } catch(e) {
+            if (originalSrc) { logoImg.src = originalSrc; logoImg.style.filter = ''; }
             phase2El.classList.add('hidden');
             return;
         }
+        if (originalSrc) { logoImg.src = originalSrc; logoImg.style.filter = ''; }
 
         // Hide the real splash — canvas takes over
         phase2El.style.visibility = 'hidden';
@@ -5501,6 +5540,7 @@
         const BURN_DURATION = 3200;
         const embers = [];
         const flames = [];
+        let audioFading = false;
         const startTime = performance.now();
 
         function animate(now) {
@@ -5675,6 +5715,12 @@
                 ctx.fill();
             }
             ctx.restore();
+
+            // Start fading audio as burn nears completion
+            if (progress >= 0.8 && !audioFading) {
+                audioFading = true;
+                SplashAudio.fadeOut(2000);
+            }
 
             if (progress < 1 || embers.length > 0 || flames.length > 0) {
                 requestAnimationFrame(animate);
