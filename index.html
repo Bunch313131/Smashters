@@ -3830,7 +3830,7 @@
                 ${allPlayers.length > 0 ? '<button class="btn btn-outline btn-sm" onclick="ExportManager.generateTeamRoster(\'pdf\')">📤 Export Roster</button>' : ''}
                 ${canEdit ?
                     '<button class="btn btn-primary btn-sm" onclick="openPlayerModal()">+ Add Player</button>' :
-                    '<button class="btn btn-outline btn-sm" onclick="if(requireAdmin(\'add players\')) renderPlayers()">🔒 Add Player (Admin)</button>'
+                    '<button class="btn btn-outline btn-sm" onclick="unlockPlayers()">🔒 Unlock Editing</button>'
                 }
             </div>
         </div>`;
@@ -3864,6 +3864,18 @@
         }
 
         el.innerHTML = html;
+    }
+
+    function unlockPlayers() {
+        const password = prompt('Enter settings password:');
+        if (password !== '1313') {
+            showToast('Incorrect password');
+            return;
+        }
+        S.ui.settingsUnlocked = true;
+        saveState();
+        renderPlayers();
+        showToast('Editing unlocked');
     }
 
     function renderPlayerCard(player) {
