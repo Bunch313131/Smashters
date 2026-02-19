@@ -5520,16 +5520,16 @@
 
             const burnPath = buildBurnPath(baseY, progress);
 
-            // === 1. Clip the real DOM — show only below the burn edge ===
-            // Build CSS clip-path polygon: trace burn edge left→right, then bottom-right, bottom-left
-            let clipPoints = '';
-            const step = 8; // Use every other point for performance
-            for (let i = 0; i < burnPath.length; i += step / 4) {
+            // === 1. Clip the real DOM — show only ABOVE the burn edge ===
+            // polygon: top-left, top-right, trace burn edge right→left, close
+            let clipPoints = `0px 0px,${W}px 0px,`;
+            // Trace burn edge from right to left
+            for (let i = burnPath.length - 1; i >= 0; i -= 2) {
                 const p = burnPath[i];
-                clipPoints += `${p.x}px ${Math.max(0, p.y)}px,`;
+                clipPoints += `${p.x}px ${p.y}px,`;
             }
-            // Close: bottom-right corner, bottom-left corner
-            clipPoints += `${W}px ${H}px,0px ${H}px`;
+            // Remove trailing comma
+            clipPoints = clipPoints.slice(0, -1);
             phase2El.style.clipPath = `polygon(${clipPoints})`;
 
             // === 2. Draw charring glow along burn edge ===
