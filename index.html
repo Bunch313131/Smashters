@@ -2828,18 +2828,12 @@
                 onclick="setIndividualView('points')">Point Leaders</button>
             <button class="btn ${selectedView === 'daily' ? 'btn-primary' : 'btn-outline'} btn-sm"
                 onclick="setIndividualView('daily')">Daily Scores</button>
-            <button class="btn ${selectedView === 'birdies' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('birdies')">Birdies</button>
-            <button class="btn ${selectedView === 'eagles' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('eagles')">Eagles</button>
-            <button class="btn ${selectedView === 'average' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('average')">Avg</button>
             <button class="btn ${selectedView === 'stats' ? 'btn-primary' : 'btn-outline'} btn-sm"
                 onclick="setIndividualView('stats')">Stats</button>
         </div>`;
 
-        // Gross/Net and Session filter — only for views that use them
-        if (selectedView !== 'points' && selectedView !== 'daily') {
+        // Gross/Net and Session filter — only for stats view
+        if (selectedView === 'stats') {
             html += `<div style="display:flex;gap:8px;margin-bottom:16px;">
                 <button class="btn ${selectedType === 'gross' ? 'btn-gold' : 'btn-outline'} btn-sm"
                     onclick="setIndividualType('gross')">Gross</button>
@@ -2862,12 +2856,6 @@
             html += renderPointLeaders();
         } else if (selectedView === 'daily') {
             html += renderDailyScoresRelToPar();
-        } else if (selectedView === 'birdies') {
-            html += renderBirdieLeaders(selectedType, sessionFilter);
-        } else if (selectedView === 'eagles') {
-            html += renderEagleLeaders(selectedType, sessionFilter);
-        } else if (selectedView === 'average') {
-            html += renderScoringAverage(selectedType, sessionFilter);
         } else if (selectedView === 'stats') {
             html += renderAllStats(selectedType, sessionFilter);
         }
@@ -3065,14 +3053,15 @@
 
         const sorted = allStats.sort((a, b) => a.playerName.localeCompare(b.playerName));
 
-        const avgField = type === 'gross' ? 'grossAverage' : 'netAverage';
         const birdieField = type === 'gross' ? 'birdiesGross' : 'birdiesNet';
         const eagleField = type === 'gross' ? 'eaglesGross' : 'eaglesNet';
         const parField = type === 'gross' ? 'parsGross' : 'parsNet';
         const bogeyField = type === 'gross' ? 'bogeysGross' : 'bogeysNet';
+        const dblBogeyField = type === 'gross' ? 'doubleBogeysGross' : 'doubleBogeysNet';
+        const totalField = type === 'gross' ? 'grossTotal' : 'netTotal';
 
         let html = `<div class="lb-board">
-            <div class="lb-section-header">Complete Statistics - ${type === 'gross' ? 'Gross' : 'Net'}</div>
+            <div class="lb-section-header">Player Statistics - ${type === 'gross' ? 'Gross' : 'Net'}</div>
             <div style="padding:12px;overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;font-size:0.85em;">
                     <thead>
@@ -3080,9 +3069,10 @@
                             <th style="padding:6px;text-align:left;font-weight:600;">Player</th>
                             <th style="padding:6px;text-align:center;font-weight:600;">Holes</th>
                             <th style="padding:6px;text-align:center;font-weight:600;">Avg</th>
-                            <th style="padding:6px;text-align:center;font-weight:600;">🦅</th>
-                            <th style="padding:6px;text-align:center;font-weight:600;">🔥</th>
-                            <th style="padding:6px;text-align:center;font-weight:600;">Par</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">Eagles</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">Birdies</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">Pars</th>
+                            <th style="padding:6px;text-align:center;font-weight:600;">Bogey</th>
                             <th style="padding:6px;text-align:center;font-weight:600;">Bogey+</th>
                         </tr>
                     </thead>
@@ -3090,18 +3080,20 @@
 
         sorted.forEach(stats => {
             const teamColor = stats.team === 'A' ? S.config.teamA.color : stats.team === 'B' ? S.config.teamB.color : '#666';
-            const bogeyPlus = stats[bogeyField] + stats.doubleBogeysGross;
+            // Scoring average for a full 18-hole round
+            const roundAvg = stats.holesPlayed >= 9 ? ((stats[totalField] / stats.holesPlayed) * 18).toFixed(1) : '-';
 
             html += `<tr style="border-bottom:1px solid #eee;">
                 <td style="padding:6px;">
                     <span style="color:${teamColor};font-weight:bold;">${stats.playerName}</span>
                 </td>
                 <td style="padding:6px;text-align:center;">${stats.holesPlayed}</td>
-                <td style="padding:6px;text-align:center;font-weight:bold;">${stats[avgField]}</td>
+                <td style="padding:6px;text-align:center;font-weight:bold;">${roundAvg}</td>
                 <td style="padding:6px;text-align:center;">${stats[eagleField] || '-'}</td>
                 <td style="padding:6px;text-align:center;">${stats[birdieField] || '-'}</td>
                 <td style="padding:6px;text-align:center;">${stats[parField] || '-'}</td>
-                <td style="padding:6px;text-align:center;">${bogeyPlus || '-'}</td>
+                <td style="padding:6px;text-align:center;">${stats[bogeyField] || '-'}</td>
+                <td style="padding:6px;text-align:center;">${stats[dblBogeyField] || '-'}</td>
             </tr>`;
         });
 
