@@ -5473,7 +5473,7 @@
             el.style.animation = 'none';
         });
 
-        // html2canvas ignores CSS filter — manually make logo white via pixel data
+        // html2canvas ignores CSS filter — swap logo to a white version before capture
         const logoImg = phase2El.querySelector('.splash-logo');
         let originalSrc = null;
         if (logoImg && logoImg.naturalWidth) {
@@ -5489,9 +5489,14 @@
                     if (px[i + 3] > 0) { px[i] = 255; px[i+1] = 255; px[i+2] = 255; }
                 }
                 offCtx.putImageData(imgData, 0, 0);
+                const whiteDataUrl = offCanvas.toDataURL();
                 originalSrc = logoImg.src;
-                logoImg.src = offCanvas.toDataURL();
                 logoImg.style.filter = 'none';
+                // Wait for white image to fully load before capturing
+                await new Promise(resolve => {
+                    logoImg.onload = resolve;
+                    logoImg.src = whiteDataUrl;
+                });
             } catch(e) {}
         }
 
