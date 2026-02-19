@@ -5481,9 +5481,10 @@
             el.style.animation = 'none';
         });
 
-        // html2canvas ignores CSS filter — swap logo to a white version before capture
+        // Build white logo data URL (html2canvas ignores CSS filter)
+        // Done offscreen — never touches the visible DOM
+        let whiteLogoDataUrl = null;
         const logoImg = phase2El.querySelector('.splash-logo');
-        let originalSrc = null;
         if (logoImg && logoImg.naturalWidth) {
             try {
                 const offCanvas = document.createElement('canvas');
@@ -5497,30 +5498,34 @@
                     if (px[i + 3] > 0) { px[i] = 255; px[i+1] = 255; px[i+2] = 255; }
                 }
                 offCtx.putImageData(imgData, 0, 0);
-                const whiteDataUrl = offCanvas.toDataURL();
-                originalSrc = logoImg.src;
-                logoImg.style.filter = 'none';
-                // Wait for white image to fully load before capturing
-                await new Promise(resolve => {
-                    logoImg.onload = resolve;
-                    logoImg.src = whiteDataUrl;
-                });
+                whiteLogoDataUrl = offCanvas.toDataURL();
             } catch(e) {}
         }
 
-        // Capture the splash screen as a snapshot image
+        // Capture via html2canvas — swap logo only on the CLONE (no visible flicker)
         let snapshot;
         try {
             snapshot = await html2canvas(phase2El, {
                 width: W, height: H, scale: 1,
-                backgroundColor: null, logging: false
+                backgroundColor: null, logging: false,
+                onclone: (clonedDoc) => {
+                    const clonedLogo = clonedDoc.querySelector('.splash-logo');
+                    if (clonedLogo && whiteLogoDataUrl) {
+                        clonedLogo.src = whiteLogoDataUrl;
+                        clonedLogo.style.filter = 'none';
+                    }
+                    // Force final state on cloned elements too
+                    clonedDoc.querySelectorAll('.splash-logo, .splash-title, .splash-year').forEach(el => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                        el.style.animation = 'none';
+                    });
+                }
             });
         } catch(e) {
-            if (originalSrc) { logoImg.src = originalSrc; logoImg.style.filter = ''; }
             phase2El.classList.add('hidden');
             return;
         }
-        if (originalSrc) { logoImg.src = originalSrc; logoImg.style.filter = ''; }
 
         // Hide the real splash — canvas takes over
         phase2El.style.visibility = 'hidden';
