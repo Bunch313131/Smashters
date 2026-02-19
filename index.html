@@ -1619,9 +1619,9 @@
 </head>
 <body>
 
-    <!-- Single audio element (iOS only allows one at a time) -->
+    <!-- Splash audio elements -->
     <audio id="splashThemeAudio" preload="auto" src="assets/audio/masters_theme_1.mp3"></audio>
-    <audio id="splashFireAudio" preload="auto" src="assets/audio/soundreality-fire-sound-334130.mp3"></audio>
+    <audio id="splashFireAudio" preload="metadata" src="assets/audio/soundreality-fire-sound-334130.mp3"></audio>
 
     <!-- ═══════════════════════════════════════════════════════
          SPLASH SCREEN - Phase 1: DFGC Presents
@@ -5145,13 +5145,19 @@
     // ─────────────────────────────────────────────────────────
     // SPLASH AUDIO
     // ─────────────────────────────────────────────────────────
+
+    // Detect if launched from home screen (standalone PWA) vs in-browser
+    function isStandalone() {
+        return window.navigator.standalone === true
+            || window.matchMedia('(display-mode: standalone)').matches;
+    }
+
     const SplashAudio = {
         theme: null,        // <audio> for masters theme
         fire: null,         // <audio> for fire sound
         _stopped: false,
         _themeFadeRAF: null,
         _fireFadeRAF: null,
-        _fireUnlocked: false,
 
         playTheme() {
             this.theme = document.getElementById('splashThemeAudio');
@@ -5161,31 +5167,12 @@
             this.theme.currentTime = 0;
             this.theme.volume = 1;
 
-            // "Unlock" fire element by playing it silently, then immediately pausing
-            // iOS requires a user gesture to play audio — we unlock both in the same gesture
-            const unlockFire = () => {
-                if (this.fire && !this._fireUnlocked) {
-                    this.fire.volume = 0;
-                    this.fire.currentTime = 0;
-                    const p = this.fire.play();
-                    if (p) p.then(() => {
-                        this.fire.pause();
-                        this.fire.currentTime = 0;
-                        this._fireUnlocked = true;
-                    }).catch(() => {});
-                }
-            };
-
             const playPromise = this.theme.play();
             if (playPromise) {
-                playPromise.then(() => {
-                    // Autoplay worked — also unlock fire
-                    unlockFire();
-                }).catch(() => {
-                    // Autoplay blocked — wait for tap to unlock BOTH
+                playPromise.catch(() => {
+                    // Autoplay blocked — wait for tap
                     const unlockAudio = () => {
                         if (!this._stopped) this.theme.play().catch(() => {});
-                        unlockFire();
                         document.removeEventListener('touchstart', unlockAudio);
                         document.removeEventListener('click', unlockAudio);
                     };
@@ -5195,7 +5182,7 @@
             }
         },
 
-        // True crossfade: theme fades down while fire fades up simultaneously
+        // Crossfade: theme fades down (ease-out) while fire fades up
         crossfadeToFire() {
             if (this._stopped) return;
 
@@ -5212,14 +5199,17 @@
             const crossfade = (now) => {
                 if (this._stopped) return;
                 const elapsed = now - fadeStart;
-                const progress = Math.min(elapsed / crossfadeDuration, 1);
+                const t = Math.min(elapsed / crossfadeDuration, 1);
 
-                // Theme fades down
-                if (this.theme) this.theme.volume = Math.max(0, 1 - progress);
-                // Fire fades up
-                if (this.fire) this.fire.volume = Math.min(1, progress);
+                // Ease-out curve: theme drops slowly at first, then faster
+                const eased = t * (2 - t);
 
-                if (progress < 1) {
+                // Theme fades down with ease-out
+                if (this.theme) this.theme.volume = Math.max(0, 1 - eased);
+                // Fire fades up linearly
+                if (this.fire) this.fire.volume = Math.min(1, t);
+
+                if (t < 1) {
                     this._themeFadeRAF = requestAnimationFrame(crossfade);
                 } else {
                     if (this.theme) { this.theme.pause(); this.theme.volume = 0; }
@@ -5244,19 +5234,27 @@
                 if (progress < 1) {
                     this._fireFadeRAF = requestAnimationFrame(fadeOut);
                 } else {
-                    if (this.fire) { this.fire.pause(); this.fire.volume = 0; }
+                    this._destroyElement(this.fire);
                 }
             };
             this._fireFadeRAF = requestAnimationFrame(fadeOut);
         },
 
-        // Hard stop everything
+        // Fully destroy an audio element so iOS drops it from media session
+        _destroyElement(el) {
+            if (!el) return;
+            el.pause();
+            el.removeAttribute('src');
+            el.load();
+        },
+
+        // Hard stop everything + remove from iOS media session / lock screen
         stop() {
             this._stopped = true;
             if (this._themeFadeRAF) { cancelAnimationFrame(this._themeFadeRAF); this._themeFadeRAF = null; }
             if (this._fireFadeRAF) { cancelAnimationFrame(this._fireFadeRAF); this._fireFadeRAF = null; }
-            if (this.theme) { this.theme.pause(); this.theme.currentTime = 0; this.theme.volume = 0; }
-            if (this.fire) { this.fire.pause(); this.fire.currentTime = 0; this.fire.volume = 0; }
+            this._destroyElement(this.theme);
+            this._destroyElement(this.fire);
         },
     };
 
