@@ -108,6 +108,7 @@
             filter: brightness(0) invert(1);
         }
 
+
         .header-titles { text-align: center; }
 
         .header-titles h1 {
@@ -1216,11 +1217,39 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(160deg, var(--masters-dark) 0%, var(--masters-green) 40%, var(--masters-dark) 100%);
-            transition: opacity 0.6s ease;
+            transition: opacity 1s ease;
         }
         .splash-overlay.fade-out { opacity: 0; pointer-events: none; }
         .splash-overlay.hidden { display: none; }
+
+        /* Phase 1: DFGC Presents (white background, on top of phase 2) */
+        .splash-phase1 {
+            background: #ffffff;
+            z-index: 1000;
+        }
+
+        .splash-phase1-logo {
+            width: 65%;
+            max-width: 400px;
+            height: auto;
+            opacity: 0;
+            animation: splashFadeIn 1.2s ease-out 0.3s forwards;
+        }
+
+        .splash-phase1-presents {
+            font-family: 'Azalea', 'Georgia', serif;
+            color: var(--masters-dark);
+            font-size: 1.4rem;
+            letter-spacing: 3px;
+            margin-top: 20px;
+            opacity: 0;
+            animation: splashFadeIn 1s ease-out 1s forwards;
+        }
+
+        /* Phase 2: The Smashters (green background) */
+        .splash-phase2 {
+            background: linear-gradient(160deg, var(--masters-dark) 0%, var(--masters-green) 40%, var(--masters-dark) 100%);
+        }
 
         .splash-logo {
             width: 55%;
@@ -1228,6 +1257,9 @@
             height: auto;
             filter: brightness(0) invert(1);
             opacity: 0;
+        }
+
+        .splash-phase2.active .splash-logo {
             animation: splashFadeIn 1.2s ease-out 0.2s forwards;
         }
 
@@ -1238,6 +1270,9 @@
             letter-spacing: 2px;
             margin-top: 20px;
             opacity: 0;
+        }
+
+        .splash-phase2.active .splash-title {
             animation: splashFadeIn 1s ease-out 0.8s forwards;
         }
 
@@ -1260,12 +1295,22 @@
             letter-spacing: 2px;
             margin-top: 24px;
             opacity: 0;
+        }
+
+        .splash-phase2.active .splash-year {
             animation: splashFadeIn 1s ease-out 1.5s forwards;
         }
 
         @keyframes splashFadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        #burnCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1001;
+            pointer-events: none;
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -1574,13 +1619,25 @@
 </head>
 <body>
 
+    <!-- Splash audio -->
+    <audio id="mastersTheme" preload="auto" src="assets/audio/masters_theme_1.mp3"></audio>
+    <audio id="fireSound" preload="auto" src="assets/audio/soundreality-fire-sound-334130.mp3"></audio>
+
     <!-- ═══════════════════════════════════════════════════════
-         SPLASH SCREEN
+         SPLASH SCREEN - Phase 1: DFGC Presents
          ═══════════════════════════════════════════════════════ -->
-    <div class="splash-overlay" id="splashOverlay">
+    <div class="splash-overlay splash-phase1" id="splashPhase1">
+        <img src="assets/images/Phone Size DFCG No Background.png" alt="Dumpster Fire Golf Club" class="splash-phase1-logo">
+        <div class="splash-phase1-presents">Presents</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SPLASH SCREEN - Phase 2: The Smashters
+         ═══════════════════════════════════════════════════════ -->
+    <canvas id="burnCanvas" width="0" height="0"></canvas>
+    <div class="splash-overlay splash-phase2" id="splashPhase2">
         <img src="assets/images/smashters-logo-green.png" alt="" class="splash-logo">
         <div class="splash-title">The Smashters</div>
-        <div class="splash-subtitle">Dumpster Fire Golf Club</div>
         <div class="splash-year" id="splashYear"></div>
     </div>
 
@@ -5077,32 +5134,383 @@
     // ─────────────────────────────────────────────────────────
     // SPLASH SCREEN
     // ─────────────────────────────────────────────────────────
-    const SPLASH_KEY = 'smashters-splash-date';
+    const SPLASH_SESSION_KEY = 'smashters-splash-shown';
 
     function shouldShowSplash() {
-        const today = new Date().toISOString().slice(0, 10);
-        const lastShown = localStorage.getItem(SPLASH_KEY);
-        return lastShown !== today;
+        // Show splash on every fresh launch, but not when returning
+        // from background (tab switch, app switcher, etc.)
+        return !sessionStorage.getItem(SPLASH_SESSION_KEY);
     }
 
+    // ─────────────────────────────────────────────────────────
+    // SPLASH AUDIO
+    // ─────────────────────────────────────────────────────────
+    const SplashAudio = {
+        theme: null,
+        fire: null,
+        fadeInterval: null,
+
+        // Start masters theme — with fallback for autoplay restrictions
+        playTheme() {
+            this.theme = document.getElementById('mastersTheme');
+            if (!this.theme) return;
+            this.theme.currentTime = 0;
+            this.theme.volume = 1;
+
+            const playPromise = this.theme.play();
+            if (playPromise) {
+                playPromise.catch(() => {
+                    // Autoplay blocked — start on first user interaction
+                    const unlockAudio = () => {
+                        this.theme.play().catch(() => {});
+                        document.removeEventListener('touchstart', unlockAudio);
+                        document.removeEventListener('click', unlockAudio);
+                    };
+                    document.addEventListener('touchstart', unlockAudio, { once: true });
+                    document.addEventListener('click', unlockAudio, { once: true });
+                });
+            }
+        },
+
+        // Crossfade: fade out theme, start fire sound, then fade fire out
+        crossfadeToFire() {
+            this.fire = document.getElementById('fireSound');
+
+            // Fade out masters theme over 3s (slow enough to get drowned out by fire)
+            if (this.theme) {
+                const fadeOutStep = 0.02;
+                const fadeOutInterval = setInterval(() => {
+                    if (this.theme.volume > fadeOutStep) {
+                        this.theme.volume -= fadeOutStep;
+                    } else {
+                        this.theme.volume = 0;
+                        this.theme.pause();
+                        clearInterval(fadeOutInterval);
+                    }
+                }, 60); // ~50 steps over 3s
+            }
+
+            // Start fire sound (loud)
+            if (this.fire) {
+                this.fire.currentTime = 0;
+                this.fire.volume = 1;
+                // Boost perceived volume via Web Audio API
+                try {
+                    const ac = new (window.AudioContext || window.webkitAudioContext)();
+                    const source = ac.createMediaElementSource(this.fire);
+                    const gainNode = ac.createGain();
+                    gainNode.gain.value = 2.5;
+                    source.connect(gainNode);
+                    gainNode.connect(ac.destination);
+                    this._fireGain = gainNode;
+                    this._fireCtx = ac;
+                } catch(e) {}
+                this.fire.play().catch(() => {});
+
+                // Fade fire out starting 1.5s before burn ends (~3.2s burn duration)
+                setTimeout(() => {
+                    const fireFadeStep = 0.04;
+                    this.fadeInterval = setInterval(() => {
+                        if (this.fire.volume > fireFadeStep) {
+                            this.fire.volume -= fireFadeStep;
+                        } else {
+                            this.fire.volume = 0;
+                            this.fire.pause();
+                            clearInterval(this.fadeInterval);
+                        }
+                    }, 60); // ~25 steps over 1.5s
+                }, 2000);
+            }
+        },
+
+        // Kill all audio
+        stop() {
+            if (this.theme) { this.theme.pause(); this.theme.currentTime = 0; }
+            if (this.fire) { this.fire.pause(); this.fire.currentTime = 0; }
+            if (this.fadeInterval) clearInterval(this.fadeInterval);
+        },
+    };
+
     function showSplash() {
-        const splash = document.getElementById('splashOverlay');
+        const phase1 = document.getElementById('splashPhase1');
+        const phase2 = document.getElementById('splashPhase2');
         document.getElementById('splashYear').textContent = S.config.year;
-        splash.classList.remove('hidden', 'fade-out');
 
-        // Mark as shown today
-        localStorage.setItem(SPLASH_KEY, new Date().toISOString().slice(0, 10));
+        // Mark as shown for this session
+        sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
 
-        // Hold for 3 seconds, then fade out
+        // Both phases visible from start; phase 1 covers phase 2
+        phase1.classList.remove('hidden', 'fade-out');
+        phase2.classList.remove('hidden', 'fade-out');
+
+        // Start masters theme immediately with phase 1
+        SplashAudio.playTheme();
+
+        // After 3.75s, fade out phase 1 to reveal phase 2
         setTimeout(() => {
-            splash.classList.add('fade-out');
-            setTimeout(() => splash.classList.add('hidden'), 600);
-        }, 3000);
+            phase2.classList.add('active');
+            phase1.classList.add('fade-out');
+
+            setTimeout(() => {
+                phase1.classList.add('hidden');
+            }, 1000);
+
+            // Hold phase 2 for 5.25s, then burn away
+            setTimeout(() => {
+                SplashAudio.crossfadeToFire();
+                startBurnEffect(phase2);
+            }, 5250);
+        }, 3750);
     }
 
     function hideSplash() {
-        const splash = document.getElementById('splashOverlay');
-        splash.classList.add('hidden');
+        document.getElementById('splashPhase1').classList.add('hidden');
+        document.getElementById('splashPhase2').classList.add('hidden');
+    }
+
+    async function startBurnEffect(phase2El) {
+        const canvas = document.getElementById('burnCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = window.innerWidth;
+        const H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Capture the splash screen as a snapshot image
+        let snapshot;
+        try {
+            snapshot = await html2canvas(phase2El, {
+                width: W, height: H, scale: 1,
+                backgroundColor: null, logging: false
+            });
+        } catch(e) {
+            phase2El.classList.add('hidden');
+            return;
+        }
+
+        // Hide the real splash — canvas takes over
+        phase2El.style.visibility = 'hidden';
+
+        // Smooth noise: generate wide control points and interpolate
+        const NUM_POINTS = 20;
+        const controlPoints = [];
+        for (let i = 0; i <= NUM_POINTS; i++) {
+            controlPoints.push(Math.random() * 60 - 30);
+        }
+        function smoothNoise(x, t) {
+            // Shift noise over time for organic movement
+            const nx = (x / W) * NUM_POINTS + t * 4;
+            const idx = Math.floor(nx);
+            const frac = nx - idx;
+            const a = controlPoints[((idx % NUM_POINTS) + NUM_POINTS) % NUM_POINTS];
+            const b = controlPoints[(((idx + 1) % NUM_POINTS) + NUM_POINTS) % NUM_POINTS];
+            // Smooth interpolation
+            const smooth = frac * frac * (3 - 2 * frac);
+            return a + (b - a) * smooth
+                + Math.sin(x * 0.015 + t * 5) * 18
+                + Math.sin(x * 0.04 + t * 3) * 10;
+        }
+
+        // Build the burn edge path
+        function buildBurnPath(baseY, t) {
+            const points = [];
+            const step = 4;
+            for (let x = 0; x <= W; x += step) {
+                points.push({ x, y: baseY + smoothNoise(x, t) });
+            }
+            return points;
+        }
+
+        const BURN_DURATION = 3200;
+        const embers = [];
+        const flames = [];
+        const startTime = performance.now();
+
+        function animate(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / BURN_DURATION, 1);
+            const eased = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            const baseY = H + 40 - eased * (H + 120);
+
+            ctx.clearRect(0, 0, W, H);
+
+            const burnPath = buildBurnPath(baseY, progress);
+
+            // === 1. Draw the remaining splash image, clipped above burn edge ===
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(W, 0);
+            // Down the right edge to the burn line
+            ctx.lineTo(W, burnPath[burnPath.length - 1].y);
+            // Trace burn edge right to left
+            for (let i = burnPath.length - 1; i >= 0; i--) {
+                ctx.lineTo(burnPath[i].x, burnPath[i].y);
+            }
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(snapshot, 0, 0, W, H);
+            ctx.restore();
+
+            // === 2. Draw charring glow along burn edge ===
+            ctx.save();
+
+            // Wide outer orange glow
+            ctx.beginPath();
+            for (let i = 0; i < burnPath.length; i++) {
+                const p = burnPath[i];
+                if (i === 0) ctx.moveTo(p.x, p.y - 6);
+                else ctx.lineTo(p.x, p.y - 6);
+            }
+            ctx.lineWidth = 24;
+            ctx.strokeStyle = 'rgba(255, 120, 0, 0.4)';
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = 'rgba(255, 100, 0, 0.8)';
+            ctx.stroke();
+
+            // Mid orange-red line
+            ctx.beginPath();
+            for (let i = 0; i < burnPath.length; i++) {
+                const p = burnPath[i];
+                if (i === 0) ctx.moveTo(p.x, p.y - 4);
+                else ctx.lineTo(p.x, p.y - 4);
+            }
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = 'rgba(255, 140, 20, 0.7)';
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = 'rgba(255, 160, 0, 0.9)';
+            ctx.stroke();
+
+            // Hot bright core
+            ctx.beginPath();
+            for (let i = 0; i < burnPath.length; i++) {
+                const p = burnPath[i];
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            }
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = 'rgba(255, 230, 140, 0.95)';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(255, 200, 50, 1)';
+            ctx.stroke();
+            ctx.restore();
+
+            // === 3. Draw flame tongues rising from the burn edge ===
+            if (progress < 1) {
+                // Spawn new flames
+                if (Math.random() < 0.6) {
+                    const px = Math.floor(Math.random() * burnPath.length);
+                    const bp = burnPath[px];
+                    flames.push({
+                        x: bp.x,
+                        baseY: bp.y,
+                        width: Math.random() * 25 + 15,
+                        height: Math.random() * 50 + 30,
+                        life: 1,
+                        decay: Math.random() * 0.03 + 0.02,
+                        sway: (Math.random() - 0.5) * 2,
+                        phase: Math.random() * Math.PI * 2,
+                    });
+                }
+            }
+
+            for (let i = flames.length - 1; i >= 0; i--) {
+                const f = flames[i];
+                f.life -= f.decay;
+                if (f.life <= 0) { flames.splice(i, 1); continue; }
+
+                const flicker = Math.sin(now * 0.01 + f.phase) * 5;
+                const tipX = f.x + f.sway * (1 - f.life) * 10 + flicker;
+                const tipY = f.baseY - f.height * f.life;
+                const halfW = f.width * f.life * 0.5;
+
+                // Outer flame (red-orange)
+                const outerGrad = ctx.createLinearGradient(tipX, tipY, tipX, f.baseY);
+                outerGrad.addColorStop(0, `rgba(200, 50, 0, 0)`);
+                outerGrad.addColorStop(0.3, `rgba(220, 80, 0, ${f.life * 0.5})`);
+                outerGrad.addColorStop(0.7, `rgba(255, 130, 0, ${f.life * 0.7})`);
+                outerGrad.addColorStop(1, `rgba(255, 80, 0, ${f.life * 0.3})`);
+
+                ctx.beginPath();
+                ctx.moveTo(tipX, tipY);
+                ctx.quadraticCurveTo(tipX + halfW * 1.2, tipY + f.height * f.life * 0.5, f.x + halfW, f.baseY);
+                ctx.lineTo(f.x - halfW, f.baseY);
+                ctx.quadraticCurveTo(tipX - halfW * 1.2, tipY + f.height * f.life * 0.5, tipX, tipY);
+                ctx.fillStyle = outerGrad;
+                ctx.fill();
+
+                // Inner flame (yellow-white core)
+                const innerGrad = ctx.createLinearGradient(tipX, tipY + f.height * 0.3, tipX, f.baseY);
+                innerGrad.addColorStop(0, `rgba(255, 255, 200, 0)`);
+                innerGrad.addColorStop(0.4, `rgba(255, 230, 100, ${f.life * 0.6})`);
+                innerGrad.addColorStop(1, `rgba(255, 200, 50, ${f.life * 0.3})`);
+
+                const innerW = halfW * 0.5;
+                ctx.beginPath();
+                ctx.moveTo(tipX, tipY + f.height * 0.2);
+                ctx.quadraticCurveTo(tipX + innerW, tipY + f.height * f.life * 0.6, f.x + innerW, f.baseY);
+                ctx.lineTo(f.x - innerW, f.baseY);
+                ctx.quadraticCurveTo(tipX - innerW, tipY + f.height * f.life * 0.6, tipX, tipY + f.height * 0.2);
+                ctx.fillStyle = innerGrad;
+                ctx.fill();
+            }
+
+            // === 4. Ember particles ===
+            if (progress < 1) {
+                const spawnCount = Math.floor(Math.random() * 5) + 2;
+                for (let i = 0; i < spawnCount; i++) {
+                    const px = Math.floor(Math.random() * burnPath.length);
+                    const bp = burnPath[px];
+                    embers.push({
+                        x: bp.x,
+                        y: bp.y - Math.random() * 10,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: -(Math.random() * 3 + 1.5),
+                        size: Math.random() * 3 + 1.5,
+                        life: 1,
+                        decay: Math.random() * 0.012 + 0.006,
+                        r: Math.floor(200 + Math.random() * 55),
+                        g: Math.floor(80 + Math.random() * 140),
+                        b: Math.floor(Math.random() * 30),
+                    });
+                }
+            }
+
+            ctx.save();
+            for (let i = embers.length - 1; i >= 0; i--) {
+                const e = embers[i];
+                e.x += e.vx + (Math.random() - 0.5) * 0.8;
+                e.y += e.vy;
+                e.vy -= 0.02;
+                e.life -= e.decay;
+                e.size *= 0.998;
+
+                if (e.life <= 0) { embers.splice(i, 1); continue; }
+
+                ctx.globalAlpha = e.life;
+                ctx.fillStyle = `rgb(${e.r},${e.g},${e.b})`;
+                ctx.shadowBlur = e.size * 5;
+                ctx.shadowColor = `rgba(${e.r},${e.g},${e.b},0.8)`;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            if (progress < 1 || embers.length > 0 || flames.length > 0) {
+                requestAnimationFrame(animate);
+            } else {
+                phase2El.classList.add('hidden');
+                phase2El.style.visibility = '';
+                ctx.clearRect(0, 0, W, H);
+                canvas.width = 0;
+                canvas.height = 0;
+            }
+        }
+
+        requestAnimationFrame(animate);
     }
 
     // ─────────────────────────────────────────────────────────
