@@ -1392,6 +1392,17 @@
             animation: splashFadeIn 1s ease-out 1s forwards;
         }
 
+        /* Video Phase: Jacket video */
+        .splash-video {
+            background: #000;
+            z-index: 999;
+        }
+        .splash-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         /* Phase 2: The Smashters (green background) */
         .splash-phase2 {
             background: linear-gradient(160deg, var(--masters-dark) 0%, var(--masters-green) 40%, var(--masters-dark) 100%);
@@ -1796,6 +1807,14 @@
     <div class="splash-overlay splash-phase1" id="splashPhase1">
         <img src="assets/images/Phone Size DFCG No Background.png" alt="Dumpster Fire Golf Club" class="splash-phase1-logo">
         <div class="splash-phase1-presents">Presents</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SPLASH SCREEN - Video Phase: Jackets
+         ═══════════════════════════════════════════════════════ -->
+    <div class="splash-overlay splash-video" id="splashVideo">
+        <video id="splashVideoEl" muted playsinline preload="auto"
+            src="assets/images/Jacket.mov"></video>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
@@ -5814,6 +5833,8 @@
     // ─────────────────────────────────────────────────────────
     function showSplash() {
         const phase1 = document.getElementById('splashPhase1');
+        const videoPhase = document.getElementById('splashVideo');
+        const videoEl = document.getElementById('splashVideoEl');
         const phase2 = document.getElementById('splashPhase2');
         const themeMeta = document.querySelector('meta[name="theme-color"]');
         document.getElementById('splashYear').textContent = S.config.year;
@@ -5823,32 +5844,53 @@
         if (themeMeta) themeMeta.content = '#ffffff';
 
         phase1.classList.remove('hidden', 'fade-out');
-        phase2.classList.remove('hidden', 'fade-out');
+        videoPhase.classList.remove('fade-out');
+        videoPhase.classList.add('hidden');
+        phase2.classList.remove('hidden', 'fade-out', 'active');
 
         // Audio starts immediately — already unlocked by opt-in tap
         SplashAudio.play();
 
-        // After 3.75s, fade out phase 1 to reveal phase 2
+        // === PHASE 1: DFGC Presents (3.75s) ===
         setTimeout(() => {
-            if (themeMeta) themeMeta.content = '#00432e';
+            if (themeMeta) themeMeta.content = '#000000';
 
-            phase2.classList.add('active');
+            // Fade out phase 1, reveal video
             phase1.classList.add('fade-out');
+            videoPhase.classList.remove('hidden');
+            videoEl.playbackRate = 0.75;
+            videoEl.currentTime = 0;
+            videoEl.play().catch(() => {});
 
-            setTimeout(() => {
-                phase1.classList.add('hidden');
-            }, 1000);
+            setTimeout(() => { phase1.classList.add('hidden'); }, 1000);
 
-            // Burn starts at 4s into phase 2 (audio crossfade is baked into file)
-            setTimeout(() => {
-                startBurnEffect(phase2);
-            }, 4000);
+            // === VIDEO PHASE: plays at 0.75x (~10.3s) ===
+            // Wait for video to end, then transition to phase 2
+            const onVideoEnd = () => {
+                videoEl.removeEventListener('ended', onVideoEnd);
+                if (themeMeta) themeMeta.content = '#00432e';
+
+                // Fade out video, reveal phase 2
+                videoPhase.classList.add('fade-out');
+                phase2.classList.add('active');
+
+                setTimeout(() => { videoPhase.classList.add('hidden'); }, 1000);
+
+                // === PHASE 2: The Smashters (4s then burn) ===
+                setTimeout(() => {
+                    startBurnEffect(phase2);
+                }, 4000);
+            };
+            videoEl.addEventListener('ended', onVideoEnd);
         }, 3750);
     }
 
     function hideSplash() {
         document.getElementById('splashPhase1').classList.add('hidden');
+        document.getElementById('splashVideo').classList.add('hidden');
         document.getElementById('splashPhase2').classList.add('hidden');
+        const vid = document.getElementById('splashVideoEl');
+        if (vid) { vid.pause(); vid.currentTime = 0; }
     }
 
     function startBurnEffect(phase2El) {
