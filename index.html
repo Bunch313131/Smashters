@@ -1376,7 +1376,7 @@
             color: var(--masters-dark);
             font-size: 1.4rem;
             letter-spacing: 3px;
-            margin-top: 20px;
+            margin-top: 10px;
             opacity: 0;
             animation: splashFadeIn 1s ease-out 1s forwards;
         }
@@ -1403,7 +1403,7 @@
             color: var(--masters-yellow);
             font-size: 2.4rem;
             letter-spacing: 2px;
-            margin-top: 20px;
+            margin-top: 10px;
             opacity: 0;
         }
 
@@ -1428,7 +1428,7 @@
             font-size: 1rem;
             font-weight: bold;
             letter-spacing: 2px;
-            margin-top: 24px;
+            margin-top: 12px;
             opacity: 0;
         }
 
@@ -5473,13 +5473,6 @@
         const H = window.innerHeight;
         canvas.width = W;
         canvas.height = H;
-
-        // Force animated elements to their final state so html2canvas captures them
-        phase2El.querySelectorAll('.splash-logo, .splash-title, .splash-year').forEach(el => {
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0)';
-            el.style.animation = 'none';
-        });
 
         // Build white logo and pre-load into browser cache (html2canvas ignores CSS filter)
         const logoImg = phase2El.querySelector('.splash-logo');
