@@ -5206,7 +5206,7 @@
                 this.fire.play().catch(() => {});
             }
 
-            const crossfadeDuration = 1500;
+            const crossfadeDuration = 2500;
             const fadeStart = performance.now();
 
             const crossfade = (now) => {
@@ -5292,9 +5292,13 @@
                 phase1.classList.add('hidden');
             }, 1000);
 
-            // Crossfade + burn start together at 4s into phase 2
+            // Start crossfade early so theme melts away gradually before burn
             setTimeout(() => {
                 SplashAudio.crossfadeToFire();
+            }, 2500);
+
+            // Burn starts 1.5s after crossfade begins
+            setTimeout(() => {
                 startBurnEffect(phase2);
             }, 4000);
         }, 3750);
