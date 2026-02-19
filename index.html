@@ -5474,6 +5474,12 @@
         canvas.width = W;
         canvas.height = H;
 
+        // Force final state with !important (overrides animation fill without removing it)
+        phase2El.querySelectorAll('.splash-logo, .splash-title, .splash-year').forEach(el => {
+            el.style.setProperty('opacity', '1', 'important');
+            el.style.setProperty('transform', 'translateY(0)', 'important');
+        });
+
         // Build white logo and pre-load into browser cache (html2canvas ignores CSS filter)
         const logoImg = phase2El.querySelector('.splash-logo');
         let originalSrc = null;
