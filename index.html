@@ -1287,55 +1287,58 @@
             flex-shrink: 0;
         }
 
-        /* Opt-in page: "Are you sure?" */
+        /* Opt-in page: waiver / legal feel */
         .optin-overlay {
-            background: linear-gradient(160deg, var(--masters-dark) 0%, #1a1a1a 50%, var(--masters-dark) 100%);
-            color: var(--masters-white);
-        }
-        .optin-logo {
-            width: 45%;
-            max-width: 200px;
-            height: auto;
-            filter: brightness(0) invert(1);
-            margin-bottom: 24px;
-            opacity: 0;
-            animation: splashFadeIn 1.2s ease-out 0.3s forwards;
+            background: #ffffff;
+            color: var(--masters-dark);
+            padding: 50px 28px 40px;
+            justify-content: flex-start;
         }
         .optin-title {
-            font-family: 'Azalea', 'Georgia', serif;
-            color: var(--masters-yellow);
-            font-size: 1.8rem;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 16px;
+            color: var(--masters-dark);
+            margin-bottom: 28px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #ccc;
+            width: 100%;
+            max-width: 360px;
             opacity: 0;
-            animation: splashFadeIn 1s ease-out 0.8s forwards;
+            animation: splashFadeIn 0.8s ease-out 0.2s forwards;
         }
         .optin-text {
-            font-size: 1rem;
-            color: var(--masters-white);
-            opacity: 0;
-            line-height: 1.6;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 0.95rem;
+            color: #2a2a2a;
+            line-height: 1.7;
             margin-bottom: 36px;
-            max-width: 320px;
-            animation: splashFadeIn 1s ease-out 1.2s forwards;
+            max-width: 360px;
+            text-align: left;
+            opacity: 0;
+            animation: splashFadeIn 0.8s ease-out 0.6s forwards;
         }
         .optin-btn {
-            background: var(--masters-yellow);
-            color: var(--masters-dark);
+            background: var(--masters-dark);
+            color: #ffffff;
             border: none;
             padding: 14px 48px;
-            font-family: 'Azalea', 'Georgia', serif;
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-            border-radius: 8px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.95rem;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            border-radius: 6px;
             cursor: pointer;
             opacity: 0;
-            animation: splashFadeIn 1s ease-out 1.8s forwards;
+            animation: splashFadeIn 0.8s ease-out 1.2s forwards;
             transition: transform 0.15s ease, background 0.15s ease;
         }
         .optin-btn:active {
             transform: scale(0.96);
-            background: var(--masters-gold);
+            background: var(--masters-green);
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -1762,13 +1765,18 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
-         OPT-IN PAGE: "Are you ready?"
+         OPT-IN PAGE: Waiver
          ═══════════════════════════════════════════════════════ -->
     <div class="optin-overlay" id="optInPage">
-        <img src="assets/images/smashters-logo-green.png" alt="" class="optin-logo">
-        <div class="optin-title">The Smashters</div>
-        <div class="optin-text">This is going to be a wild ride. Are you sure you want to enter?</div>
-        <button class="optin-btn" id="optInBtn">Let's Go</button>
+        <div class="optin-title">Waiver of Responsibility</div>
+        <div class="optin-text">
+            By tapping "I Accept," you acknowledge that the Dumpster Fire Golf Club (DFGC) is not responsible for any damage to your ego, your handicap, your marriage, or your dignity.
+            <br><br>
+            You voluntarily assume all risks including but not limited to: devastating shanks, questionable side bets, unsolicited swing advice, and decisions that seemed brilliant on the 10th tee.
+            <br><br>
+            What happens at DFGC stays at DFGC. Unless it's on video.
+        </div>
+        <button class="optin-btn" id="optInBtn">I Accept</button>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
