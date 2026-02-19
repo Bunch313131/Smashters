@@ -286,6 +286,7 @@
             border-radius: var(--radius-lg);
             overflow: hidden;
             box-shadow: var(--card-shadow);
+            position: relative;
             margin-bottom: 20px;
         }
 
@@ -512,6 +513,7 @@
 
         .lb-empty { text-align: center; padding: 60px 20px; color: #999; }
         .lb-empty h3 { color: var(--masters-green); margin-bottom: 8px; font-size: 1.3rem; }
+        .lb-empty-logo { width: 100px; opacity: 0.2; margin-bottom: 16px; }
 
         @media (max-width: 600px) {
             .lb-match-row { grid-template-columns: 1fr 36px 1fr; font-size: 0.8rem; }
@@ -806,12 +808,26 @@
 
         .match-day-header h3 { font-size: 0.9rem; letter-spacing: 0.5px; }
 
+        .lb-board::after,
+        .match-setup-card::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            background: url('assets/images/Phone Size DFCG No Background.png') center/contain no-repeat;
+            opacity: 0.06;
+            pointer-events: none;
+        }
+
         .match-setup-card {
             background: var(--masters-white);
             border-radius: var(--radius);
             box-shadow: var(--card-shadow);
             margin-bottom: 12px;
             overflow: hidden;
+            position: relative;
         }
 
         .match-setup-header {
@@ -1129,9 +1145,28 @@
         .mb-16 { margin-bottom: 16px; }
         .mt-16 { margin-top: 16px; }
 
-        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; position: relative; }
         .empty-state h3 { color: var(--masters-green); margin-bottom: 8px; }
         .empty-state p { font-size: 0.9rem; }
+        .empty-state::before {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            background: url('assets/images/Phone Size DFCG No Background.png') center/contain no-repeat;
+            opacity: 0.12;
+        }
+
+        .tab-footer {
+            text-align: center;
+            padding: 32px 20px 16px;
+            opacity: 0.15;
+        }
+        .tab-footer img {
+            width: 36px;
+            height: auto;
+        }
 
         .toast {
             position: fixed;
@@ -2502,7 +2537,7 @@
         const allMatches = Object.values(S.matches);
 
         if (allMatches.length === 0 && Object.keys(S.players).length === 0) {
-            el.innerHTML = `<div class="lb-empty"><h3>Welcome to The Smashters</h3>
+            el.innerHTML = `<div class="lb-empty"><img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC" class="lb-empty-logo"><h3>Welcome to The Smashters</h3>
                 <p>Add players in the <strong>Players</strong> tab to get started,<br>then set up matches in the <strong>Matches</strong> tab.</p></div>`;
             return;
         }
@@ -2594,6 +2629,7 @@
             // Share Results button removed for now
         }
 
+        html += DFGC_FOOTER;
         el.innerHTML = html;
     }
 
@@ -2778,6 +2814,7 @@
             html += renderAllStats(selectedType, sessionFilter);
         }
 
+        html += DFGC_FOOTER;
         el.innerHTML = html;
     }
 
@@ -3101,6 +3138,7 @@
                 html += renderScoringInterface(S.matches[S.ui.activeMatchId]);
             }
 
+            html += DFGC_FOOTER;
             el.innerHTML = html;
         } catch (error) {
             console.error('Scoring render error:', error);
@@ -3507,6 +3545,7 @@
             }
         });
 
+        html += DFGC_FOOTER;
         el.innerHTML = html;
     }
 
@@ -3696,6 +3735,7 @@
                 html += unassigned.map(p => renderPlayerCard(p)).join('');
             }
         }
+        html += DFGC_FOOTER;
         el.innerHTML = html;
     }
 
@@ -3815,6 +3855,7 @@
         if (S.draft.status === 'pending') html += renderDraftSetup();
         else if (S.draft.status === 'active') html += renderDraftActive();
         else html += renderDraftComplete();
+        html += DFGC_FOOTER;
         el.innerHTML = html;
     }
 
@@ -4044,6 +4085,7 @@
             html += `</div>`;
         });
 
+        html += DFGC_FOOTER;
         el.innerHTML = html;
     }
 
@@ -4098,6 +4140,9 @@
         }
 
         el.innerHTML = `
+            <div style="text-align:center;margin-bottom:8px;">
+                <img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC" style="width:48px;opacity:0.18;">
+            </div>
             <h2 class="section-title">Event Settings</h2>
 
             <div class="settings-section" style="background:#f0f8f0;border:2px solid var(--masters-green);">
@@ -4232,6 +4277,7 @@
             </div>
 
             <div style="margin-top:32px;padding:16px;text-align:center;border-top:1px solid #eee;">
+                <img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC" style="width:36px;opacity:0.15;margin-bottom:8px;">
                 <p style="font-size:0.75rem;color:#999;margin-bottom:4px;">Smashters App</p>
                 <p style="font-size:0.85rem;color:var(--masters-green);font-weight:bold;">v${APP_VERSION}</p>
                 <p style="font-size:0.7rem;color:#999;margin-top:4px;">Admin Protection • PDF Exports • Individual Stats • Schedule</p>
@@ -5289,6 +5335,7 @@
     // SPLASH SCREEN
     // ─────────────────────────────────────────────────────────
     const SPLASH_SESSION_KEY = 'smashters-splash-shown';
+    const DFGC_FOOTER = '<div class="tab-footer"><img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC"></div>';
 
     function shouldShowSplash() {
         // Show splash on every fresh launch, but not when returning
