@@ -1924,7 +1924,7 @@
             activeMatchId: null,
             scoringHole: 1,
             settingsUnlocked: false,
-            individualView: 'daily',
+            individualView: 'points',
             individualType: 'gross',
             individualSession: 'all',
         },
@@ -2421,7 +2421,7 @@
                 m.teamA.includes(playerId) || m.teamB.includes(playerId)
             );
 
-            playerMatches.forEach(match => {
+            playerMatches.filter(m => m.type !== 'foursomes').forEach(match => {
                 Object.keys(match.holes || {}).forEach(holeNum => {
                     const grossScore = match.holes[holeNum][playerId];
                     if (grossScore === undefined || grossScore === null) return;
@@ -2501,6 +2501,84 @@
                 .filter(s => s.holesPlayed >= 9) // Minimum 9 holes
                 .sort((a, b) => parseFloat(a[field]) - parseFloat(b[field]))
                 .slice(0, 10);
+        },
+
+        getPlayerRelativeToParBySession(playerId, sessionId) {
+            const matches = Object.values(S.matches).filter(m =>
+                m.sessionId === sessionId &&
+                m.type !== 'foursomes' &&
+                (m.teamA.includes(playerId) || m.teamB.includes(playerId))
+            );
+            let totalRelToPar = 0;
+            let holesPlayed = 0;
+            matches.forEach(match => {
+                Object.keys(match.holes || {}).forEach(holeNum => {
+                    const gross = match.holes[holeNum][playerId];
+                    if (gross === undefined || gross === null) return;
+                    const par = getHoleInfo(parseInt(holeNum)).par;
+                    totalRelToPar += (gross - par);
+                    holesPlayed++;
+                });
+            });
+            return { totalRelToPar, holesPlayed };
+        },
+
+        getDailyScoresData() {
+            const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+            const allPlayers = Object.keys(S.players);
+            const scoringSessions = sessions.filter(session =>
+                getMatchesBySession(session.id).some(m => m.type !== 'foursomes')
+            );
+            const playerData = allPlayers.map(playerId => {
+                const sessionScores = {};
+                let overallRelToPar = 0;
+                let overallHolesPlayed = 0;
+                scoringSessions.forEach(session => {
+                    const result = this.getPlayerRelativeToParBySession(playerId, session.id);
+                    sessionScores[session.id] = result;
+                    overallRelToPar += result.totalRelToPar;
+                    overallHolesPlayed += result.holesPlayed;
+                });
+                return {
+                    playerId,
+                    playerName: getPlayerName(playerId),
+                    team: S.players[playerId]?.team,
+                    sessionScores,
+                    overallRelToPar,
+                    overallHolesPlayed,
+                };
+            }).filter(p => p.overallHolesPlayed > 0);
+            playerData.sort((a, b) => a.overallRelToPar - b.overallRelToPar);
+            return { scoringSessions, playerData };
+        },
+
+        getPointLeaders() {
+            const allPlayers = Object.keys(S.players);
+            const allMatches = Object.values(S.matches);
+            const records = allPlayers.map(playerId => {
+                let wins = 0, losses = 0, ties = 0;
+                allMatches.forEach(match => {
+                    const isTeamA = match.teamA.includes(playerId);
+                    const isTeamB = match.teamB.includes(playerId);
+                    if (!isTeamA && !isTeamB) return;
+                    const points = getMatchPoints(match);
+                    if (!points.settled) return;
+                    const playerPoints = points[isTeamA ? 'A' : 'B'];
+                    if (playerPoints === 1) wins++;
+                    else if (playerPoints === 0.5) ties++;
+                    else losses++;
+                });
+                return {
+                    playerId,
+                    playerName: getPlayerName(playerId),
+                    team: S.players[playerId]?.team,
+                    wins, losses, ties,
+                    totalPoints: wins + (ties * 0.5),
+                    matchesPlayed: wins + losses + ties,
+                };
+            }).filter(r => r.matchesPlayed > 0);
+            records.sort((a, b) => b.totalPoints - a.totalPoints || b.wins - a.wins);
+            return records;
         }
     };
 
@@ -2736,7 +2814,7 @@
         const el = document.getElementById('individual-content');
 
         // Tab selector for different views
-        const selectedView = S.ui.individualView || 'daily';
+        const selectedView = S.ui.individualView || 'points';
         const selectedType = S.ui.individualType || 'gross';
         const selectedSession = S.ui.individualSession || 'all';
 
@@ -2746,39 +2824,44 @@
 
         // View selector
         html += `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+            <button class="btn ${selectedView === 'points' ? 'btn-primary' : 'btn-outline'} btn-sm"
+                onclick="setIndividualView('points')">Point Leaders</button>
             <button class="btn ${selectedView === 'daily' ? 'btn-primary' : 'btn-outline'} btn-sm"
                 onclick="setIndividualView('daily')">Daily Scores</button>
             <button class="btn ${selectedView === 'birdies' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('birdies')">Birdie Leaders</button>
+                onclick="setIndividualView('birdies')">Birdies</button>
             <button class="btn ${selectedView === 'eagles' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('eagles')">Eagle Leaders</button>
+                onclick="setIndividualView('eagles')">Eagles</button>
             <button class="btn ${selectedView === 'average' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('average')">Scoring Average</button>
+                onclick="setIndividualView('average')">Avg</button>
             <button class="btn ${selectedView === 'stats' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('stats')">All Stats</button>
+                onclick="setIndividualView('stats')">Stats</button>
         </div>`;
 
-        // Gross/Net selector
-        html += `<div style="display:flex;gap:8px;margin-bottom:16px;">
-            <button class="btn ${selectedType === 'gross' ? 'btn-gold' : 'btn-outline'} btn-sm"
-                onclick="setIndividualType('gross')">Gross</button>
-            <button class="btn ${selectedType === 'net' ? 'btn-gold' : 'btn-outline'} btn-sm"
-                onclick="setIndividualType('net')">Net</button>
-        </div>`;
+        // Gross/Net and Session filter — only for views that use them
+        if (selectedView !== 'points' && selectedView !== 'daily') {
+            html += `<div style="display:flex;gap:8px;margin-bottom:16px;">
+                <button class="btn ${selectedType === 'gross' ? 'btn-gold' : 'btn-outline'} btn-sm"
+                    onclick="setIndividualType('gross')">Gross</button>
+                <button class="btn ${selectedType === 'net' ? 'btn-gold' : 'btn-outline'} btn-sm"
+                    onclick="setIndividualType('net')">Net</button>
+            </div>`;
 
-        // Session filter
-        html += `<div style="margin-bottom:16px;">
-            <select class="form-input" onchange="setIndividualSession(this.value)" style="width:auto;">
-                <option value="all" ${selectedSession === 'all' ? 'selected' : ''}>All Sessions</option>
-                ${sessions.map(s => `<option value="${s.id}" ${selectedSession === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
-            </select>
-        </div>`;
+            html += `<div style="margin-bottom:16px;">
+                <select class="form-input" onchange="setIndividualSession(this.value)" style="width:auto;">
+                    <option value="all" ${selectedSession === 'all' ? 'selected' : ''}>All Sessions</option>
+                    ${sessions.map(s => `<option value="${s.id}" ${selectedSession === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                </select>
+            </div>`;
+        }
 
         // Render selected view
         const sessionFilter = selectedSession === 'all' ? null : selectedSession;
 
-        if (selectedView === 'daily') {
-            html += renderDailyScores(selectedType, sessionFilter);
+        if (selectedView === 'points') {
+            html += renderPointLeaders();
+        } else if (selectedView === 'daily') {
+            html += renderDailyScoresRelToPar();
         } else if (selectedView === 'birdies') {
             html += renderBirdieLeaders(selectedType, sessionFilter);
         } else if (selectedView === 'eagles') {
@@ -3022,6 +3105,83 @@
             </tr>`;
         });
 
+        return html + '</tbody></table></div></div>';
+    }
+
+    function renderPointLeaders() {
+        const leaders = IndividualStats.getPointLeaders();
+        if (leaders.length === 0) {
+            return `<div class="empty-state"><h3>No Completed Matches</h3><p>Point standings will appear once matches are completed.</p></div>`;
+        }
+        let html = `<div class="lb-board">
+            <div class="lb-section-header">Point Leaders</div>
+            <div style="padding:12px;overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:2px solid #ddd;">
+                        <th style="padding:8px 6px;text-align:center;font-weight:600;width:36px;">#</th>
+                        <th style="padding:8px;text-align:left;font-weight:600;">Player</th>
+                        <th style="padding:8px;text-align:center;font-weight:600;">Record</th>
+                        <th style="padding:8px;text-align:center;font-weight:600;">Pts</th>
+                    </tr></thead><tbody>`;
+        leaders.forEach((r, i) => {
+            const tc = r.team === 'A' ? S.config.teamA.color : r.team === 'B' ? S.config.teamB.color : '#666';
+            html += `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px 6px;text-align:center;color:#999;">${i + 1}</td>
+                <td style="padding:8px;"><span style="color:${tc};font-weight:bold;">${r.playerName}</span></td>
+                <td style="padding:8px;text-align:center;font-weight:bold;">${r.wins}-${r.losses}-${r.ties}</td>
+                <td style="padding:8px;text-align:center;font-size:1.1em;font-weight:bold;">${formatScore(r.totalPoints)}</td>
+            </tr>`;
+        });
+        return html + '</tbody></table></div></div>';
+    }
+
+    function renderDailyScoresRelToPar() {
+        const { scoringSessions, playerData } = IndividualStats.getDailyScoresData();
+        if (playerData.length === 0) {
+            return `<div class="empty-state"><h3>No Scores Yet</h3><p>Scores will appear here once matches are played.</p></div>`;
+        }
+        function fmtRelPar(val) { return val === 0 ? 'E' : val > 0 ? '+' + val : '' + val; }
+        function fmtThru(h) { return h === 0 ? '-' : h >= 18 ? 'F' : h; }
+        function scoreStyle(val) {
+            if (val < 0) return 'color:#d32f2f;font-weight:bold;';
+            if (val > 0) return 'color:#666;font-weight:bold;';
+            return 'font-weight:bold;';
+        }
+        const multi = scoringSessions.length > 1;
+        let html = `<div class="lb-board">
+            <div class="lb-section-header">Daily Scores</div>
+            <div style="padding:12px;overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.85em;">
+                    <thead><tr style="border-bottom:2px solid #ddd;">
+                        <th style="padding:6px 8px;text-align:left;font-weight:600;">Player</th>`;
+        scoringSessions.forEach(s => {
+            html += `<th style="padding:6px 4px;text-align:center;font-weight:600;font-size:0.85em;">${s.name}</th>`;
+            html += `<th style="padding:6px 4px;text-align:center;font-weight:400;font-size:0.7em;color:#999;">Thru</th>`;
+        });
+        if (multi) {
+            html += `<th style="padding:6px 8px;text-align:center;font-weight:700;">Total</th>`;
+            html += `<th style="padding:6px 4px;text-align:center;font-weight:400;font-size:0.7em;color:#999;">Thru</th>`;
+        }
+        html += '</tr></thead><tbody>';
+        playerData.forEach(p => {
+            const tc = p.team === 'A' ? S.config.teamA.color : p.team === 'B' ? S.config.teamB.color : '#666';
+            html += `<tr style="border-bottom:1px solid #eee;">
+                <td style="padding:6px 8px;white-space:nowrap;"><span style="color:${tc};font-weight:bold;">${p.playerName}</span></td>`;
+            scoringSessions.forEach(s => {
+                const sd = p.sessionScores[s.id];
+                if (sd && sd.holesPlayed > 0) {
+                    html += `<td style="padding:6px 4px;text-align:center;${scoreStyle(sd.totalRelToPar)}">${fmtRelPar(sd.totalRelToPar)}</td>`;
+                    html += `<td style="padding:6px 4px;text-align:center;font-size:0.8em;color:#888;">${fmtThru(sd.holesPlayed)}</td>`;
+                } else {
+                    html += `<td style="padding:6px 4px;text-align:center;color:#ccc;">-</td><td style="padding:6px 4px;text-align:center;color:#ccc;">-</td>`;
+                }
+            });
+            if (multi) {
+                html += `<td style="padding:6px 8px;text-align:center;font-size:1.05em;${scoreStyle(p.overallRelToPar)}">${fmtRelPar(p.overallRelToPar)}</td>`;
+                html += `<td style="padding:6px 4px;text-align:center;font-size:0.8em;color:#888;">${fmtThru(p.overallHolesPlayed)}</td>`;
+            }
+            html += '</tr>';
+        });
         return html + '</tbody></table></div></div>';
     }
 
