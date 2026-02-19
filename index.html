@@ -2642,15 +2642,17 @@
                 html += `<div class="lb-section-header">${session.name} &mdash; ${formatLabel}</div>`;
                 html += matches.map(m => renderLeaderboardMatch(m)).join('');
                 sessionBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
-                // Session subtotal row
+                // Session subtotal row (mini totals bar)
                 const sessScores = getSessionScores(session.id);
-                html += `<div class="lb-match-row" style="background:var(--masters-dark);min-height:36px;">
-                    <div class="lb-cell-a" style="background:var(--masters-dark);color:var(--masters-white);font-weight:700;justify-content:center;font-size:0.85rem;">
-                        ${formatScore(sessScores.A)}
+                html += `<div style="display:grid;grid-template-columns:1fr 36px 1fr;min-height:38px;">
+                    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:${S.config.teamA.color};color:#fff;font-weight:700;">
+                        <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamA.name}</span>
+                        <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;">${formatScore(sessScores.A)}</span>
                     </div>
-                    <div class="lb-cell-thru" style="font-size:0.6rem;color:var(--masters-yellow);font-weight:600;">PTS</div>
-                    <div class="lb-cell-b" style="background:var(--masters-dark);color:var(--masters-white);font-weight:700;justify-content:center;font-size:0.85rem;">
-                        ${formatScore(sessScores.B)}
+                    <div style="display:flex;align-items:center;justify-content:center;background:#4a4a4a;color:var(--masters-yellow);font-size:0.55rem;font-weight:600;">PTS</div>
+                    <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 12px;background:${S.config.teamB.color};color:#fff;font-weight:700;">
+                        <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;">${formatScore(sessScores.B)}</span>
+                        <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamB.name}</span>
                     </div>
                 </div>`;
                 html += `</div>`;
@@ -2665,6 +2667,20 @@
             html += `<div class="lb-board" style="margin-top:16px;">`;
             html += `<div class="lb-section-header">Bonus Events</div>`;
             standaloneBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
+            // Bonus events subtotal
+            let bonusA = 0, bonusB = 0;
+            standaloneBonuses.forEach(e => { bonusA += (e.pointsA || 0); bonusB += (e.pointsB || 0); });
+            html += `<div style="display:grid;grid-template-columns:1fr 36px 1fr;min-height:38px;">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:${S.config.teamA.color};color:#fff;font-weight:700;">
+                    <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamA.name}</span>
+                    <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;">${formatScore(bonusA)}</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:center;background:#4a4a4a;color:var(--masters-yellow);font-size:0.55rem;font-weight:600;">PTS</div>
+                <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 12px;background:${S.config.teamB.color};color:#fff;font-weight:700;">
+                    <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;">${formatScore(bonusB)}</span>
+                    <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamB.name}</span>
+                </div>
+            </div>`;
             html += `</div>`;
         }
 
@@ -2832,7 +2848,7 @@
         const notesBHtml = evt.notesB ? `<span style="display:block;font-size:0.65rem;color:#888;margin-top:1px;">${evt.notesB}</span>` : '';
 
         return `
-            <div class="lb-section-header" style="font-size:0.75rem;padding:7px 16px;">${evt.name}</div>
+            <div style="background:#4a4a4a;color:var(--masters-cream);padding:6px 16px;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;font-size:0.75rem;font-weight:bold;letter-spacing:0.5px;text-transform:uppercase;">${evt.name}</div>
             <div class="lb-match-row">
                 <div class="lb-cell-a ${cellAClass}">
                     ${ptsA > 0 ? `<span class="lb-match-score">${formatScore(ptsA)}</span>` : ''}
