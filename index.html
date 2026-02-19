@@ -2330,16 +2330,14 @@
 
     function getBonusEventPoints(sessionId) {
         let a = 0, b = 0;
+        const sumAll = arguments.length === 0;
         Object.values(S.bonusEvents).forEach(evt => {
-            if (arguments.length === 0) {
-                // No argument: sum ALL bonus events
+            if (sumAll) {
                 a += (evt.pointsA || 0);
                 b += (evt.pointsB || 0);
             } else if (sessionId === null) {
-                // Explicit null: standalone events only
                 if (!evt.sessionId) { a += (evt.pointsA || 0); b += (evt.pointsB || 0); }
             } else {
-                // Specific session ID
                 if (evt.sessionId === sessionId) { a += (evt.pointsA || 0); b += (evt.pointsB || 0); }
             }
         });
