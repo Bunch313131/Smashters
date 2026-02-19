@@ -5172,29 +5172,24 @@
             }
         },
 
-        // Crossfade: fade out theme, start fire sound, then fade fire out
+        // Stop theme, then play fire sound (iOS only allows one audio at a time)
         crossfadeToFire() {
             this.fire = document.getElementById('fireSound');
 
-            // Fade out masters theme over 3s (slow enough to get drowned out by fire)
+            // Kill theme immediately so fire can take over
             if (this.theme) {
-                const fadeOutStep = 0.02;
-                const fadeOutInterval = setInterval(() => {
-                    if (this.theme.volume > fadeOutStep) {
-                        this.theme.volume -= fadeOutStep;
-                    } else {
-                        this.theme.volume = 0;
-                        this.theme.pause();
-                        clearInterval(fadeOutInterval);
-                    }
-                }, 60); // ~50 steps over 3s
+                this.theme.pause();
+                this.theme.currentTime = 0;
+                this.theme.volume = 0;
             }
 
-            // Start fire sound at full volume (no Web Audio routing — direct playback for mobile)
+            // Start fire sound after a brief delay to let iOS release the audio channel
             if (this.fire) {
-                this.fire.currentTime = 0;
-                this.fire.volume = 1;
-                this.fire.play().catch(() => {});
+                setTimeout(() => {
+                    this.fire.currentTime = 0;
+                    this.fire.volume = 1;
+                    this.fire.play().catch(() => {});
+                }, 100);
 
                 // Fade fire out over the last 1.5s of the burn (~3.2s burn duration)
                 setTimeout(() => {
