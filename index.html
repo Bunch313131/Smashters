@@ -5190,24 +5190,13 @@
                 }, 60); // ~50 steps over 3s
             }
 
-            // Start fire sound (loud)
+            // Start fire sound at full volume (no Web Audio routing — direct playback for mobile)
             if (this.fire) {
                 this.fire.currentTime = 0;
                 this.fire.volume = 1;
-                // Boost perceived volume via Web Audio API
-                try {
-                    const ac = new (window.AudioContext || window.webkitAudioContext)();
-                    const source = ac.createMediaElementSource(this.fire);
-                    const gainNode = ac.createGain();
-                    gainNode.gain.value = 2.5;
-                    source.connect(gainNode);
-                    gainNode.connect(ac.destination);
-                    this._fireGain = gainNode;
-                    this._fireCtx = ac;
-                } catch(e) {}
                 this.fire.play().catch(() => {});
 
-                // Fade fire out starting 1.5s before burn ends (~3.2s burn duration)
+                // Fade fire out over the last 1.5s of the burn (~3.2s burn duration)
                 setTimeout(() => {
                     const fireFadeStep = 0.04;
                     this.fadeInterval = setInterval(() => {
@@ -5218,18 +5207,25 @@
                             this.fire.pause();
                             clearInterval(this.fadeInterval);
                         }
-                    }, 60); // ~25 steps over 1.5s
+                    }, 60);
                 }, 2000);
             }
         },
 
-        // Kill all audio
+        // Kill all audio immediately
         stop() {
-            if (this.theme) { this.theme.pause(); this.theme.currentTime = 0; }
-            if (this.fire) { this.fire.pause(); this.fire.currentTime = 0; }
+            if (this.theme) { this.theme.pause(); this.theme.currentTime = 0; this.theme.volume = 0; }
+            if (this.fire) { this.fire.pause(); this.fire.currentTime = 0; this.fire.volume = 0; }
             if (this.fadeInterval) clearInterval(this.fadeInterval);
         },
     };
+
+    // Stop audio when app is minimized or tab is hidden
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            SplashAudio.stop();
+        }
+    });
 
     function showSplash() {
         const phase1 = document.getElementById('splashPhase1');
@@ -5506,6 +5502,7 @@
                 phase2El.style.visibility = '';
                 ctx.clearRect(0, 0, W, H);
                 canvas.width = 0;
+                SplashAudio.stop();
                 canvas.height = 0;
             }
         }
