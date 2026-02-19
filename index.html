@@ -1619,9 +1619,8 @@
 </head>
 <body>
 
-    <!-- Splash audio -->
-    <audio id="mastersTheme" preload="auto" src="assets/audio/masters_theme_1.mp3"></audio>
-    <audio id="fireSound" preload="auto" src="assets/audio/soundreality-fire-sound-334130.mp3"></audio>
+    <!-- Single audio element (iOS only allows one at a time) -->
+    <audio id="splashAudioPlayer" preload="auto"></audio>
 
     <!-- ═══════════════════════════════════════════════════════
          SPLASH SCREEN - Phase 1: DFGC Presents
@@ -5146,38 +5145,25 @@
     // SPLASH AUDIO
     // ─────────────────────────────────────────────────────────
     const SplashAudio = {
-        theme: null,
-        fire: null,
-        fadeInterval: null,
+        el: null,        // single audio element for iOS compatibility
+        _fadeId: null,
+        _fireTimeoutId: null,
+        _stopped: false,
 
-        // Unlock an audio element by briefly playing it silently
-        _unlock(el) {
-            if (!el) return;
-            el.volume = 0;
-            el.play().then(() => {
-                el.pause();
-                el.currentTime = 0;
-            }).catch(() => {});
-        },
-
-        // Start masters theme — with fallback for autoplay restrictions
+        // Use a SINGLE audio element — swap src as needed (iOS requirement)
         playTheme() {
-            this.theme = document.getElementById('mastersTheme');
-            this.fire = document.getElementById('fireSound');
-            if (!this.theme) return;
-            this.theme.currentTime = 0;
-            this.theme.volume = 1;
+            this.el = document.getElementById('splashAudioPlayer');
+            if (!this.el) return;
+            this._stopped = false;
+            this.el.src = 'assets/audio/masters_theme_1.mp3';
+            this.el.currentTime = 0;
+            this.el.volume = 1;
 
-            const playPromise = this.theme.play();
+            const playPromise = this.el.play();
             if (playPromise) {
-                playPromise.then(() => {
-                    // Theme playing — also unlock fire element for later
-                    this._unlock(this.fire);
-                }).catch(() => {
-                    // Autoplay blocked — start on first user interaction
+                playPromise.catch(() => {
                     const unlockAudio = () => {
-                        this.theme.play().catch(() => {});
-                        this._unlock(this.fire);
+                        if (!this._stopped) this.el.play().catch(() => {});
                         document.removeEventListener('touchstart', unlockAudio);
                         document.removeEventListener('click', unlockAudio);
                     };
@@ -5187,57 +5173,52 @@
             }
         },
 
-        // Fade theme out smoothly, then start fire (iOS single audio channel)
+        // Fade theme out, swap to fire sound, fade fire out at end
         crossfadeToFire() {
-            if (!this.fire) this.fire = document.getElementById('fireSound');
+            if (!this.el || this._stopped) return;
 
             // Smooth fade out of theme over ~1.2s
-            if (this.theme && !this.theme.paused) {
-                const fadeStep = 0.04;
-                const themeFade = setInterval(() => {
-                    if (this.theme.volume > fadeStep) {
-                        this.theme.volume -= fadeStep;
-                    } else {
-                        this.theme.volume = 0;
-                        this.theme.pause();
-                        clearInterval(themeFade);
+            const fadeStep = 0.04;
+            this._fadeId = setInterval(() => {
+                if (this.el.volume > fadeStep) {
+                    this.el.volume -= fadeStep;
+                } else {
+                    this.el.volume = 0;
+                    this.el.pause();
+                    clearInterval(this._fadeId);
+                    this._fadeId = null;
 
-                        // Start fire after theme is fully stopped (iOS needs this)
-                        this._startFire();
-                    }
-                }, 50); // ~24 steps over 1.2s
-            } else {
-                // Theme already stopped, just play fire
-                this._startFire();
-            }
+                    if (this._stopped) return;
+
+                    // Swap to fire sound and play
+                    this.el.src = 'assets/audio/soundreality-fire-sound-334130.mp3';
+                    this.el.currentTime = 0;
+                    this.el.volume = 1;
+                    this.el.play().catch(() => {});
+
+                    // Fade fire out over last 1.5s of burn
+                    this._fireTimeoutId = setTimeout(() => {
+                        const fireFade = setInterval(() => {
+                            if (this.el.volume > 0.04) {
+                                this.el.volume -= 0.04;
+                            } else {
+                                this.el.volume = 0;
+                                this.el.pause();
+                                clearInterval(fireFade);
+                            }
+                        }, 60);
+                        this._fadeId = fireFade;
+                    }, 2000);
+                }
+            }, 50);
         },
 
-        _startFire() {
-            if (!this.fire) return;
-            this.fire.currentTime = 0;
-            this.fire.volume = 1;
-            this.fire.play().catch(() => {});
-
-            // Fade fire out over the last 1.5s of the burn
-            setTimeout(() => {
-                const fireFadeStep = 0.04;
-                this.fadeInterval = setInterval(() => {
-                    if (this.fire.volume > fireFadeStep) {
-                        this.fire.volume -= fireFadeStep;
-                    } else {
-                        this.fire.volume = 0;
-                        this.fire.pause();
-                        clearInterval(this.fadeInterval);
-                    }
-                }, 60);
-            }, 2000);
-        },
-
-        // Kill all audio immediately
+        // Kill everything
         stop() {
-            if (this.theme) { this.theme.pause(); this.theme.currentTime = 0; this.theme.volume = 0; }
-            if (this.fire) { this.fire.pause(); this.fire.currentTime = 0; this.fire.volume = 0; }
-            if (this.fadeInterval) clearInterval(this.fadeInterval);
+            this._stopped = true;
+            if (this._fadeId) { clearInterval(this._fadeId); this._fadeId = null; }
+            if (this._fireTimeoutId) { clearTimeout(this._fireTimeoutId); this._fireTimeoutId = null; }
+            if (this.el) { this.el.pause(); this.el.currentTime = 0; this.el.volume = 0; }
         },
     };
 
