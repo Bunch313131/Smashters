@@ -5472,11 +5472,6 @@
         canvas.width = W;
         canvas.height = H;
 
-        // Force final state with !important (overrides animation fill without removing it)
-        phase2El.querySelectorAll('.splash-logo, .splash-title, .splash-year').forEach(el => {
-            el.style.setProperty('opacity', '1', 'important');
-        });
-
         // Build white logo and pre-load into browser cache (html2canvas ignores CSS filter)
         const logoImg = phase2El.querySelector('.splash-logo');
         let originalSrc = null;
@@ -5520,7 +5515,13 @@
         try {
             snapshot = await html2canvas(phase2El, {
                 width: W, height: H, scale: 1,
-                backgroundColor: null, logging: false
+                backgroundColor: null, logging: false,
+                onclone: (clonedDoc) => {
+                    // Force opacity on clone only — visible DOM untouched (no shift)
+                    clonedDoc.querySelectorAll('.splash-logo, .splash-title, .splash-year').forEach(el => {
+                        el.style.setProperty('opacity', '1', 'important');
+                    });
+                }
             });
         } catch(e) {
             if (originalSrc) { logoImg.src = originalSrc; logoImg.style.filter = ''; logoImg.style.width = ''; logoImg.style.height = ''; }
