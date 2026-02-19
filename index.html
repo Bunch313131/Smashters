@@ -1919,6 +1919,7 @@
             currentTeam: 'A',
         },
         matches: {},
+        bonusEvents: {},
         ui: {
             activeTab: 'schedule',
             activeMatchId: null,
@@ -1961,6 +1962,7 @@
                     players: parsed.players || {},
                     draft: { ...base.draft, ...parsed.draft },
                     matches,
+                    bonusEvents: parsed.bonusEvents || {},
                     ui: { ...base.ui, ...parsed.ui, settingsUnlocked: false },
                 };
 
@@ -2326,12 +2328,32 @@
         return { A: 0, B: 1, settled: true };
     }
 
+    function getBonusEventPoints(sessionId) {
+        let a = 0, b = 0;
+        Object.values(S.bonusEvents).forEach(evt => {
+            if (arguments.length === 0) {
+                // No argument: sum ALL bonus events
+                a += (evt.pointsA || 0);
+                b += (evt.pointsB || 0);
+            } else if (sessionId === null) {
+                // Explicit null: standalone events only
+                if (!evt.sessionId) { a += (evt.pointsA || 0); b += (evt.pointsB || 0); }
+            } else {
+                // Specific session ID
+                if (evt.sessionId === sessionId) { a += (evt.pointsA || 0); b += (evt.pointsB || 0); }
+            }
+        });
+        return { A: a, B: b };
+    }
+
     function getTeamScores() {
         let a = 0, b = 0;
         Object.values(S.matches).forEach(m => {
             const pts = getMatchPoints(m);
             a += pts.A; b += pts.B;
         });
+        const bonus = getBonusEventPoints();
+        a += bonus.A; b += bonus.B;
         return { A: a, B: b };
     }
 
@@ -2342,6 +2364,8 @@
             const pts = getMatchPoints(m);
             a += pts.A; b += pts.B;
         });
+        const bonus = getBonusEventPoints(sessionId);
+        a += bonus.A; b += bonus.B;
         return { A: a, B: b };
     }
 
@@ -2381,6 +2405,8 @@
             if (!pts.settled) hasProjections = true;
         });
 
+        const bonus = getBonusEventPoints();
+        a += bonus.A; b += bonus.B;
         return { A: a, B: b, hasProjections };
     }
 
@@ -2589,7 +2615,7 @@
         const el = document.getElementById('leaderboard-content');
         const allMatches = Object.values(S.matches);
 
-        if (allMatches.length === 0 && Object.keys(S.players).length === 0) {
+        if (allMatches.length === 0 && Object.keys(S.players).length === 0 && Object.keys(S.bonusEvents).length === 0) {
             el.innerHTML = `<div class="lb-empty"><img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC" class="lb-empty-logo"><h3>Welcome to The Smashters</h3>
                 <p>Add players in the <strong>Players</strong> tab to get started,<br>then set up matches in the <strong>Matches</strong> tab.</p></div>`;
             return;
@@ -2602,7 +2628,11 @@
         const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
         sessions.forEach((session, index) => {
             const matches = getMatchesBySession(session.id);
-            if (matches.length > 0) {
+            const sessionBonuses = Object.values(S.bonusEvents)
+                .filter(evt => evt.sessionId === session.id)
+                .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            if (matches.length > 0 || sessionBonuses.length > 0) {
                 const formatLabel = {
                     fourball: 'Four Ball',
                     foursomes: 'Foursomes',
@@ -2613,21 +2643,46 @@
                 html += `<div class="lb-board" ${index > 0 ? 'style="margin-top:16px;"' : ''}>`;
                 html += `<div class="lb-section-header">${session.name} &mdash; ${formatLabel}</div>`;
                 html += matches.map(m => renderLeaderboardMatch(m)).join('');
+                sessionBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
                 html += `</div>`;
             }
         });
 
+        // Standalone bonus events (no session tie)
+        const standaloneBonuses = Object.values(S.bonusEvents)
+            .filter(evt => !evt.sessionId)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+        if (standaloneBonuses.length > 0) {
+            html += `<div class="lb-board" style="margin-top:16px;">`;
+            html += `<div class="lb-section-header">Bonus Events</div>`;
+            standaloneBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
+            html += `</div>`;
+        }
+
         // Build session subtotals breakdown
         let sessionBreakdownA = '';
         let sessionBreakdownB = '';
-        sessions.forEach((session, idx) => {
+        let breakdownParts = 0;
+        sessions.forEach(session => {
             const matches = getMatchesBySession(session.id);
-            if (matches.length > 0) {
+            const sessionBonuses = Object.values(S.bonusEvents).filter(evt => evt.sessionId === session.id);
+            if (matches.length > 0 || sessionBonuses.length > 0) {
                 const sessionScores = getSessionScores(session.id);
-                sessionBreakdownA += `${idx > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.A)}`;
-                sessionBreakdownB += `${idx > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.B)}`;
+                sessionBreakdownA += `${breakdownParts > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.A)}`;
+                sessionBreakdownB += `${breakdownParts > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.B)}`;
+                breakdownParts++;
             }
         });
+        // Add standalone bonus subtotal
+        let standaloneA = 0, standaloneB = 0;
+        Object.values(S.bonusEvents).filter(e => !e.sessionId).forEach(e => {
+            standaloneA += (e.pointsA || 0);
+            standaloneB += (e.pointsB || 0);
+        });
+        if (standaloneA > 0 || standaloneB > 0) {
+            sessionBreakdownA += `${breakdownParts > 0 ? ' | ' : ''}Bonus: ${formatScore(standaloneA)}`;
+            sessionBreakdownB += `${breakdownParts > 0 ? ' | ' : ''}Bonus: ${formatScore(standaloneB)}`;
+        }
 
         // Get projected scores
         const projected = getProjectedTeamScores();
@@ -2750,6 +2805,32 @@
                 <div class="lb-cell-b ${cellBClass}">
                     <span class="lb-player-name">${teamBNames}</span>
                     ${scoreB ? `<span class="lb-match-score">${scoreB}</span>` : ''}
+                </div>
+            </div>`;
+    }
+
+    function renderLeaderboardBonusEvent(evt) {
+        const ptsA = evt.pointsA || 0;
+        const ptsB = evt.pointsB || 0;
+        const isALeading = ptsA > ptsB;
+        const isBLeading = ptsB > ptsA;
+
+        let cellAClass = 'tied', cellBClass = 'tied';
+        if (isALeading) { cellAClass = 'leading'; }
+        else if (isBLeading) { cellBClass = 'leading'; }
+
+        const notesHtml = evt.notes ? `<span style="display:block;font-size:0.65rem;color:#888;font-style:normal;margin-top:1px;">${evt.notes}</span>` : '';
+
+        return `
+            <div class="lb-match-row">
+                <div class="lb-cell-a ${cellAClass}">
+                    ${ptsA > 0 ? `<span class="lb-match-score">${formatScore(ptsA)}</span>` : ''}
+                    <span class="lb-player-name" style="font-style:italic;">${evt.name}${notesHtml}</span>
+                </div>
+                <div class="lb-cell-thru" style="font-size:0.6rem;">&#9733;</div>
+                <div class="lb-cell-b ${cellBClass}">
+                    <span class="lb-player-name" style="font-style:italic;">${evt.name}${notesHtml}</span>
+                    ${ptsB > 0 ? `<span class="lb-match-score">${formatScore(ptsB)}</span>` : ''}
                 </div>
             </div>`;
     }
@@ -4380,6 +4461,45 @@
             </div>
 
             <div class="settings-section">
+                <div class="settings-section-header">Bonus Events</div>
+                <div class="settings-section-body">
+                    <p class="text-sm text-muted mb-16">Award custom points to teams for side events (e.g., Closest to Pin, Fastest Hole, Skills Challenge).</p>
+                    <div id="bonusEventsListSettings">
+                        ${Object.values(S.bonusEvents)
+                            .sort((a, b) => (a.order || 0) - (b.order || 0))
+                            .map(evt => `
+                            <div class="session-config-row" style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;flex-wrap:wrap;">
+                                <input class="form-input" value="${evt.name || ''}" id="bonus_name_${evt.id}"
+                                    style="flex:2;min-width:120px;" placeholder="Event name">
+                                <select class="form-input" id="bonus_session_${evt.id}" style="flex:1.5;min-width:100px;">
+                                    <option value="" ${!evt.sessionId ? 'selected' : ''}>Standalone</option>
+                                    ${S.config.sessions.sort((a,b) => a.order - b.order).map(s =>
+                                        `<option value="${s.id}" ${evt.sessionId === s.id ? 'selected' : ''}>${s.name}</option>`
+                                    ).join('')}
+                                </select>
+                                <div style="display:flex;align-items:center;gap:4px;">
+                                    <label class="text-sm" style="white-space:nowrap;color:${S.config.teamA.color};font-weight:600;">${S.config.teamA.name}:</label>
+                                    <input class="form-input" type="number" id="bonus_ptsA_${evt.id}"
+                                        value="${evt.pointsA || 0}" min="0" step="0.5" style="width:60px;">
+                                </div>
+                                <div style="display:flex;align-items:center;gap:4px;">
+                                    <label class="text-sm" style="white-space:nowrap;color:${S.config.teamB.color};font-weight:600;">${S.config.teamB.name}:</label>
+                                    <input class="form-input" type="number" id="bonus_ptsB_${evt.id}"
+                                        value="${evt.pointsB || 0}" min="0" step="0.5" style="width:60px;">
+                                </div>
+                                <input class="form-input" value="${evt.notes || ''}" id="bonus_notes_${evt.id}"
+                                    style="flex:2;min-width:140px;" placeholder="Notes (optional)">
+                                <button class="btn btn-sm" onclick="deleteBonusEvent('${evt.id}')"
+                                    style="background:var(--masters-red);color:#fff;padding:4px 8px;" title="Delete">×</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${Object.keys(S.bonusEvents).length === 0 ? '<p class="text-sm text-muted" style="text-align:center;font-style:italic;">No bonus events yet.</p>' : ''}
+                    <button class="btn btn-outline btn-sm" onclick="addBonusEvent()" style="margin-top:8px;">+ Add Bonus Event</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <div class="settings-section-header">Scoring</div>
                 <div class="settings-section-body">
                     <div class="form-group">
@@ -4440,6 +4560,20 @@
             if (nameInput) session.name = nameInput.value.trim() || session.name;
             if (formatInput) session.format = formatInput.value;
             if (dateInput) session.date = dateInput.value;
+        });
+
+        // Save bonus events
+        Object.keys(S.bonusEvents).forEach(id => {
+            const nameInput = document.getElementById(`bonus_name_${id}`);
+            const sessionInput = document.getElementById(`bonus_session_${id}`);
+            const ptsAInput = document.getElementById(`bonus_ptsA_${id}`);
+            const ptsBInput = document.getElementById(`bonus_ptsB_${id}`);
+            const notesInput = document.getElementById(`bonus_notes_${id}`);
+            if (nameInput) S.bonusEvents[id].name = nameInput.value.trim() || 'Bonus Event';
+            if (sessionInput) S.bonusEvents[id].sessionId = sessionInput.value || null;
+            if (ptsAInput) S.bonusEvents[id].pointsA = parseFloat(ptsAInput.value) || 0;
+            if (ptsBInput) S.bonusEvents[id].pointsB = parseFloat(ptsBInput.value) || 0;
+            if (notesInput) S.bonusEvents[id].notes = notesInput.value.trim();
         });
 
         // Save course holes
@@ -4665,6 +4799,10 @@
                 delete S.matches[matchId];
             }
         });
+        // Detach bonus events from deleted session (make standalone)
+        Object.values(S.bonusEvents).forEach(evt => {
+            if (evt.sessionId === sessionId) evt.sessionId = null;
+        });
         saveState();
         renderSettings();
         showToast('Session deleted');
@@ -4688,6 +4826,33 @@
             saveState();
             renderSettings();
         }
+    }
+
+    function addBonusEvent() {
+        const id = 'bonus-' + Date.now();
+        const maxOrder = Math.max(...Object.values(S.bonusEvents).map(e => e.order || 0), 0);
+        S.bonusEvents[id] = {
+            id,
+            name: 'New Bonus Event',
+            sessionId: null,
+            pointsA: 0,
+            pointsB: 0,
+            notes: '',
+            order: maxOrder + 1,
+        };
+        saveState();
+        renderSettings();
+        showToast('Bonus event added');
+    }
+
+    function deleteBonusEvent(id) {
+        const evt = S.bonusEvents[id];
+        if (!evt) return;
+        if (!confirm(`Delete bonus event "${evt.name}"?`)) return;
+        delete S.bonusEvents[id];
+        saveState();
+        renderSettings();
+        showToast('Bonus event deleted');
     }
 
     function resetAll() {
@@ -4930,6 +5095,7 @@
                                 config: S.config,
                                 players: S.players,
                                 matches: S.matches,
+                                bonusEvents: S.bonusEvents,
                                 scorerCode: this.scorerCode,
                                 adminPin: this.adminPin,
                                 updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -4957,6 +5123,7 @@
                                 config: S.config,
                                 players: S.players,
                                 matches: S.matches,
+                                bonusEvents: S.bonusEvents,
                                 scorerCode: this.scorerCode,
                                 adminPin: this.adminPin,
                                 updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -4976,6 +5143,7 @@
                         config: S.config,
                         players: S.players,
                         matches: S.matches,
+                        bonusEvents: S.bonusEvents,
                         scorerCode: this.scorerCode,
                         adminPin: this.adminPin,
                         updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -5033,6 +5201,7 @@
                     config: S.config,
                     players: S.players,
                     matches: S.matches,
+                    bonusEvents: S.bonusEvents,
                     matchCodes: codeToMatch,
                     scorerCode: this.scorerCode,
                     adminPin: this.adminPin,
@@ -5095,6 +5264,7 @@
                     config: S.config,
                     players: S.players,
                     matches: S.matches,
+                    bonusEvents: S.bonusEvents,
                     updatedAt: firebase.database.ServerValue.TIMESTAMP,
                 }).then(() => {
                     setTimeout(() => { this._suppressListener = false; }, 500);
@@ -5191,6 +5361,7 @@
             }
             S.players = val.players || {};
             S.matches = val.matches || {};
+            S.bonusEvents = val.bonusEvents || {};
 
             // Ensure all matches have holes property initialized
             Object.values(S.matches).forEach(match => {
