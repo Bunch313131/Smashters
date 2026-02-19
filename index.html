@@ -1234,6 +1234,7 @@
             max-width: 220px;
             height: auto;
             margin-bottom: 30px;
+            filter: brightness(0) invert(1);
         }
         .gate-title {
             font-family: 'Azalea', 'Georgia', serif;
@@ -1749,9 +1750,6 @@
     </style>
 </head>
 <body>
-
-    <!-- Single combined splash audio -->
-    <audio id="splashAudio" preload="auto" src="assets/audio/splash_audio.mp3"></audio>
 
     <!-- ═══════════════════════════════════════════════════════
          MOBILE GATE: Add to Home Screen
@@ -5293,54 +5291,48 @@
     }
 
     // ─────────────────────────────────────────────────────────
-    // SPLASH AUDIO (single combined file)
+    // SPLASH AUDIO (Web Audio API — no lock screen controls)
     // ─────────────────────────────────────────────────────────
     const SplashAudio = {
-        el: null,
+        _ctx: null,
+        _source: null,
+        _gain: null,
         _stopped: false,
         _fadeRAF: null,
 
+        // Call from user gesture (opt-in tap) — fetches, decodes, and plays
         play() {
-            this.el = document.getElementById('splashAudio');
-            if (!this.el) return;
             this._stopped = false;
-            this.el.currentTime = 0;
-            this.el.volume = 1;
-            this.el.play().catch(() => {});
-        },
+            try {
+                this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch(e) { return; }
 
-        fadeOut(duration) {
-            duration = duration || 2000;
-            if (!this.el || this._stopped) return;
+            this._gain = this._ctx.createGain();
+            this._gain.gain.value = 1;
+            this._gain.connect(this._ctx.destination);
 
-            const fadeStart = performance.now();
-            const startVol = this.el.volume;
-
-            const fade = (now) => {
-                if (this._stopped) return;
-                const progress = Math.min((now - fadeStart) / duration, 1);
-                this.el.volume = Math.max(0, startVol * (1 - progress));
-                if (progress < 1) {
-                    this._fadeRAF = requestAnimationFrame(fade);
-                } else {
-                    this._destroy();
-                }
-            };
-            this._fadeRAF = requestAnimationFrame(fade);
-        },
-
-        _destroy() {
-            if (this.el) {
-                this.el.pause();
-                this.el.removeAttribute('src');
-                this.el.load();
-            }
+            fetch('assets/audio/splash_audio.mp3')
+                .then(r => r.arrayBuffer())
+                .then(buf => this._ctx.decodeAudioData(buf))
+                .then(decoded => {
+                    if (this._stopped) return;
+                    this._source = this._ctx.createBufferSource();
+                    this._source.buffer = decoded;
+                    this._source.connect(this._gain);
+                    this._source.start(0);
+                })
+                .catch(() => {});
         },
 
         stop() {
             this._stopped = true;
             if (this._fadeRAF) { cancelAnimationFrame(this._fadeRAF); this._fadeRAF = null; }
-            this._destroy();
+            try { if (this._source) this._source.stop(); } catch(e) {}
+            if (this._gain) this._gain.disconnect();
+            if (this._ctx) this._ctx.close().catch(() => {});
+            this._source = null;
+            this._gain = null;
+            this._ctx = null;
         },
     };
 
@@ -5356,7 +5348,7 @@
                 <h3>How to Install</h3>
                 <div class="gate-step">
                     <span class="gate-step-num">1</span>
-                    <span>Tap the <strong>Share</strong> button at the bottom of Safari</span>
+                    <span>Tap the <strong>Share</strong> button <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin:0 2px"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> at the bottom of Safari</span>
                 </div>
                 <div class="gate-step">
                     <span class="gate-step-num">2</span>
