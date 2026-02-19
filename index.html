@@ -5425,9 +5425,6 @@
     // ─────────────────────────────────────────────────────────
     // SPLASH FLOW
     // ─────────────────────────────────────────────────────────
-    // Pre-captured snapshot stored here so startBurnEffect can use it without any DOM manipulation
-    let _preCapturedSnapshot = null;
-
     function showSplash() {
         const phase1 = document.getElementById('splashPhase1');
         const phase2 = document.getElementById('splashPhase2');
@@ -5455,81 +5452,11 @@
                 phase1.classList.add('hidden');
             }, 1000);
 
-            // Pre-capture snapshot at 2.5s (all animations done by then)
-            // Any tiny shift from html2canvas blends with animation settle
-            setTimeout(() => {
-                preCaptureSnapshot(phase2);
-            }, 2500);
-
-            // Burn starts at 4s — uses pre-captured snapshot, zero DOM manipulation
+            // Burn starts at 4s into phase 2 (audio crossfade is baked into file)
             setTimeout(() => {
                 startBurnEffect(phase2);
             }, 4000);
         }, 3750);
-    }
-
-    async function preCaptureSnapshot(phase2El) {
-        const W = window.innerWidth;
-        const H = window.innerHeight;
-
-        // Build white logo (html2canvas ignores CSS filter)
-        const logoImg = phase2El.querySelector('.splash-logo');
-        let originalSrc = null;
-        if (logoImg && logoImg.naturalWidth) {
-            try {
-                const offCanvas = document.createElement('canvas');
-                offCanvas.width = logoImg.naturalWidth;
-                offCanvas.height = logoImg.naturalHeight;
-                const offCtx = offCanvas.getContext('2d');
-                offCtx.drawImage(logoImg, 0, 0);
-                const imgData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
-                const px = imgData.data;
-                for (let i = 0; i < px.length; i += 4) {
-                    if (px[i + 3] > 0) { px[i] = 255; px[i+1] = 255; px[i+2] = 255; }
-                }
-                offCtx.putImageData(imgData, 0, 0);
-                const whiteDataUrl = offCanvas.toDataURL();
-
-                // Pre-load into browser cache
-                await new Promise(resolve => {
-                    const preload = new Image();
-                    preload.onload = resolve;
-                    preload.onerror = resolve;
-                    preload.src = whiteDataUrl;
-                });
-
-                // Lock dimensions, swap src
-                const rect = logoImg.getBoundingClientRect();
-                logoImg.style.width = rect.width + 'px';
-                logoImg.style.height = rect.height + 'px';
-                originalSrc = logoImg.src;
-                logoImg.src = whiteDataUrl;
-                logoImg.style.filter = 'none';
-            } catch(e) {}
-        }
-
-        // Capture snapshot
-        try {
-            _preCapturedSnapshot = await html2canvas(phase2El, {
-                width: W, height: H, scale: 1,
-                backgroundColor: null, logging: false,
-                onclone: (clonedDoc) => {
-                    clonedDoc.querySelectorAll('.splash-logo, .splash-title, .splash-year').forEach(el => {
-                        el.style.setProperty('opacity', '1', 'important');
-                    });
-                }
-            });
-        } catch(e) {
-            _preCapturedSnapshot = null;
-        }
-
-        // Restore logo immediately
-        if (originalSrc) {
-            logoImg.src = originalSrc;
-            logoImg.style.filter = '';
-            logoImg.style.width = '';
-            logoImg.style.height = '';
-        }
     }
 
     function hideSplash() {
@@ -5537,7 +5464,7 @@
         document.getElementById('splashPhase2').classList.add('hidden');
     }
 
-    async function startBurnEffect(phase2El) {
+    function startBurnEffect(phase2El) {
         const canvas = document.getElementById('burnCanvas');
         const ctx = canvas.getContext('2d');
         const W = window.innerWidth;
@@ -5545,15 +5472,8 @@
         canvas.width = W;
         canvas.height = H;
 
-        // Use the pre-captured snapshot (captured earlier during phase 2 to avoid shift)
-        const snapshot = _preCapturedSnapshot;
-        if (!snapshot) {
-            phase2El.classList.add('hidden');
-            return;
-        }
-
-        // Hide the real splash — canvas takes over (no DOM manipulation before this point!)
-        phase2El.style.visibility = 'hidden';
+        // No html2canvas! Real DOM stays visible, clipped via CSS clip-path.
+        // Canvas only draws fire/glow/ember effects on top.
 
         // Smooth noise: generate wide control points and interpolate
         const NUM_POINTS = 20;
@@ -5562,20 +5482,17 @@
             controlPoints.push(Math.random() * 60 - 30);
         }
         function smoothNoise(x, t) {
-            // Shift noise over time for organic movement
             const nx = (x / W) * NUM_POINTS + t * 4;
             const idx = Math.floor(nx);
             const frac = nx - idx;
             const a = controlPoints[((idx % NUM_POINTS) + NUM_POINTS) % NUM_POINTS];
             const b = controlPoints[(((idx + 1) % NUM_POINTS) + NUM_POINTS) % NUM_POINTS];
-            // Smooth interpolation
             const smooth = frac * frac * (3 - 2 * frac);
             return a + (b - a) * smooth
                 + Math.sin(x * 0.015 + t * 5) * 18
                 + Math.sin(x * 0.04 + t * 3) * 10;
         }
 
-        // Build the burn edge path
         function buildBurnPath(baseY, t) {
             const points = [];
             const step = 4;
@@ -5603,21 +5520,17 @@
 
             const burnPath = buildBurnPath(baseY, progress);
 
-            // === 1. Draw the remaining splash image, clipped above burn edge ===
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(W, 0);
-            // Down the right edge to the burn line
-            ctx.lineTo(W, burnPath[burnPath.length - 1].y);
-            // Trace burn edge right to left
-            for (let i = burnPath.length - 1; i >= 0; i--) {
-                ctx.lineTo(burnPath[i].x, burnPath[i].y);
+            // === 1. Clip the real DOM — show only below the burn edge ===
+            // Build CSS clip-path polygon: trace burn edge left→right, then bottom-right, bottom-left
+            let clipPoints = '';
+            const step = 8; // Use every other point for performance
+            for (let i = 0; i < burnPath.length; i += step / 4) {
+                const p = burnPath[i];
+                clipPoints += `${p.x}px ${Math.max(0, p.y)}px,`;
             }
-            ctx.closePath();
-            ctx.clip();
-            ctx.drawImage(snapshot, 0, 0, W, H);
-            ctx.restore();
+            // Close: bottom-right corner, bottom-left corner
+            clipPoints += `${W}px ${H}px,0px ${H}px`;
+            phase2El.style.clipPath = `polygon(${clipPoints})`;
 
             // === 2. Draw charring glow along burn edge ===
             ctx.save();
@@ -5664,7 +5577,6 @@
 
             // === 3. Draw flame tongues rising from the burn edge ===
             if (progress < 1) {
-                // Spawn new flames
                 if (Math.random() < 0.6) {
                     const px = Math.floor(Math.random() * burnPath.length);
                     const bp = burnPath[px];
@@ -5691,7 +5603,6 @@
                 const tipY = f.baseY - f.height * f.life;
                 const halfW = f.width * f.life * 0.5;
 
-                // Outer flame (red-orange)
                 const outerGrad = ctx.createLinearGradient(tipX, tipY, tipX, f.baseY);
                 outerGrad.addColorStop(0, `rgba(200, 50, 0, 0)`);
                 outerGrad.addColorStop(0.3, `rgba(220, 80, 0, ${f.life * 0.5})`);
@@ -5706,7 +5617,6 @@
                 ctx.fillStyle = outerGrad;
                 ctx.fill();
 
-                // Inner flame (yellow-white core)
                 const innerGrad = ctx.createLinearGradient(tipX, tipY + f.height * 0.3, tipX, f.baseY);
                 innerGrad.addColorStop(0, `rgba(255, 255, 200, 0)`);
                 innerGrad.addColorStop(0.4, `rgba(255, 230, 100, ${f.life * 0.6})`);
@@ -5774,7 +5684,7 @@
                 requestAnimationFrame(animate);
             } else {
                 phase2El.classList.add('hidden');
-                phase2El.style.visibility = '';
+                phase2El.style.clipPath = '';
                 ctx.clearRect(0, 0, W, H);
                 canvas.width = 0;
                 SplashAudio.stop();
