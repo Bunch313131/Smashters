@@ -1961,7 +1961,7 @@
                     players: parsed.players || {},
                     draft: { ...base.draft, ...parsed.draft },
                     matches,
-                    ui: { ...base.ui, ...parsed.ui },
+                    ui: { ...base.ui, ...parsed.ui, settingsUnlocked: false },
                 };
 
                 console.log(`State loaded: ${Object.keys(loadedState.players).length} players, ${Object.keys(loadedState.matches).length} matches`);
