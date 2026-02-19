@@ -5473,17 +5473,22 @@
             el.style.animation = 'none';
         });
 
-        // html2canvas doesn't support CSS filter, so pre-render logo as white
+        // html2canvas ignores CSS filter — manually make logo white via pixel data
         const logoImg = phase2El.querySelector('.splash-logo');
         let originalSrc = null;
-        if (logoImg) {
+        if (logoImg && logoImg.naturalWidth) {
             try {
                 const offCanvas = document.createElement('canvas');
                 offCanvas.width = logoImg.naturalWidth;
                 offCanvas.height = logoImg.naturalHeight;
                 const offCtx = offCanvas.getContext('2d');
-                offCtx.filter = 'brightness(0) invert(1)';
                 offCtx.drawImage(logoImg, 0, 0);
+                const imgData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+                const px = imgData.data;
+                for (let i = 0; i < px.length; i += 4) {
+                    if (px[i + 3] > 0) { px[i] = 255; px[i+1] = 255; px[i+2] = 255; }
+                }
+                offCtx.putImageData(imgData, 0, 0);
                 originalSrc = logoImg.src;
                 logoImg.src = offCanvas.toDataURL();
                 logoImg.style.filter = 'none';
