@@ -5145,12 +5145,29 @@
     // SPLASH AUDIO
     // ─────────────────────────────────────────────────────────
     const SplashAudio = {
-        el: null,        // single audio element for iOS compatibility
-        _fadeId: null,
-        _fireTimeoutId: null,
+        el: null,           // <audio> element for masters theme
         _stopped: false,
+        _themeFadeRAF: null,
+        _fireFadeRAF: null,
 
-        // Use a SINGLE audio element — swap src as needed (iOS requirement)
+        // Web Audio API for fire (independent channel, gain > 1.0 for volume boost)
+        _audioCtx: null,
+        _fireBuffer: null,
+        _fireSource: null,
+        _fireGain: null,
+
+        // Pre-fetch + decode fire audio so it's ready instantly
+        prefetchFire() {
+            try {
+                this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                fetch('assets/audio/soundreality-fire-sound-334130.mp3')
+                    .then(r => r.arrayBuffer())
+                    .then(buf => this._audioCtx.decodeAudioData(buf))
+                    .then(decoded => { this._fireBuffer = decoded; })
+                    .catch(() => {});
+            } catch(e) {}
+        },
+
         playTheme() {
             this.el = document.getElementById('splashAudioPlayer');
             if (!this.el) return;
@@ -5159,11 +5176,19 @@
             this.el.currentTime = 0;
             this.el.volume = 1;
 
+            // Also resume AudioContext (needs user gesture on iOS — piggyback on tap)
+            if (this._audioCtx && this._audioCtx.state === 'suspended') {
+                this._audioCtx.resume().catch(() => {});
+            }
+
             const playPromise = this.el.play();
             if (playPromise) {
                 playPromise.catch(() => {
                     const unlockAudio = () => {
                         if (!this._stopped) this.el.play().catch(() => {});
+                        if (this._audioCtx && this._audioCtx.state === 'suspended') {
+                            this._audioCtx.resume().catch(() => {});
+                        }
                         document.removeEventListener('touchstart', unlockAudio);
                         document.removeEventListener('click', unlockAudio);
                     };
@@ -5173,61 +5198,101 @@
             }
         },
 
-        // Fade theme out, swap to fire sound, fade fire out at end
+        // True crossfade: theme fades down while fire fades up simultaneously
         crossfadeToFire() {
-            if (!this.el || this._stopped) return;
+            if (this._stopped) return;
 
-            // Smooth fade out of theme over ~1.2s
-            const fadeStep = 0.04;
-            this._fadeId = setInterval(() => {
-                if (this.el.volume > fadeStep) {
-                    this.el.volume -= fadeStep;
+            // Start fire via Web Audio API at volume 0, ramp up
+            this._startFireSound();
+
+            // Fade theme down over ~1.5s using rAF (more reliable than setInterval on iOS)
+            const fadeDuration = 1500;
+            const fadeStart = performance.now();
+
+            const fadeTheme = (now) => {
+                if (this._stopped) return;
+                const elapsed = now - fadeStart;
+                const progress = Math.min(elapsed / fadeDuration, 1);
+                if (this.el) this.el.volume = Math.max(0, 1 - progress);
+                if (progress < 1) {
+                    this._themeFadeRAF = requestAnimationFrame(fadeTheme);
                 } else {
-                    this.el.volume = 0;
-                    this.el.pause();
-                    clearInterval(this._fadeId);
-                    this._fadeId = null;
-
-                    if (this._stopped) return;
-
-                    // Swap to fire sound — wait for it to load before playing
-                    this.el.src = 'assets/audio/soundreality-fire-sound-334130.mp3';
-                    this.el.volume = 1;
-                    this.el.currentTime = 0;
-
-                    const onCanPlay = () => {
-                        this.el.removeEventListener('canplay', onCanPlay);
-                        if (this._stopped) return;
-                        this.el.volume = 1;
-                        this.el.play().catch(() => {});
-
-                        // Fade fire out over last 1.5s of burn
-                        this._fireTimeoutId = setTimeout(() => {
-                            const fireFade = setInterval(() => {
-                                if (this.el.volume > 0.04) {
-                                    this.el.volume -= 0.04;
-                                } else {
-                                    this.el.volume = 0;
-                                    this.el.pause();
-                                    clearInterval(fireFade);
-                                }
-                            }, 60);
-                            this._fadeId = fireFade;
-                        }, 2000);
-                    };
-
-                    this.el.addEventListener('canplay', onCanPlay);
-                    this.el.load();
+                    if (this.el) { this.el.pause(); this.el.volume = 0; }
                 }
-            }, 50);
+            };
+            this._themeFadeRAF = requestAnimationFrame(fadeTheme);
         },
 
-        // Kill everything
+        _startFireSound() {
+            if (!this._audioCtx || !this._fireBuffer) return;
+
+            // Resume context if suspended (iOS)
+            if (this._audioCtx.state === 'suspended') {
+                this._audioCtx.resume().catch(() => {});
+            }
+
+            this._fireGain = this._audioCtx.createGain();
+            this._fireGain.gain.value = 0;
+            this._fireGain.connect(this._audioCtx.destination);
+
+            this._fireSource = this._audioCtx.createBufferSource();
+            this._fireSource.buffer = this._fireBuffer;
+            this._fireSource.connect(this._fireGain);
+            this._fireSource.start(0);
+
+            // Ramp fire up to 2.0 gain (louder than 1.0) over 800ms
+            const rampDuration = 800;
+            const rampStart = performance.now();
+            const maxGain = 2.0;
+
+            const rampUp = (now) => {
+                if (this._stopped) return;
+                const elapsed = now - rampStart;
+                const progress = Math.min(elapsed / rampDuration, 1);
+                if (this._fireGain) this._fireGain.gain.value = progress * maxGain;
+                if (progress < 1) {
+                    requestAnimationFrame(rampUp);
+                }
+            };
+            requestAnimationFrame(rampUp);
+        },
+
+        // Fade fire out (called when burn effect nears completion)
+        fadeOutFire(duration) {
+            duration = duration || 1500;
+            if (!this._fireGain || this._stopped) return;
+
+            const fadeStart = performance.now();
+            const startVol = this._fireGain.gain.value;
+
+            const fadeOut = (now) => {
+                if (this._stopped) return;
+                const elapsed = now - fadeStart;
+                const progress = Math.min(elapsed / duration, 1);
+                if (this._fireGain) this._fireGain.gain.value = startVol * (1 - progress);
+                if (progress < 1) {
+                    this._fireFadeRAF = requestAnimationFrame(fadeOut);
+                } else {
+                    this._killFire();
+                }
+            };
+            this._fireFadeRAF = requestAnimationFrame(fadeOut);
+        },
+
+        _killFire() {
+            try {
+                if (this._fireSource) { this._fireSource.stop(); this._fireSource = null; }
+            } catch(e) {}
+            if (this._fireGain) { this._fireGain.disconnect(); this._fireGain = null; }
+        },
+
+        // Hard stop everything
         stop() {
             this._stopped = true;
-            if (this._fadeId) { clearInterval(this._fadeId); this._fadeId = null; }
-            if (this._fireTimeoutId) { clearTimeout(this._fireTimeoutId); this._fireTimeoutId = null; }
+            if (this._themeFadeRAF) { cancelAnimationFrame(this._themeFadeRAF); this._themeFadeRAF = null; }
+            if (this._fireFadeRAF) { cancelAnimationFrame(this._fireFadeRAF); this._fireFadeRAF = null; }
             if (this.el) { this.el.pause(); this.el.currentTime = 0; this.el.volume = 0; }
+            this._killFire();
         },
     };
 
@@ -5248,6 +5313,9 @@
         phase1.classList.remove('hidden', 'fade-out');
         phase2.classList.remove('hidden', 'fade-out');
 
+        // Pre-fetch fire audio so it's decoded and ready
+        SplashAudio.prefetchFire();
+
         // Start masters theme immediately with phase 1
         SplashAudio.playTheme();
 
@@ -5263,15 +5331,11 @@
                 phase1.classList.add('hidden');
             }, 1000);
 
-            // Start fading theme 1.5s before burn (smooth transition)
+            // Crossfade + burn start together at 4s into phase 2
             setTimeout(() => {
                 SplashAudio.crossfadeToFire();
-            }, 3750);
-
-            // Start burn visual after theme has faded (~5.25s)
-            setTimeout(() => {
                 startBurnEffect(phase2);
-            }, 5250);
+            }, 4000);
         }, 3750);
     }
 
@@ -5336,6 +5400,7 @@
         const BURN_DURATION = 3200;
         const embers = [];
         const flames = [];
+        let burnFireFading = false;
         const startTime = performance.now();
 
         function animate(now) {
@@ -5510,6 +5575,12 @@
                 ctx.fill();
             }
             ctx.restore();
+
+            // Start fading fire audio as burn nears completion
+            if (progress >= 0.85 && !burnFireFading) {
+                burnFireFading = true;
+                SplashAudio.fadeOutFire(2000);
+            }
 
             if (progress < 1 || embers.length > 0 || flames.length > 0) {
                 requestAnimationFrame(animate);
