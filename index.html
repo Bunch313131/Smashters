@@ -5150,19 +5150,34 @@
         fire: null,
         fadeInterval: null,
 
+        // Unlock an audio element by briefly playing it silently
+        _unlock(el) {
+            if (!el) return;
+            el.volume = 0;
+            el.play().then(() => {
+                el.pause();
+                el.currentTime = 0;
+            }).catch(() => {});
+        },
+
         // Start masters theme — with fallback for autoplay restrictions
         playTheme() {
             this.theme = document.getElementById('mastersTheme');
+            this.fire = document.getElementById('fireSound');
             if (!this.theme) return;
             this.theme.currentTime = 0;
             this.theme.volume = 1;
 
             const playPromise = this.theme.play();
             if (playPromise) {
-                playPromise.catch(() => {
+                playPromise.then(() => {
+                    // Theme playing — also unlock fire element for later
+                    this._unlock(this.fire);
+                }).catch(() => {
                     // Autoplay blocked — start on first user interaction
                     const unlockAudio = () => {
                         this.theme.play().catch(() => {});
+                        this._unlock(this.fire);
                         document.removeEventListener('touchstart', unlockAudio);
                         document.removeEventListener('click', unlockAudio);
                     };
@@ -5172,39 +5187,50 @@
             }
         },
 
-        // Stop theme, then play fire sound (iOS only allows one audio at a time)
+        // Fade theme out smoothly, then start fire (iOS single audio channel)
         crossfadeToFire() {
-            this.fire = document.getElementById('fireSound');
+            if (!this.fire) this.fire = document.getElementById('fireSound');
 
-            // Kill theme immediately so fire can take over
-            if (this.theme) {
-                this.theme.pause();
-                this.theme.currentTime = 0;
-                this.theme.volume = 0;
+            // Smooth fade out of theme over ~1.2s
+            if (this.theme && !this.theme.paused) {
+                const fadeStep = 0.04;
+                const themeFade = setInterval(() => {
+                    if (this.theme.volume > fadeStep) {
+                        this.theme.volume -= fadeStep;
+                    } else {
+                        this.theme.volume = 0;
+                        this.theme.pause();
+                        clearInterval(themeFade);
+
+                        // Start fire after theme is fully stopped (iOS needs this)
+                        this._startFire();
+                    }
+                }, 50); // ~24 steps over 1.2s
+            } else {
+                // Theme already stopped, just play fire
+                this._startFire();
             }
+        },
 
-            // Start fire sound after a brief delay to let iOS release the audio channel
-            if (this.fire) {
-                setTimeout(() => {
-                    this.fire.currentTime = 0;
-                    this.fire.volume = 1;
-                    this.fire.play().catch(() => {});
-                }, 100);
+        _startFire() {
+            if (!this.fire) return;
+            this.fire.currentTime = 0;
+            this.fire.volume = 1;
+            this.fire.play().catch(() => {});
 
-                // Fade fire out over the last 1.5s of the burn (~3.2s burn duration)
-                setTimeout(() => {
-                    const fireFadeStep = 0.04;
-                    this.fadeInterval = setInterval(() => {
-                        if (this.fire.volume > fireFadeStep) {
-                            this.fire.volume -= fireFadeStep;
-                        } else {
-                            this.fire.volume = 0;
-                            this.fire.pause();
-                            clearInterval(this.fadeInterval);
-                        }
-                    }, 60);
-                }, 2000);
-            }
+            // Fade fire out over the last 1.5s of the burn
+            setTimeout(() => {
+                const fireFadeStep = 0.04;
+                this.fadeInterval = setInterval(() => {
+                    if (this.fire.volume > fireFadeStep) {
+                        this.fire.volume -= fireFadeStep;
+                    } else {
+                        this.fire.volume = 0;
+                        this.fire.pause();
+                        clearInterval(this.fadeInterval);
+                    }
+                }, 60);
+            }, 2000);
         },
 
         // Kill all audio immediately
@@ -5246,9 +5272,13 @@
                 phase1.classList.add('hidden');
             }, 1000);
 
-            // Hold phase 2 for 5.25s, then burn away
+            // Start fading theme 1.5s before burn (smooth transition)
             setTimeout(() => {
                 SplashAudio.crossfadeToFire();
+            }, 3750);
+
+            // Start burn visual after theme has faded (~5.25s)
+            setTimeout(() => {
                 startBurnEffect(phase2);
             }, 5250);
         }, 3750);
