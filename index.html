@@ -2642,6 +2642,17 @@
                 html += `<div class="lb-section-header">${session.name} &mdash; ${formatLabel}</div>`;
                 html += matches.map(m => renderLeaderboardMatch(m)).join('');
                 sessionBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
+                // Session subtotal row
+                const sessScores = getSessionScores(session.id);
+                html += `<div class="lb-match-row" style="background:var(--masters-dark);min-height:36px;">
+                    <div class="lb-cell-a" style="background:var(--masters-dark);color:var(--masters-white);font-weight:700;justify-content:center;font-size:0.85rem;">
+                        ${formatScore(sessScores.A)}
+                    </div>
+                    <div class="lb-cell-thru" style="font-size:0.6rem;color:var(--masters-yellow);font-weight:600;">PTS</div>
+                    <div class="lb-cell-b" style="background:var(--masters-dark);color:var(--masters-white);font-weight:700;justify-content:center;font-size:0.85rem;">
+                        ${formatScore(sessScores.B)}
+                    </div>
+                </div>`;
                 html += `</div>`;
             }
         });
@@ -2817,17 +2828,19 @@
         if (isALeading) { cellAClass = 'leading'; }
         else if (isBLeading) { cellBClass = 'leading'; }
 
-        const notesHtml = evt.notes ? `<span style="display:block;font-size:0.65rem;color:#888;font-style:normal;margin-top:1px;">${evt.notes}</span>` : '';
+        const notesAHtml = evt.notesA ? `<span style="display:block;font-size:0.65rem;color:#888;margin-top:1px;">${evt.notesA}</span>` : '';
+        const notesBHtml = evt.notesB ? `<span style="display:block;font-size:0.65rem;color:#888;margin-top:1px;">${evt.notesB}</span>` : '';
 
         return `
+            <div class="lb-section-header" style="font-size:0.75rem;padding:7px 16px;">${evt.name}</div>
             <div class="lb-match-row">
                 <div class="lb-cell-a ${cellAClass}">
                     ${ptsA > 0 ? `<span class="lb-match-score">${formatScore(ptsA)}</span>` : ''}
-                    <span class="lb-player-name" style="font-style:italic;">${evt.name}${notesHtml}</span>
+                    <span class="lb-player-name">${S.config.teamA.name}${notesAHtml}</span>
                 </div>
                 <div class="lb-cell-thru" style="font-size:0.6rem;">&#9733;</div>
                 <div class="lb-cell-b ${cellBClass}">
-                    <span class="lb-player-name" style="font-style:italic;">${evt.name}${notesHtml}</span>
+                    <span class="lb-player-name">${S.config.teamB.name}${notesBHtml}</span>
                     ${ptsB > 0 ? `<span class="lb-match-score">${formatScore(ptsB)}</span>` : ''}
                 </div>
             </div>`;
@@ -4485,8 +4498,10 @@
                                     <input class="form-input" type="number" id="bonus_ptsB_${evt.id}"
                                         value="${evt.pointsB || 0}" min="0" step="0.5" style="width:60px;">
                                 </div>
-                                <input class="form-input" value="${evt.notes || ''}" id="bonus_notes_${evt.id}"
-                                    style="flex:2;min-width:140px;" placeholder="Notes (optional)">
+                                <input class="form-input" value="${evt.notesA || evt.notes || ''}" id="bonus_notesA_${evt.id}"
+                                    style="flex:1.5;min-width:100px;" placeholder="${S.config.teamA.name} notes">
+                                <input class="form-input" value="${evt.notesB || ''}" id="bonus_notesB_${evt.id}"
+                                    style="flex:1.5;min-width:100px;" placeholder="${S.config.teamB.name} notes">
                                 <button class="btn btn-sm" onclick="deleteBonusEvent('${evt.id}')"
                                     style="background:var(--masters-red);color:#fff;padding:4px 8px;" title="Delete">×</button>
                             </div>
@@ -4566,12 +4581,15 @@
             const sessionInput = document.getElementById(`bonus_session_${id}`);
             const ptsAInput = document.getElementById(`bonus_ptsA_${id}`);
             const ptsBInput = document.getElementById(`bonus_ptsB_${id}`);
-            const notesInput = document.getElementById(`bonus_notes_${id}`);
+            const notesAInput = document.getElementById(`bonus_notesA_${id}`);
+            const notesBInput = document.getElementById(`bonus_notesB_${id}`);
             if (nameInput) S.bonusEvents[id].name = nameInput.value.trim() || 'Bonus Event';
             if (sessionInput) S.bonusEvents[id].sessionId = sessionInput.value || null;
             if (ptsAInput) S.bonusEvents[id].pointsA = parseFloat(ptsAInput.value) || 0;
             if (ptsBInput) S.bonusEvents[id].pointsB = parseFloat(ptsBInput.value) || 0;
-            if (notesInput) S.bonusEvents[id].notes = notesInput.value.trim();
+            if (notesAInput) S.bonusEvents[id].notesA = notesAInput.value.trim();
+            if (notesBInput) S.bonusEvents[id].notesB = notesBInput.value.trim();
+            delete S.bonusEvents[id].notes;
         });
 
         // Save course holes
@@ -4835,7 +4853,8 @@
             sessionId: null,
             pointsA: 0,
             pointsB: 0,
-            notes: '',
+            notesA: '',
+            notesB: '',
             order: maxOrder + 1,
         };
         saveState();
