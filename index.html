@@ -5845,8 +5845,9 @@
         if (themeMeta) themeMeta.content = '#ffffff';
 
         phase1.classList.remove('hidden', 'fade-out');
-        videoPhase.classList.remove('fade-out');
-        videoPhase.classList.add('hidden');
+        // Video starts visible but transparent — sits above phase 1 (z-index 1001 > 1000)
+        videoPhase.classList.remove('fade-out', 'hidden');
+        videoPhase.style.opacity = '0';
         // Phase 2 stays visible underneath — video (z-index 1001) covers it
         phase2.classList.remove('hidden', 'fade-out');
         phase2.classList.add('active');
@@ -5856,15 +5857,20 @@
 
         // === PHASE 1: DFGC Presents (3.75s) ===
         setTimeout(() => {
-            if (themeMeta) themeMeta.content = '#000000';
-
-            // Fade out phase 1, reveal video (variable speed: 0.6x then 0.3x, ~15s)
-            phase1.classList.add('fade-out');
-            videoPhase.classList.remove('hidden');
+            // Start video and crossfade from phase 1 into video (no black gap)
             videoEl.currentTime = 0;
             videoEl.play().catch(() => {});
+            videoPhase.offsetHeight; // force reflow so browser registers opacity 0
+            videoPhase.style.transition = 'opacity 2.5s ease';
+            videoPhase.style.opacity = '1';
 
-            setTimeout(() => { phase1.classList.add('hidden'); }, 1000);
+            // Clean up phase 1 and inline styles after crossfade completes
+            setTimeout(() => {
+                if (themeMeta) themeMeta.content = '#000000';
+                phase1.classList.add('hidden');
+                videoPhase.style.transition = '';
+                videoPhase.style.opacity = '';
+            }, 2800);
 
             // === VIDEO PHASE: ~15s variable speed (0.6x → 0.3x for jacket linger) ===
             // Start crossfade at 12s — video fades out over 3s, revealing phase 2 underneath
