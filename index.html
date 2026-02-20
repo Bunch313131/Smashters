@@ -5870,17 +5870,28 @@
             setTimeout(() => {
                 if (themeMeta) themeMeta.content = '#00432e';
 
-                // Crossfade: video dissolves (3s CSS) while phase 2 fades in
+                // Crossfade: unhide phase 2 at opacity 0, then fade in
+                phase2.style.opacity = '0';
                 phase2.classList.remove('hidden');
+                phase2.style.transition = 'opacity 3s ease';
+                // Force reflow so the browser registers opacity 0 before transitioning
+                phase2.offsetHeight;
+                phase2.style.opacity = '1';
                 phase2.classList.add('active');
                 videoPhase.classList.add('fade-out');
 
                 setTimeout(() => { videoPhase.classList.add('hidden'); }, 3500);
 
+                // Clean up inline styles after fade-in completes
+                setTimeout(() => {
+                    phase2.style.opacity = '';
+                    phase2.style.transition = '';
+                }, 3200);
+
                 // === PHASE 2: The Smashters (4.5s then burn) ===
                 setTimeout(() => {
                     startBurnEffect(phase2);
-                }, 4500);
+                }, 5000);
             }, 10000);
         }, 3750);
     }
