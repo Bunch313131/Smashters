@@ -1395,7 +1395,7 @@
         /* Video Phase: Jacket video */
         .splash-video {
             background: #000;
-            z-index: 999;
+            z-index: 1001;
             transition: opacity 3s ease;
         }
         .splash-video video {
@@ -5847,8 +5847,9 @@
         phase1.classList.remove('hidden', 'fade-out');
         videoPhase.classList.remove('fade-out');
         videoPhase.classList.add('hidden');
-        phase2.classList.remove('fade-out', 'active');
-        phase2.classList.add('hidden');
+        // Phase 2 stays visible underneath — video (z-index 1001) covers it
+        phase2.classList.remove('hidden', 'fade-out');
+        phase2.classList.add('active');
 
         // Audio starts immediately — already unlocked by opt-in tap
         SplashAudio.play();
@@ -5857,7 +5858,7 @@
         setTimeout(() => {
             if (themeMeta) themeMeta.content = '#000000';
 
-            // Fade out phase 1, reveal video (already baked at 0.75x, 30fps)
+            // Fade out phase 1, reveal video (variable speed: 0.6x then 0.3x, ~15s)
             phase1.classList.add('fade-out');
             videoPhase.classList.remove('hidden');
             videoEl.currentTime = 0;
@@ -5865,34 +5866,21 @@
 
             setTimeout(() => { phase1.classList.add('hidden'); }, 1000);
 
-            // === VIDEO PHASE: ~12.7s at 0.6x, 2s fade-to-black baked in ===
-            // Start crossfade at 10s — 3s overlap for smooth dissolve
+            // === VIDEO PHASE: ~15s variable speed (0.6x → 0.3x for jacket linger) ===
+            // Start crossfade at 12s — video fades out over 3s, revealing phase 2 underneath
             setTimeout(() => {
                 if (themeMeta) themeMeta.content = '#00432e';
 
-                // Crossfade: unhide phase 2 at opacity 0, then fade in
-                phase2.style.opacity = '0';
-                phase2.classList.remove('hidden');
-                phase2.style.transition = 'opacity 3s ease';
-                // Force reflow so the browser registers opacity 0 before transitioning
-                phase2.offsetHeight;
-                phase2.style.opacity = '1';
-                phase2.classList.add('active');
+                // Fade video out — phase 2 is already visible underneath at z-index 999
                 videoPhase.classList.add('fade-out');
 
                 setTimeout(() => { videoPhase.classList.add('hidden'); }, 3500);
 
-                // Clean up inline styles after fade-in completes
-                setTimeout(() => {
-                    phase2.style.opacity = '';
-                    phase2.style.transition = '';
-                }, 3200);
-
-                // === PHASE 2: The Smashters (4.5s then burn) ===
+                // === PHASE 2: The Smashters (5s visible then burn) ===
                 setTimeout(() => {
                     startBurnEffect(phase2);
                 }, 5000);
-            }, 10000);
+            }, 12000);
         }, 3750);
     }
 
