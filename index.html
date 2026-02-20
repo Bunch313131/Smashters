@@ -5846,7 +5846,8 @@
         phase1.classList.remove('hidden', 'fade-out');
         videoPhase.classList.remove('fade-out');
         videoPhase.classList.add('hidden');
-        phase2.classList.remove('hidden', 'fade-out', 'active');
+        phase2.classList.remove('fade-out', 'active');
+        phase2.classList.add('hidden');
 
         // Audio starts immediately — already unlocked by opt-in tap
         SplashAudio.play();
@@ -5872,6 +5873,7 @@
 
                 // Fade out video, reveal phase 2
                 videoPhase.classList.add('fade-out');
+                phase2.classList.remove('hidden');
                 phase2.classList.add('active');
 
                 setTimeout(() => { videoPhase.classList.add('hidden'); }, 1000);
