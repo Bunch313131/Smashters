@@ -5856,34 +5856,31 @@
         setTimeout(() => {
             if (themeMeta) themeMeta.content = '#000000';
 
-            // Fade out phase 1, reveal video
+            // Fade out phase 1, reveal video (already baked at 0.75x, 30fps)
             phase1.classList.add('fade-out');
             videoPhase.classList.remove('hidden');
-            videoEl.playbackRate = 0.75;
             videoEl.currentTime = 0;
             videoEl.play().catch(() => {});
 
             setTimeout(() => { phase1.classList.add('hidden'); }, 1000);
 
-            // === VIDEO PHASE: plays at 0.75x (~10.3s) ===
-            // Wait for video to end, then transition to phase 2
-            const onVideoEnd = () => {
-                videoEl.removeEventListener('ended', onVideoEnd);
+            // === VIDEO PHASE: ~10.2s, has fade-to-black baked into last 1s ===
+            // Start crossfade to phase 2 at 9s (overlaps with video's fade-to-black)
+            setTimeout(() => {
                 if (themeMeta) themeMeta.content = '#00432e';
 
-                // Fade out video, reveal phase 2
-                videoPhase.classList.add('fade-out');
+                // Crossfade: phase 2 fades in while video fades to black
                 phase2.classList.remove('hidden');
                 phase2.classList.add('active');
+                videoPhase.classList.add('fade-out');
 
-                setTimeout(() => { videoPhase.classList.add('hidden'); }, 1000);
+                setTimeout(() => { videoPhase.classList.add('hidden'); }, 1200);
 
                 // === PHASE 2: The Smashters (4s then burn) ===
                 setTimeout(() => {
                     startBurnEffect(phase2);
                 }, 4000);
-            };
-            videoEl.addEventListener('ended', onVideoEnd);
+            }, 9000);
         }, 3750);
     }
 
