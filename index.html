@@ -271,19 +271,58 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           MAIN CONTENT
+           MAIN CONTENT - 3D CUBE TRANSITIONS
            ═══════════════════════════════════════════════════════ */
+        #content-container {
+            perspective: 1200px;
+            overflow: hidden;
+            position: relative;
+        }
+
         .tab-content {
             display: none;
             padding: 16px;
             max-width: 900px;
             margin: 0 auto;
-        }
-        .tab-content.active {
-            display: block;
-            animation: tabSlideIn 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transform-origin: center;
         }
 
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 3D Rotation animations */
+        .tab-content.cube-rotate-left {
+            animation: cubeRotateLeft 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .tab-content.cube-rotate-right {
+            animation: cubeRotateRight 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        @keyframes cubeRotateLeft {
+            0% {
+                opacity: 0;
+                transform: translateX(100%) rotateY(90deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) rotateY(0deg);
+            }
+        }
+
+        @keyframes cubeRotateRight {
+            0% {
+                opacity: 0;
+                transform: translateX(-100%) rotateY(-90deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) rotateY(0deg);
+            }
+        }
+
+        /* Old slide animation as fallback */
         @keyframes tabSlideIn {
             from {
                 opacity: 0;
@@ -413,6 +452,92 @@
             font-size: 0.75rem;
             font-weight: 600;
             letter-spacing: 0.5px;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           3D CARD FLIP FOR MATCH DETAILS
+           ═══════════════════════════════════════════════════════ */
+        .match-card-container {
+            perspective: 1000px;
+            position: relative;
+            cursor: pointer;
+            min-height: 52px;
+        }
+
+        .match-card-container.flipped {
+            min-height: 300px;
+        }
+
+        .match-card-flipper {
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .match-card-container.flipped .match-card-flipper {
+            transform: rotateY(180deg);
+        }
+
+        .match-card-front, .match-card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .match-card-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transform: rotateY(180deg);
+            background: white;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow-y: auto;
+        }
+
+        .hole-by-hole-grid {
+            display: grid;
+            grid-template-columns: auto repeat(9, 1fr);
+            gap: 4px;
+            font-size: 0.7rem;
+        }
+
+        .hole-cell {
+            text-align: center;
+            padding: 6px 4px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .hole-cell.won-a { background: var(--team-a-color); color: white; }
+        .hole-cell.won-b { background: var(--team-b-color); color: white; }
+        .hole-cell.halved { background: #ddd; }
+
+        .hole-header {
+            font-weight: bold;
+            font-size: 0.7rem;
+            color: #666;
+            padding: 4px 2px;
+            text-align: center;
+        }
+
+        .player-label {
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 6px 4px;
+            text-align: right;
+            padding-right: 8px;
+            color: var(--masters-green);
+        }
+
+        .flip-hint {
+            text-align: center;
+            font-size: 0.65rem;
+            color: #999;
+            margin-top: 8px;
         }
 
         /* Team totals footer bar */
@@ -727,6 +852,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
         .score-adj-btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
         .score-adj-btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
@@ -736,6 +863,30 @@
             color: white;
             border-color: var(--masters-green);
             transform: scale(0.95);
+        }
+
+        /* Morphing Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(0, 103, 71, 0.5);
+            transform: scale(0);
+            animation: rippleMorph 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        @keyframes rippleMorph {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
 
         .score-value-display {
@@ -2144,9 +2295,12 @@
     }
 
     // ─────────────────────────────────────────────────────────
-    // TAB NAVIGATION
+    // TAB NAVIGATION - 3D CUBE TRANSITIONS
     // ─────────────────────────────────────────────────────────
-    function switchTab(tabId) {
+    let previousTab = null;
+    const tabOrder = ['leaderboard', 'individual', 'scoring', 'schedule', 'players', 'matches', 'settings'];
+
+    function switchTab(tabId, direction = null) {
         // Password protect settings tab
         if (tabId === 'settings' && !S.ui.settingsUnlocked) {
             const password = prompt('Enter settings password:');
@@ -2161,8 +2315,35 @@
         // Haptic feedback on tab switch
         haptic(10);
 
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
-        document.querySelectorAll('.tab-content').forEach(s => s.classList.toggle('active', s.id === `tab-${tabId}`));
+        // Determine rotation direction based on tab order
+        if (!direction && previousTab) {
+            const prevIndex = tabOrder.indexOf(previousTab);
+            const newIndex = tabOrder.indexOf(tabId);
+            direction = newIndex > prevIndex ? 'left' : 'right';
+        }
+
+        // Remove active from all tabs
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(s => {
+            s.classList.remove('active', 'cube-rotate-left', 'cube-rotate-right');
+        });
+
+        // Activate new tab with 3D rotation
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            if (b.dataset.tab === tabId) b.classList.add('active');
+        });
+
+        const newContent = document.getElementById(`tab-${tabId}`);
+        if (newContent) {
+            newContent.classList.add('active');
+            if (direction === 'left') {
+                newContent.classList.add('cube-rotate-left');
+            } else if (direction === 'right') {
+                newContent.classList.add('cube-rotate-right');
+            }
+        }
+
+        previousTab = tabId;
         S.ui.activeTab = tabId;
         saveState();
         renderTab(tabId);
@@ -2775,11 +2956,11 @@
                 html += `<div style="display:grid;grid-template-columns:1fr 36px 1fr;min-height:38px;">
                     <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:${S.config.teamA.color};color:#fff;font-weight:700;">
                         <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamA.name}</span>
-                        <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;">${formatScore(sessScores.A)}</span>
+                        <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;" data-animate-score="${sessScores.A}" data-counter-id="session-${session.id}-a">${formatScore(sessScores.A)}</span>
                     </div>
                     <div style="display:flex;align-items:center;justify-content:center;background:#4a4a4a;color:var(--masters-yellow);font-size:0.55rem;font-weight:600;">PTS</div>
                     <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 12px;background:${S.config.teamB.color};color:#fff;font-weight:700;">
-                        <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;">${formatScore(sessScores.B)}</span>
+                        <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;" data-animate-score="${sessScores.B}" data-counter-id="session-${session.id}-b">${formatScore(sessScores.B)}</span>
                         <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamB.name}</span>
                     </div>
                 </div>`;
@@ -2848,13 +3029,13 @@
                 <div class="lb-totals-row">
                     <div class="lb-totals-a">
                         <span class="lb-total-team-name">${S.config.teamA.name}</span>
-                        <span class="lb-total-pts">${formatScore(scores.A)}</span>
+                        <span class="lb-total-pts" data-animate-score="${scores.A}" data-counter-id="total-a">${formatScore(scores.A)}</span>
                     </div>
                     <div class="lb-totals-center">
                         <img src="assets/images/smashters-logo-green.png" alt="" style="filter:brightness(0) invert(1);">
                     </div>
                     <div class="lb-totals-b">
-                        <span class="lb-total-pts">${formatScore(scores.B)}</span>
+                        <span class="lb-total-pts" data-animate-score="${scores.B}" data-counter-id="total-b">${formatScore(scores.B)}</span>
                         <span class="lb-total-team-name">${S.config.teamB.name}</span>
                     </div>
                 </div>`;
@@ -2893,6 +3074,7 @@
 
 
         el.innerHTML = html;
+        triggerScoreAnimations();
     }
 
     function enableScoring() {
@@ -2923,6 +3105,56 @@
         } else if (pin !== null) {
             showToast('Incorrect admin PIN');
         }
+    }
+
+    function renderHoleByHoleDetails(match) {
+        if (!match.holes || Object.keys(match.holes).length === 0) {
+            return '<div style="text-align:center;padding:20px;color:#999;">No scores yet</div>';
+        }
+
+        let html = '<div style="margin-bottom:12px;font-weight:bold;font-size:0.8rem;">Hole-by-Hole Breakdown</div>';
+
+        // Build rows for each 9 holes
+        for (let nine = 0; nine < 2; nine++) {
+            const startHole = nine * 9 + 1;
+            const endHole = Math.min(startHole + 8, 18);
+
+            // Hole headers
+            html += '<div class="hole-by-hole-grid">';
+            html += '<div class="hole-header">Hole</div>';
+            for (let h = startHole; h <= endHole; h++) {
+                html += `<div class="hole-header">${h}</div>`;
+            }
+
+            // Team A players
+            match.teamA.forEach(playerId => {
+                const player = getPlayer(playerId);
+                html += `<div class="player-label">${player.name.split(' ')[0]}</div>`;
+                for (let h = startHole; h <= endHole; h++) {
+                    const score = match.holes[h]?.[playerId];
+                    const winner = getHoleWinner(match, h);
+                    let cellClass = winner === 'A' ? 'won-a' : winner === 'B' ? 'won-b' : winner === 'halved' ? 'halved' : '';
+                    html += `<div class="hole-cell ${cellClass}">${score || '-'}</div>`;
+                }
+            });
+
+            // Team B players
+            match.teamB.forEach(playerId => {
+                const player = getPlayer(playerId);
+                html += `<div class="player-label">${player.name.split(' ')[0]}</div>`;
+                for (let h = startHole; h <= endHole; h++) {
+                    const score = match.holes[h]?.[playerId];
+                    const winner = getHoleWinner(match, h);
+                    let cellClass = winner === 'A' ? 'won-a' : winner === 'B' ? 'won-b' : winner === 'halved' ? 'halved' : '';
+                    html += `<div class="hole-cell ${cellClass}">${score || '-'}</div>`;
+                }
+            });
+
+            html += '</div>';
+            if (nine === 0 && endHole < 18) html += '<div style="height:8px;"></div>';
+        }
+
+        return html;
     }
 
     function renderLeaderboardMatch(match) {
@@ -2966,7 +3198,8 @@
             scoreB = status.text;
         }
 
-        return `
+        // Front side (summary)
+        const frontHtml = `
             <div class="lb-match-row">
                 <div class="lb-cell-a ${cellAClass}">
                     ${scoreA ? `<span class="lb-match-score">${scoreA}</span>` : ''}
@@ -2976,6 +3209,21 @@
                 <div class="lb-cell-b ${cellBClass}">
                     <span class="lb-player-name">${teamBNames}</span>
                     ${scoreB ? `<span class="lb-match-score">${scoreB}</span>` : ''}
+                </div>
+            </div>`;
+
+        // Back side (hole-by-hole)
+        const backHtml = `
+            <div class="match-card-back">
+                ${renderHoleByHoleDetails(match)}
+                <div class="flip-hint">Tap to return</div>
+            </div>`;
+
+        return `
+            <div class="match-card-container" onclick="toggleMatchFlip(event, '${match.id}')">
+                <div class="match-card-flipper">
+                    <div class="match-card-front">${frontHtml}</div>
+                    ${backHtml}
                 </div>
             </div>`;
     }
@@ -3727,6 +3975,168 @@
         }
         return 18;
     }
+
+    // ─────────────────────────────────────────────────────────
+    // LIVE SCORE COUNTER ANIMATION
+    // ─────────────────────────────────────────────────────────
+    const scoreCounterCache = {};
+
+    function animateCounter(element, targetValue) {
+        const key = element.dataset.counterId || Math.random().toString();
+        element.dataset.counterId = key;
+
+        const startValue = scoreCounterCache[key] !== undefined ? scoreCounterCache[key] : targetValue;
+        scoreCounterCache[key] = targetValue;
+
+        if (startValue === targetValue) return;
+
+        const duration = 600;
+        const startTime = performance.now();
+        const isHalf = String(targetValue).includes('½');
+        const targetNum = isHalf ? Math.floor(parseFloat(targetValue)) : targetValue;
+        const startNum = isHalf && String(startValue).includes('½') ? Math.floor(parseFloat(startValue)) : startValue;
+
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Ease out cubic for smooth deceleration
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = startNum + (targetNum - startNum) * eased;
+
+            if (isHalf && progress === 1) {
+                element.textContent = Math.floor(current) + '½';
+            } else {
+                element.textContent = Math.round(current);
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    // Apply counter animation to elements with data-animate-score attribute
+    function triggerScoreAnimations() {
+        document.querySelectorAll('[data-animate-score]').forEach(el => {
+            const value = parseFloat(el.dataset.animateScore);
+            animateCounter(el, value);
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // DEPTH/PARALLAX SCROLLING
+    // ─────────────────────────────────────────────────────────
+    function initParallax() {
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabContents.forEach(container => {
+            container.addEventListener('scroll', () => {
+                const scrolled = container.scrollTop;
+
+                // Apply parallax to section headers (slower scroll)
+                container.querySelectorAll('.lb-section-header').forEach(header => {
+                    const offset = header.offsetTop;
+                    const distance = scrolled - offset;
+                    if (Math.abs(distance) < 800) {
+                        header.style.transform = `translateY(${distance * 0.3}px)`;
+                        header.style.opacity = 1 - (Math.abs(distance) / 1000);
+                    }
+                });
+
+                // Apply parallax to totals row (medium speed)
+                container.querySelectorAll('.lb-totals-row').forEach(row => {
+                    const offset = row.offsetTop;
+                    const distance = scrolled - offset;
+                    if (Math.abs(distance) < 600) {
+                        row.style.transform = `translateY(${distance * 0.15}px) scale(${1 - Math.abs(distance) / 3000})`;
+                    }
+                });
+            }, { passive: true });
+        });
+    }
+
+    // Initialize parallax after a short delay
+    setTimeout(initParallax, 500);
+
+    // ─────────────────────────────────────────────────────────
+    // 3D CARD FLIP TOGGLE
+    // ─────────────────────────────────────────────────────────
+    function toggleMatchFlip(event, matchId) {
+        event.stopPropagation();
+        const container = event.currentTarget;
+        container.classList.toggle('flipped');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // SWIPE GESTURE DETECTION FOR TAB NAVIGATION
+    // ─────────────────────────────────────────────────────────
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    function handleSwipe() {
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+        const minSwipeDistance = 80;
+
+        // Only register as horizontal swipe if mostly horizontal
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+            const currentIndex = tabOrder.indexOf(S.ui.activeTab);
+
+            if (deltaX > 0 && currentIndex > 0) {
+                // Swipe right - go to previous tab
+                switchTab(tabOrder[currentIndex - 1], 'right');
+            } else if (deltaX < 0 && currentIndex < tabOrder.length - 1) {
+                // Swipe left - go to next tab
+                switchTab(tabOrder[currentIndex + 1], 'left');
+            }
+        }
+    }
+
+    // Add swipe listeners to content area
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+    }, { passive: true });
+
+    // ─────────────────────────────────────────────────────────
+    // MORPHING RIPPLE EFFECT
+    // ─────────────────────────────────────────────────────────
+    function createRipple(event) {
+        const button = event.currentTarget;
+        const ripple = document.createElement('span');
+        ripple.classList.add('ripple');
+
+        const rect = button.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = event.clientX - rect.left - size / 2;
+        const y = event.clientY - rect.top - size / 2;
+
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+
+        button.appendChild(ripple);
+
+        setTimeout(() => ripple.remove(), 600);
+    }
+
+    // Add ripple to all score buttons
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.score-adj-btn')) {
+            createRipple(e);
+        }
+    });
 
     function adjustScore(playerId, holeNum, delta) {
         const match = S.matches[S.ui.activeMatchId];
