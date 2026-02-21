@@ -683,13 +683,15 @@
             .lb-breakdown-row { font-size: 0.7rem; padding: 12px 10px; }
             .lb-projected-row { font-size: 0.75rem; padding: 10px 10px; }
             .lb-projected-value { font-size: 1rem; }
-            .lb-board { margin-bottom: 24px; }
+            .lb-board { margin-bottom: 20px; }
             /* Allow player names to wrap on mobile */
             .lb-player-name {
                 white-space: normal;
                 overflow: visible;
-                font-size: 0.8rem;
-                line-height: 1.3;
+                text-overflow: clip;
+                font-size: 0.75rem;
+                line-height: 1.25;
+                word-wrap: break-word;
             }
             .lb-projected-label { font-size: 0.6rem; }
         }
@@ -3184,9 +3186,9 @@
 
     function renderLeaderboardMatch(match) {
         const status = getMatchPlayStatus(match);
-        // Keep each player name together, only allow breaking at separator
-        const teamANames = match.teamA.map(id => `<span style="white-space:nowrap;">${getPlayerName(id)}</span>`).join(' / ');
-        const teamBNames = match.teamB.map(id => `<span style="white-space:nowrap;">${getPlayerName(id)}</span>`).join(' / ');
+        // Join player names with separator - CSS will handle wrapping on mobile
+        const teamANames = match.teamA.map(id => getPlayerName(id)).join(' / ');
+        const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' / ');
         const isALeading = status.leader === 'A';
         const isBLeading = status.leader === 'B';
         const isTied = status.text === 'ALL SQUARE' || status.text === 'HALVED';
