@@ -455,45 +455,32 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           3D CARD FLIP FOR MATCH DETAILS
+           EXPANDABLE MATCH DETAILS (SLIDE DOWN)
            ═══════════════════════════════════════════════════════ */
         .match-card-container {
-            perspective: 1000px;
-            position: relative;
             cursor: pointer;
+            overflow: hidden;
         }
 
-        .match-card-flipper {
-            position: relative;
-            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
-            transform-style: preserve-3d;
-            min-height: 52px;
+        .match-card-summary {
+            /* Summary is always visible */
         }
 
-        .match-card-container.flipped .match-card-flipper {
-            transform: rotateY(180deg);
-        }
-
-        .match-card-front, .match-card-back {
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-        }
-
-        .match-card-back {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            transform: rotateY(180deg);
+        .match-card-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
             background: white;
-            padding: 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow-y: auto;
         }
 
-        .match-card-container.flipped .match-card-back {
-            position: relative;
+        .match-card-container.expanded .match-card-details {
+            max-height: 2000px;
+        }
+
+        .match-card-details-inner {
+            padding: 16px;
+            border-top: 1px solid #ddd;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .hole-by-hole-grid {
@@ -2963,7 +2950,7 @@
                 sessionBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
                 // Session subtotal row (mini totals bar)
                 const sessScores = getSessionScores(session.id);
-                html += `<div style="display:grid;grid-template-columns:1fr 36px 1fr;min-height:38px;">
+                html += `<div style="display:grid;grid-template-columns:1fr 44px 1fr;min-height:38px;">
                     <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:${S.config.teamA.color};color:#fff;font-weight:700;">
                         <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamA.name}</span>
                         <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;" data-animate-score="${sessScores.A}" data-counter-id="session-${session.id}-a">${formatScore(sessScores.A)}</span>
@@ -3236,32 +3223,26 @@
             scoreB = status.text;
         }
 
-        // Front side (summary)
-        const frontHtml = `
-            <div class="lb-match-row">
-                <div class="lb-cell-a ${cellAClass}">
-                    ${scoreA ? `<span class="lb-match-score">${scoreA}</span>` : ''}
-                    <span class="lb-player-name">${teamANames}</span>
-                </div>
-                <div class="lb-cell-thru">${thru}</div>
-                <div class="lb-cell-b ${cellBClass}">
-                    <span class="lb-player-name">${teamBNames}</span>
-                    ${scoreB ? `<span class="lb-match-score">${scoreB}</span>` : ''}
-                </div>
-            </div>`;
-
-        // Back side (hole-by-hole)
-        const backHtml = `
-            <div class="match-card-back">
-                ${renderHoleByHoleDetails(match)}
-                <div class="flip-hint">Tap to return</div>
-            </div>`;
-
         return `
-            <div class="match-card-container" onclick="toggleMatchFlip(event, '${match.id}')">
-                <div class="match-card-flipper">
-                    <div class="match-card-front">${frontHtml}</div>
-                    ${backHtml}
+            <div class="match-card-container" onclick="toggleMatchExpand(event, '${match.id}')">
+                <div class="match-card-summary">
+                    <div class="lb-match-row">
+                        <div class="lb-cell-a ${cellAClass}">
+                            ${scoreA ? `<span class="lb-match-score">${scoreA}</span>` : ''}
+                            <span class="lb-player-name">${teamANames}</span>
+                        </div>
+                        <div class="lb-cell-thru">${thru}</div>
+                        <div class="lb-cell-b ${cellBClass}">
+                            <span class="lb-player-name">${teamBNames}</span>
+                            ${scoreB ? `<span class="lb-match-score">${scoreB}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="match-card-details">
+                    <div class="match-card-details-inner">
+                        ${renderHoleByHoleDetails(match)}
+                        <div class="flip-hint">Tap to collapse</div>
+                    </div>
                 </div>
             </div>`;
     }
@@ -4100,12 +4081,12 @@
     setTimeout(initParallax, 500);
 
     // ─────────────────────────────────────────────────────────
-    // 3D CARD FLIP TOGGLE
+    // EXPANDABLE MATCH DETAILS TOGGLE
     // ─────────────────────────────────────────────────────────
-    function toggleMatchFlip(event, matchId) {
+    function toggleMatchExpand(event, matchId) {
         event.stopPropagation();
         const container = event.currentTarget;
-        container.classList.toggle('flipped');
+        container.classList.toggle('expanded');
     }
 
     // ─────────────────────────────────────────────────────────
