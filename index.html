@@ -50,6 +50,7 @@
             --masters-black: #1a1a1a;
             --team-a-color: #CE1141;
             --team-b-color: #004F9E;
+            --center-column-width: 44px;
             --birdie-color: #CE1141;
             --eagle-color: #C8A951;
             --bogey-color: #006747;
@@ -374,7 +375,7 @@
         /* Match row - 3 column broadcast layout */
         .lb-match-row {
             display: grid;
-            grid-template-columns: 1fr 44px 1fr;
+            grid-template-columns: 1fr var(--center-column-width) 1fr;
             min-height: 52px;
             border-bottom: 1px solid rgba(0,0,0,0.06);
             font-size: 0.9rem;
@@ -384,8 +385,9 @@
         .bonus-event-container {
             overflow: hidden;
         }
-        .bonus-event-container + .bonus-event-container {
-            margin-top: 1px;
+        .bonus-event-container .lb-match-row {
+            border-bottom: none;
+            margin-bottom: 0;
         }
 
         .lb-cell-a, .lb-cell-b {
@@ -547,7 +549,7 @@
         /* Team totals footer bar */
         .lb-totals-row {
             display: grid;
-            grid-template-columns: 1fr 44px 1fr;
+            grid-template-columns: 1fr var(--center-column-width) 1fr;
             min-height: 52px;
             font-size: 1rem;
         }
@@ -677,12 +679,13 @@
         .lb-empty-logo { width: 140px; opacity: 0.25; margin-bottom: 20px; }
 
         @media (max-width: 600px) {
+            :root {
+                --center-column-width: 48px;
+            }
             .lb-match-row {
-                grid-template-columns: 1fr 48px 1fr;
                 font-size: 0.85rem;
                 min-height: 58px;
             }
-            .lb-totals-row { grid-template-columns: 1fr 48px 1fr; }
             .lb-cell-a, .lb-cell-b { padding: 12px 10px; }
             .lb-cell-thru { font-size: 0.7rem; }
             .lb-total-pts { font-size: 1.5rem; }
@@ -701,10 +704,6 @@
                 word-wrap: break-word;
             }
             .lb-projected-label { font-size: 0.6rem; }
-            /* Fix session subtotal gray box width on mobile */
-            .session-subtotal-row {
-                grid-template-columns: 1fr 48px 1fr !important;
-            }
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -2963,7 +2962,7 @@
                 sessionBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
                 // Session subtotal row (mini totals bar)
                 const sessScores = getSessionScores(session.id);
-                html += `<div class="session-subtotal-row" style="display:grid;grid-template-columns:1fr 44px 1fr;min-height:38px;">
+                html += `<div class="session-subtotal-row" style="display:grid;grid-template-columns:1fr var(--center-column-width) 1fr;min-height:38px;">
                     <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:${S.config.teamA.color};color:#fff;font-weight:700;">
                         <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamA.name}</span>
                         <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;" data-animate-score="${sessScores.A}" data-counter-id="session-${session.id}-a">${formatScore(sessScores.A)}</span>
