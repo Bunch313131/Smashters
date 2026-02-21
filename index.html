@@ -1928,6 +1928,59 @@
         }
 
         /* ═══════════════════════════════════════════════════════
+           PULL TO REFRESH - FLAME EFFECT
+           ═══════════════════════════════════════════════════════ */
+        .pull-refresh-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 0;
+            background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%);
+            overflow: hidden;
+            transition: height 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            z-index: 999;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+        }
+
+        .pull-refresh-flames {
+            display: flex;
+            gap: 8px;
+            font-size: 2rem;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease;
+        }
+
+        .pull-refresh-indicator.pulling .pull-refresh-flames {
+            opacity: 1;
+            transform: scale(1);
+            animation: flameFlicker 0.3s infinite alternate;
+        }
+
+        .pull-refresh-indicator.refreshing .pull-refresh-flames {
+            animation: flameBurst 0.6s ease-out;
+        }
+
+        @keyframes flameFlicker {
+            0% { transform: scale(1) translateY(0); }
+            100% { transform: scale(1.1) translateY(-3px); }
+        }
+
+        @keyframes flameBurst {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(2) translateY(-20px); opacity: 0; }
+        }
+
+        .app-container {
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        /* ═══════════════════════════════════════════════════════
            BIRDIE FLAMES 🔥
            ═══════════════════════════════════════════════════════ */
         .flame-container {
@@ -2053,9 +2106,18 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
+         PULL TO REFRESH INDICATOR
+         ═══════════════════════════════════════════════════════ -->
+    <div class="pull-refresh-indicator" id="pullRefreshIndicator">
+        <div class="pull-refresh-flames">
+            🔥 🔥 🔥
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
          HEADER & NAVIGATION
          ═══════════════════════════════════════════════════════ -->
-    <header class="app-header">
+    <header class="app-header" id="appHeader">
         <div class="header-top">
             <img src="assets/images/smashters-logo-green.png" alt="Smashters" class="header-logo">
             <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
@@ -4151,6 +4213,80 @@
         touchEndX = e.changedTouches[0].screenX;
         touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
+    }, { passive: true });
+
+    // ─────────────────────────────────────────────────────────
+    // PULL TO REFRESH - FLAME EFFECT 🔥
+    // ─────────────────────────────────────────────────────────
+    let pullStartY = 0;
+    let pullDistance = 0;
+    let isPulling = false;
+    const pullThreshold = 80;
+    const maxPullDistance = 120;
+    const pullIndicator = document.getElementById('pullRefreshIndicator');
+    const appHeader = document.getElementById('appHeader');
+
+    document.addEventListener('touchstart', (e) => {
+        const scrollTop = document.querySelector('.tab-content.active')?.scrollTop || 0;
+        if (scrollTop === 0) {
+            pullStartY = e.touches[0].clientY;
+            isPulling = true;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isPulling || pullStartY === 0) return;
+
+        const currentY = e.touches[0].clientY;
+        const delta = currentY - pullStartY;
+
+        if (delta > 0 && delta < maxPullDistance) {
+            pullDistance = delta;
+            const indicatorHeight = Math.min(delta, maxPullDistance);
+            pullIndicator.style.height = indicatorHeight + 'px';
+            document.body.style.transform = `translateY(${delta * 0.5}px)`;
+
+            if (delta > pullThreshold) {
+                pullIndicator.classList.add('pulling');
+            }
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => {
+        if (!isPulling) return;
+
+        if (pullDistance > pullThreshold) {
+            // Trigger refresh
+            pullIndicator.classList.remove('pulling');
+            pullIndicator.classList.add('refreshing');
+
+            // Play sizzle sound
+            const sizzle = new Audio('assets/sounds/sizzle.mp3');
+            sizzle.volume = 0.4;
+            sizzle.play().catch(() => {});
+
+            // Trigger Firebase sync/refresh
+            setTimeout(async () => {
+                await LiveSync.pullLatest();
+                renderAllTabs();
+
+                // Reset
+                setTimeout(() => {
+                    pullIndicator.style.height = '0';
+                    pullIndicator.classList.remove('refreshing');
+                    document.body.style.transform = '';
+                }, 300);
+            }, 600);
+        } else {
+            // Reset without refresh
+            pullIndicator.style.height = '0';
+            pullIndicator.classList.remove('pulling');
+            document.body.style.transform = '';
+        }
+
+        isPulling = false;
+        pullDistance = 0;
+        pullStartY = 0;
     }, { passive: true });
 
     // ─────────────────────────────────────────────────────────
