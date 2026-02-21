@@ -163,6 +163,10 @@
         }
 
         .tab-btn:hover { color: rgba(255,255,255,0.9); }
+        .tab-btn:active {
+            background: rgba(255,255,255,0.1);
+            transform: scale(0.98);
+        }
 
         .tab-btn.active {
             color: var(--masters-yellow);
@@ -689,16 +693,18 @@
 
         .score-entry-name {
             flex: 1;
-            font-size: 0.9rem;
+            font-size: 1rem;
+            font-weight: 600;
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
         .score-entry-name .hcp-badge {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: #999;
             display: block;
+            font-weight: normal;
         }
 
         .score-entry-controls {
@@ -725,7 +731,12 @@
         .score-adj-btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
         .score-adj-btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
         .score-adj-btn:hover { background: #eee; }
-        .score-adj-btn:active { background: #ddd; }
+        .score-adj-btn:active {
+            background: var(--masters-green);
+            color: white;
+            border-color: var(--masters-green);
+            transform: scale(0.95);
+        }
 
         .score-value-display {
             width: 52px;
@@ -1130,15 +1141,19 @@
 
         .btn-primary { background: var(--masters-green); color: var(--masters-white); }
         .btn-primary:hover { background: var(--masters-dark); }
+        .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
 
         .btn-gold { background: var(--masters-gold); color: var(--masters-darkest); }
         .btn-gold:hover { background: var(--masters-yellow); }
+        .btn-gold:active { transform: scale(0.97); opacity: 0.9; }
 
         .btn-danger { background: var(--masters-red); color: var(--masters-white); }
         .btn-danger:hover { opacity: 0.9; }
+        .btn-danger:active { transform: scale(0.97); opacity: 0.8; }
 
         .btn-outline { background: transparent; border: 2px solid var(--masters-green); color: var(--masters-green); }
         .btn-outline:hover { background: var(--masters-green); color: var(--masters-white); }
+        .btn-outline:active { transform: scale(0.97); }
 
         .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
         .btn-block { display: flex; width: 100%; }
@@ -1708,11 +1723,12 @@
            RESPONSIVE
            ═══════════════════════════════════════════════════════ */
         @media (max-width: 600px) {
+            .desktop-only { display: none !important; }
             .header-titles h1 { font-size: 1.2rem; }
             .lb-team-pts { font-size: 2.2rem; }
             .form-row { grid-template-columns: 1fr; }
             .draft-board { grid-template-columns: 1fr; }
-            .score-entry-name { font-size: 0.8rem; }
+            .score-entry-name { font-size: 0.95rem; }
             .score-adj-btn { width: 44px; height: 44px; font-size: 1.2rem; }
             .score-value-display { width: 48px; height: 44px; font-size: 1.2rem; }
 
@@ -3911,7 +3927,7 @@
 
         let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <h2 class="section-title" style="margin-bottom:0;">Match Setup</h2>
-            <button class="btn btn-outline btn-sm" onclick="ExportManager.generateMatchSchedule(null, 'pdf')">📤 Export Schedule</button>
+            <button class="btn btn-outline btn-sm desktop-only" onclick="ExportManager.generateMatchSchedule(null, 'pdf')">📤 Export Schedule</button>
         </div>`;
 
         // Loop through sessions dynamically
@@ -4096,7 +4112,7 @@
         let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <h2 class="section-title" style="margin-bottom:0;">Players</h2>
             <div style="display:flex;gap:8px;">
-                ${allPlayers.length > 0 ? '<button class="btn btn-outline btn-sm" onclick="ExportManager.generateTeamRoster(\'pdf\')">📤 Export Roster</button>' : ''}
+                ${allPlayers.length > 0 ? '<button class="btn btn-outline btn-sm desktop-only" onclick="ExportManager.generateTeamRoster(\'pdf\')">📤 Export Roster</button>' : ''}
                 ${canEdit ?
                     '<button class="btn btn-primary btn-sm" onclick="openPlayerModal()">+ Add Player</button>' :
                     '<button class="btn btn-outline btn-sm" onclick="unlockPlayers()">🔒 Unlock Editing</button>'
