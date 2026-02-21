@@ -2792,12 +2792,29 @@
         const code = prompt('Enter scorer code:');
         if (code === '6969') {
             LiveSync.isScorer = true;
+            LiveSync.isViewer = false;
             LiveSync.scorerMatchId = null; // Can score all matches
             LiveSync.updateBanner();
             showToast('Scoring enabled!');
             switchTab('scoring');
-        } else {
+        } else if (code !== null) {
             showToast('Incorrect scorer code');
+        }
+    }
+
+    function enableAdmin() {
+        const pin = prompt('Enter admin PIN:');
+        if (pin === '1313') {
+            LiveSync.isAdmin = true;
+            LiveSync.isViewer = false;
+            LiveSync.isScorer = false;
+            S.ui.settingsUnlocked = true;
+            LiveSync.updateBanner();
+            saveState();
+            showToast('Admin mode enabled!');
+            renderTab(S.ui.activeTab);
+        } else if (pin !== null) {
+            showToast('Incorrect admin PIN');
         }
     }
 
@@ -3319,14 +3336,20 @@
                 return;
             }
 
-            // Check if user needs to enable scoring
+            // Check if user needs to enable scoring or admin
             if (!LiveSync.isAdmin && !LiveSync.isScorer) {
                 el.innerHTML = `
                     <h2 class="section-title">Live Scoring</h2>
                     <div class="empty-state">
-                        <h3>Scorer Authentication Required</h3>
-                        <p>Enter the scorer code to enable scoring for all matches.</p>
-                        <button class="btn btn-primary" onclick="enableScoring()" style="margin-top:16px;">Enable Scoring</button>
+                        <h3>Authentication Required</h3>
+                        <p style="margin-bottom:24px;">Choose your access level:</p>
+                        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="enableScoring()">📊 Enable Scoring</button>
+                            <button class="btn btn-gold" onclick="enableAdmin()">⚙️ Admin Mode</button>
+                        </div>
+                        <p style="margin-top:16px;font-size:0.9rem;color:#666;">
+                            Scorers can enter scores. Admins can edit everything.
+                        </p>
                     </div>`;
                 return;
             }
@@ -5109,8 +5132,8 @@
             this.eventCode = 'smashsters-live'; // Hardcoded event ID
             this.scorerCode = '6969';
             this.adminPin = '1313';
-            this.isAdmin = true;
-            this.isViewer = false;
+            this.isAdmin = false; // Default to viewer mode - must enter PIN for admin
+            this.isViewer = true; // Read-only by default
             this.isScorer = false;
             this.eventRef = this.db.ref('smashters/' + this.eventCode);
 
@@ -5130,17 +5153,25 @@
                         firebaseTimestamp,
                         localTimestamp,
                         firebasePlayerCount,
-                        localPlayerCount
+                        localPlayerCount,
+                        mode: this.isViewer ? 'viewer' : 'other'
                     });
 
+                    // As a viewer, always pull from Firebase (read-only mode)
+                    if (this.isViewer) {
+                        console.log('Viewer mode: Pulling from Firebase...');
+                        this.applyState(firebaseData);
+                        renderTab(S.ui.activeTab);
+                        showToast('Connected to live event');
+                    }
                     // PRIORITY 1: If Firebase has more players, always pull from Firebase
-                    if (firebasePlayerCount > localPlayerCount) {
+                    else if (firebasePlayerCount > localPlayerCount) {
                         console.log('Pulling from Firebase (has more players)...');
                         this.applyState(firebaseData);
                         renderTab(S.ui.activeTab);
                         showToast('Synced from cloud');
                     }
-                    // PRIORITY 2: If local has more players, push to Firebase
+                    // PRIORITY 2: If local has more players, push to Firebase (admin/scorer only)
                     else if (localPlayerCount > firebasePlayerCount) {
                         // Validate local data before pushing
                         const localValidation = this.validateState(S, 'Local');
@@ -5680,14 +5711,22 @@
             const banner = document.getElementById('liveBanner');
             if (!banner) return;
 
-            if (this.isScorer) {
+            if (this.isAdmin) {
+                banner.className = 'live-banner active';
+                banner.style.background = 'var(--masters-gold)';
+                banner.innerHTML = `
+                    <span class="live-dot"></span>
+                    ADMIN MODE — Full Access
+                    <button class="live-banner-btn" onclick="LiveSync.disableAdmin()">Exit Admin</button>`;
+            } else if (this.isScorer) {
                 banner.className = 'live-banner active';
                 banner.style.background = 'var(--masters-green)';
                 banner.innerHTML = `
                     <span class="live-dot"></span>
-                    SCORING MODE — All Matches
+                    SCORING MODE — Score Entry Only
                     <button class="live-banner-btn" onclick="LiveSync.disableScoring()">Exit Scoring</button>`;
             } else {
+                // Viewer mode - show subtle indicator
                 banner.className = 'live-banner';
                 banner.innerHTML = '';
             }
@@ -5696,10 +5735,22 @@
         // Disable scoring mode
         disableScoring() {
             this.isScorer = false;
+            this.isViewer = true;
             this.scorerMatchId = null;
             this.updateBanner();
-            showToast('Scoring disabled');
+            showToast('Returned to viewer mode');
             switchTab('leaderboard');
+        },
+
+        // Disable admin mode
+        disableAdmin() {
+            this.isAdmin = false;
+            this.isViewer = true;
+            S.ui.settingsUnlocked = false;
+            saveState();
+            this.updateBanner();
+            showToast('Returned to viewer mode');
+            renderTab(S.ui.activeTab);
         },
 
         // Check if user can edit scores for a given match
