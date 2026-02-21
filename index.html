@@ -461,17 +461,13 @@
             perspective: 1000px;
             position: relative;
             cursor: pointer;
-            min-height: 52px;
-        }
-
-        .match-card-container.flipped {
-            min-height: 300px;
         }
 
         .match-card-flipper {
             position: relative;
             transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
             transform-style: preserve-3d;
+            min-height: 52px;
         }
 
         .match-card-container.flipped .match-card-flipper {
@@ -499,9 +495,10 @@
 
         .hole-by-hole-grid {
             display: grid;
-            grid-template-columns: auto repeat(9, 1fr);
+            grid-template-columns: auto repeat(18, minmax(40px, 1fr));
             gap: 4px;
             font-size: 0.7rem;
+            min-width: max-content;
         }
 
         .hole-cell {
@@ -531,6 +528,16 @@
             text-align: right;
             padding-right: 8px;
             color: var(--masters-green);
+        }
+
+        .status-label {
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 6px 4px;
+            text-align: right;
+            padding-right: 8px;
+            color: #666;
+            font-style: italic;
         }
 
         .flip-hint {
@@ -3112,48 +3119,76 @@
             return '<div style="text-align:center;padding:20px;color:#999;">No scores yet</div>';
         }
 
-        let html = '<div style="margin-bottom:12px;font-weight:bold;font-size:0.8rem;">Hole-by-Hole Breakdown</div>';
+        // Build hole-by-hole match status (AS, 1UP, 2UP, etc)
+        let holeStatuses = [];
+        let runningA = 0, runningB = 0;
+        for (let h = 1; h <= 18; h++) {
+            // Check if this hole has been played (has any scores)
+            const holePlayed = match.holes[h] && Object.keys(match.holes[h]).length > 0;
 
-        // Build rows for each 9 holes
-        for (let nine = 0; nine < 2; nine++) {
-            const startHole = nine * 9 + 1;
-            const endHole = Math.min(startHole + 8, 18);
+            if (holePlayed) {
+                const winner = getHoleWinner(match, h);
+                if (winner === 'A') runningA++;
+                else if (winner === 'B') runningB++;
 
-            // Hole headers
-            html += '<div class="hole-by-hole-grid">';
-            html += '<div class="hole-header">Hole</div>';
-            for (let h = startHole; h <= endHole; h++) {
-                html += `<div class="hole-header">${h}</div>`;
+                const diff = runningA - runningB;
+                let statusText = 'AS';
+                if (diff > 0) statusText = `${diff}UP`;
+                else if (diff < 0) statusText = `${Math.abs(diff)}UP`;
+
+                holeStatuses.push({ text: statusText, leader: diff > 0 ? 'A' : diff < 0 ? 'B' : null, played: true });
+            } else {
+                holeStatuses.push({ text: '', leader: null, played: false });
             }
-
-            // Team A players
-            match.teamA.forEach(playerId => {
-                const player = getPlayer(playerId);
-                html += `<div class="player-label">${player.name.split(' ')[0]}</div>`;
-                for (let h = startHole; h <= endHole; h++) {
-                    const score = match.holes[h]?.[playerId];
-                    const winner = getHoleWinner(match, h);
-                    let cellClass = winner === 'A' ? 'won-a' : winner === 'B' ? 'won-b' : winner === 'halved' ? 'halved' : '';
-                    html += `<div class="hole-cell ${cellClass}">${score || '-'}</div>`;
-                }
-            });
-
-            // Team B players
-            match.teamB.forEach(playerId => {
-                const player = getPlayer(playerId);
-                html += `<div class="player-label">${player.name.split(' ')[0]}</div>`;
-                for (let h = startHole; h <= endHole; h++) {
-                    const score = match.holes[h]?.[playerId];
-                    const winner = getHoleWinner(match, h);
-                    let cellClass = winner === 'A' ? 'won-a' : winner === 'B' ? 'won-b' : winner === 'halved' ? 'halved' : '';
-                    html += `<div class="hole-cell ${cellClass}">${score || '-'}</div>`;
-                }
-            });
-
-            html += '</div>';
-            if (nine === 0 && endHole < 18) html += '<div style="height:8px;"></div>';
         }
 
+        // Horizontal scrollable grid
+        let html = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
+        html += '<div class="hole-by-hole-grid">';
+
+        // Row 1: Hole headers
+        html += '<div class="hole-header">Hole</div>';
+        for (let h = 1; h <= 18; h++) {
+            html += `<div class="hole-header">${h}</div>`;
+        }
+
+        // Rows: Team A players
+        match.teamA.forEach(playerId => {
+            const player = getPlayer(playerId);
+            html += `<div class="player-label">${player?.name?.split(' ')[0] || 'Player'}</div>`;
+            for (let h = 1; h <= 18; h++) {
+                const score = match.holes[h]?.[playerId];
+                const winner = getHoleWinner(match, h);
+                let cellClass = (winner === 'A' && match.teamA.includes(playerId)) ? 'won-a' : '';
+                html += `<div class="hole-cell ${cellClass}">${score || '-'}</div>`;
+            }
+        });
+
+        // Row: Match status (AS, 1UP, 2UP, etc)
+        html += '<div class="status-label">Status</div>';
+        for (let h = 1; h <= 18; h++) {
+            const status = holeStatuses[h - 1];
+            if (status.played) {
+                let bgColor = status.leader === 'A' ? S.config.teamA.color : status.leader === 'B' ? S.config.teamB.color : '#4a4a4a';
+                html += `<div class="hole-cell" style="background:${bgColor};color:white;font-weight:bold;">${status.text}</div>`;
+            } else {
+                html += `<div class="hole-cell" style="background:#f8f9fa;">-</div>`;
+            }
+        }
+
+        // Rows: Team B players
+        match.teamB.forEach(playerId => {
+            const player = getPlayer(playerId);
+            html += `<div class="player-label">${player?.name?.split(' ')[0] || 'Player'}</div>`;
+            for (let h = 1; h <= 18; h++) {
+                const score = match.holes[h]?.[playerId];
+                const winner = getHoleWinner(match, h);
+                let cellClass = (winner === 'B' && match.teamB.includes(playerId)) ? 'won-b' : '';
+                html += `<div class="hole-cell ${cellClass}">${score || '-'}</div>`;
+            }
+        });
+
+        html += '</div></div>';
         return html;
     }
 
