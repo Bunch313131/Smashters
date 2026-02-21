@@ -5164,16 +5164,16 @@
                         }
                     }
                     // PRIORITY 3: Same player count - use timestamp
-                    else if (firebaseTimestamp > localTimestamp) {
-                        console.log('Pulling from Firebase (newer timestamp)...');
-                        this.applyState(firebaseData);
-                        renderTab(S.ui.activeTab);
-                        showToast('Synced from cloud');
-                    } else {
-                        // Validate local data before pushing
+                    // Only push local if it's SIGNIFICANTLY newer (5+ seconds) to avoid race conditions
+                    else if (localTimestamp > firebaseTimestamp + 5000) {
+                        // Local is significantly newer - validate and push
                         const localValidation = this.validateState(S, 'Local');
                         if (localValidation.valid) {
-                            console.log('Pushing to Firebase (local is newer)...');
+                            console.log('Pushing to Firebase (local is significantly newer)...', {
+                                localTimestamp,
+                                firebaseTimestamp,
+                                diff: localTimestamp - firebaseTimestamp
+                            });
                             await this.eventRef.set({
                                 config: S.config,
                                 players: S.players,
@@ -5190,6 +5190,16 @@
                             renderTab(S.ui.activeTab);
                             showToast('Local data corrupted - restored from cloud');
                         }
+                    } else {
+                        // Firebase is newer or within 5 seconds - prefer Firebase to avoid conflicts
+                        console.log('Pulling from Firebase (cloud is source of truth)...', {
+                            firebaseTimestamp,
+                            localTimestamp,
+                            diff: firebaseTimestamp - localTimestamp
+                        });
+                        this.applyState(firebaseData);
+                        renderTab(S.ui.activeTab);
+                        showToast('Synced from cloud');
                     }
                 } else {
                     // No Firebase data yet - push current state
@@ -5215,10 +5225,18 @@
                 const listener = this.eventRef.on('value', (snap) => {
                     if (this._suppressListener) return;
                     const val = snap.val();
-                    if (val && val.updatedAt !== S._lastSync) {
-                        console.log('Received update from Firebase');
-                        this.applyState(val);
-                        renderTab(S.ui.activeTab);
+                    // Apply update if Firebase has data and timestamp is different (with 1s tolerance)
+                    if (val && val.updatedAt) {
+                        const timeDiff = Math.abs((val.updatedAt || 0) - (S._lastSync || 0));
+                        if (timeDiff > 1000) { // More than 1 second difference
+                            console.log('Received update from Firebase', {
+                                firebaseTimestamp: val.updatedAt,
+                                localTimestamp: S._lastSync,
+                                diff: timeDiff
+                            });
+                            this.applyState(val);
+                            renderTab(S.ui.activeTab);
+                        }
                     }
                 });
                 this.listeners.push({ ref: this.eventRef, event: 'value', callback: listener });
@@ -5458,9 +5476,13 @@
                 const listener = ref.on('value', (s) => {
                     if (this._suppressListener) return;
                     const val = s.val();
-                    if (val) {
-                        this.applyState(val);
-                        renderTab(S.ui.activeTab);
+                    if (val && val.updatedAt) {
+                        const timeDiff = Math.abs((val.updatedAt || 0) - (S._lastSync || 0));
+                        if (timeDiff > 1000) {
+                            console.log('Viewer: Received update from Firebase');
+                            this.applyState(val);
+                            renderTab(S.ui.activeTab);
+                        }
                     }
                 });
                 this.listeners.push({ ref, event: 'value', callback: listener });
@@ -5520,9 +5542,13 @@
                 const listener = ref.on('value', (s) => {
                     if (this._suppressListener) return;
                     const val = s.val();
-                    if (val) {
-                        this.applyState(val);
-                        renderTab(S.ui.activeTab);
+                    if (val && val.updatedAt) {
+                        const timeDiff = Math.abs((val.updatedAt || 0) - (S._lastSync || 0));
+                        if (timeDiff > 1000) {
+                            console.log('Scorer: Received update from Firebase');
+                            this.applyState(val);
+                            renderTab(S.ui.activeTab);
+                        }
                     }
                 });
                 this.listeners.push({ ref, event: 'value', callback: listener });
