@@ -753,7 +753,23 @@
             color: var(--masters-white);
             padding: 10px 12px;
             text-align: center;
+            position: relative;
         }
+        .scoring-lock-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .scoring-lock-btn:hover { color:#fff; background:rgba(255,255,255,0.12); }
 
         .scoring-header .match-label {
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
@@ -934,6 +950,105 @@
             right: 3px;
             font-size: 0.5rem;
             font-weight: bold;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           SCORE DRUM WHEEL PICKER
+           ═══════════════════════════════════════════════════════ */
+        .score-drum-wrap { display:flex; align-items:center; gap:8px; margin-left:auto; }
+        .score-drum {
+            position:relative; width:160px; height:49px; overflow:hidden; border-radius:6px;
+            background:linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(200,169,81,0.06) 40%, rgba(200,169,81,0.06) 60%, rgba(0,0,0,0.4) 100%);
+            box-shadow:inset 0 2px 6px rgba(0,0,0,0.5), inset 0 -2px 6px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4);
+            border:1px solid rgba(200,169,81,0.25);
+        }
+        .score-drum::before {
+            content:''; position:absolute; inset:0; border-radius:6px;
+            background:linear-gradient(90deg, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.4) 100%);
+            z-index:1; pointer-events:none;
+        }
+        .score-drum::after {
+            content:''; position:absolute; top:0; left:0; right:0; height:40%;
+            background:linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 100%);
+            border-radius:6px 6px 0 0; z-index:1; pointer-events:none;
+        }
+        .score-drum-track { display:flex; transition:transform 0.2s ease-out; height:100%; align-items:center; }
+        .score-drum-num {
+            width:52px; flex-shrink:0; height:41px; display:flex; align-items:center; justify-content:center;
+            font-size:15px; font-weight:600; color:#999; opacity:0.5; text-shadow:0 1px 2px rgba(0,0,0,0.3);
+            font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;
+        }
+        .score-drum-num.center {
+            font-size:25px; font-weight:800; color:var(--masters-black); opacity:1;
+            text-shadow:0 1px 0 rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .score-drum-num.center.eagle,
+        .score-drum-num.center.birdie {
+            color:var(--masters-green);
+            text-shadow:0 0 8px rgba(0,103,71,0.3), 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .score-drum-num.center.bogey,
+        .score-drum-num.center.double-bogey {
+            color:var(--masters-red, #CE1141);
+            text-shadow:0 0 8px rgba(206,17,65,0.3), 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .score-drum-frame {
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            width:50px; height:43px; border:2px solid var(--masters-gold);
+            border-radius:4px; pointer-events:none; z-index:4;
+            box-shadow:0 0 8px rgba(200,169,81,0.3), inset 0 0 6px rgba(200,169,81,0.1);
+            background:rgba(200,169,81,0.04);
+        }
+        .score-drum-frame.eagle,
+        .score-drum-frame.birdie {
+            border-color:var(--masters-green);
+            box-shadow:0 0 12px rgba(0,103,71,0.3), inset 0 0 8px rgba(0,103,71,0.1);
+            background:rgba(0,103,71,0.04);
+        }
+        .score-drum-frame.bogey,
+        .score-drum-frame.double-bogey {
+            border-color:var(--masters-red, #CE1141);
+            box-shadow:0 0 12px rgba(206,17,65,0.3), inset 0 0 8px rgba(206,17,65,0.1);
+            background:rgba(206,17,65,0.04);
+        }
+        .score-drum-frame.no-score-yet {
+            border-color:rgba(200,169,81,0.4);
+            box-shadow:0 0 4px rgba(200,169,81,0.15);
+            background:rgba(200,169,81,0.02);
+        }
+        .score-drum-touch { position:absolute; inset:0; z-index:5; cursor:grab; }
+        .score-drum-touch:active { cursor:grabbing; }
+        .score-drum.no-score-yet { opacity:0.65; }
+
+        /* ═══════════════════════════════════════════════════════
+           BOTTOM NAVIGATION TOOLBAR
+           ═══════════════════════════════════════════════════════ */
+        .bottom-nav {
+            position:fixed; bottom:0; left:0; right:0;
+            background:var(--masters-white, #fff);
+            border-top:2px solid var(--masters-gold);
+            display:flex; z-index:50;
+            padding-bottom:calc(env(safe-area-inset-bottom) + 8px);
+            box-shadow:0 -2px 12px rgba(0,0,0,0.1);
+        }
+        .bottom-nav-btn {
+            flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+            padding:16px 4px 10px; background:none; border:none;
+            color:#999; font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;
+            font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px;
+            cursor:pointer; transition:color 0.2s;
+        }
+        .bottom-nav-btn.active { color:var(--masters-gold); }
+        .bottom-nav-btn svg { width:22px; height:22px; }
+        body.has-bottom-nav { padding-bottom:80px; }
+
+        /* Hide bottom-nav tabs from hamburger menu on mobile */
+        @media (max-width: 768px) {
+            body.has-bottom-nav .mobile-menu .tab-btn[data-tab="schedule"],
+            body.has-bottom-nav .mobile-menu .tab-btn[data-tab="scoring"],
+            body.has-bottom-nav .mobile-menu .tab-btn[data-tab="leaderboard"],
+            body.has-bottom-nav .mobile-menu .tab-btn[data-tab="individual"],
+            body.has-bottom-nav .mobile-menu .tab-btn[data-tab="settings"] { display:none; }
         }
 
         .best-ball-indicator {
@@ -2099,6 +2214,30 @@
     </div>
     <div class="toast" id="toast"></div>
 
+    <!-- Bottom Navigation Toolbar -->
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="bottom-nav-btn" data-tab="schedule">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span>Schedule</span>
+        </button>
+        <button class="bottom-nav-btn" data-tab="scoring">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            <span>Scoring</span>
+        </button>
+        <button class="bottom-nav-btn" data-tab="leaderboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+            <span>Leaderboard</span>
+        </button>
+        <button class="bottom-nav-btn" data-tab="individual">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/></svg>
+            <span>Individual</span>
+        </button>
+        <button class="bottom-nav-btn" data-tab="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <span>Settings</span>
+        </button>
+    </nav>
+
     <script>
     /* ═══════════════════════════════════════════════════════════
        THE SMASHTERS APP
@@ -2367,6 +2506,7 @@
         S.ui.activeTab = tabId;
         saveState();
         renderTab(tabId);
+        updateBottomNavActive();
     }
 
     document.getElementById('tabNav').addEventListener('click', e => {
@@ -2375,6 +2515,31 @@
             closeMobileMenu();
         }
     });
+
+    // ─────────────────────────────────────────────────────────
+    // BOTTOM NAVIGATION TOOLBAR
+    // ─────────────────────────────────────────────────────────
+    function updateBottomNavActive() {
+        const bottomNav = document.getElementById('bottomNav');
+        if (!bottomNav) return;
+        bottomNav.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === S.ui.activeTab);
+        });
+    }
+
+    function initBottomNav() {
+        const bottomNav = document.getElementById('bottomNav');
+        if (!bottomNav) return;
+        document.body.classList.add('has-bottom-nav');
+
+        bottomNav.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                switchTab(btn.dataset.tab);
+            });
+        });
+
+        updateBottomNavActive();
+    }
 
     // ─────────────────────────────────────────────────────────
     // MOBILE HAMBURGER MENU
@@ -2409,6 +2574,31 @@
         if (navigator.vibrate) {
             navigator.vibrate(pattern);
         }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // SCORE DRUM WHEEL — constants & audio feedback
+    // ─────────────────────────────────────────────────────────
+    const DRUM_CELL = 52;   // px per number cell
+    const DRUM_W   = 160;   // drum visible width
+    const MIN_SCORE = 1;
+    const MAX_SCORE = 15;
+    let _drumAudioCtx = null;
+
+    function drumClick() {
+        try { if (navigator.vibrate) navigator.vibrate(12); } catch(e){}
+        try {
+            if (!_drumAudioCtx) _drumAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = _drumAudioCtx.createOscillator();
+            const gain = _drumAudioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(_drumAudioCtx.destination);
+            osc.frequency.value = 1800;
+            gain.gain.value = 0.08;
+            gain.gain.exponentialRampToValueAtTime(0.001, _drumAudioCtx.currentTime + 0.03);
+            osc.start(_drumAudioCtx.currentTime);
+            osc.stop(_drumAudioCtx.currentTime + 0.03);
+        } catch(e){}
     }
 
     // Confetti celebration for match wins
@@ -3301,40 +3491,79 @@
     }
 
     function renderFoursomesScoreRow(match, teamIds, holeNum, holeScores, holeInfo, teamLetter) {
-        // Get player names
         const names = teamIds.map(id => getPlayer(id)?.name || 'Unknown').join(' / ');
-
-        // Get team handicap and strokes
         const teamHcp = getTeamHandicap(teamIds);
         const teamStrokes = getAlternateShotStrokes(match);
         const matchPlayHcp = teamLetter === 'A' ? teamStrokes.teamA : teamStrokes.teamB;
         const strokesReceived = S.config.useHandicaps ? getStrokesOnHole(matchPlayHcp, holeInfo.hcp) : 0;
+        const canEdit = LiveSync.canScore(match.id);
 
-        // Score stored under first player
         const scorePlayerId = teamIds[0];
         const grossScore = holeScores[scorePlayerId];
         const hasScore = grossScore !== undefined && grossScore !== null;
         const par = holeInfo.par;
 
-        // Score display class
-        let scoreClass = 'no-score';
-        let vsParText = '';
-        if (hasScore) {
-            const diff = grossScore - par;
-            if (diff <= -2) { scoreClass = 'eagle'; vsParText = diff; }
-            else if (diff === -1) { scoreClass = 'birdie'; vsParText = '-1'; }
-            else if (diff === 0) { scoreClass = ''; vsParText = 'E'; }
-            else if (diff === 1) { scoreClass = 'bogey'; vsParText = '+1'; }
-            else { scoreClass = 'double-bogey'; vsParText = '+' + diff; }
-        }
-
-        const displayScore = hasScore ? grossScore : '-';
         const strokeDots = strokesReceived > 0 ? ' <span style="color:var(--masters-red);font-size:0.7rem;">' + '\u25CF'.repeat(strokesReceived) + '</span>' : '';
-
-        // Show team handicap and match play handicap
         const hcpDisplay = matchPlayHcp !== teamHcp && matchPlayHcp > 0
             ? `Team HCP ${teamHcp} (${matchPlayHcp})`
             : `Team HCP ${teamHcp}`;
+
+        // Drum values
+        const currentScore = hasScore ? grossScore : par;
+        const drumNums = [];
+        for (let n = currentScore - 2; n <= currentScore + 2; n++) {
+            if (n >= MIN_SCORE && n <= MAX_SCORE) drumNums.push(n);
+        }
+        const centerIdx = drumNums.indexOf(currentScore);
+        const centerDiff = currentScore - par;
+
+        let frameClass = 'score-drum-frame';
+        if (hasScore) {
+            if (centerDiff <= -2) frameClass += ' eagle';
+            else if (centerDiff === -1) frameClass += ' birdie';
+            else if (centerDiff === 1) frameClass += ' bogey';
+            else if (centerDiff >= 2) frameClass += ' double-bogey';
+        } else {
+            frameClass += ' no-score-yet';
+        }
+
+        const drumCenter = DRUM_W / 2;
+        const trackOffset = drumCenter - (centerIdx * DRUM_CELL) - (DRUM_CELL / 2);
+
+        const numCells = drumNums.map((n, i) => {
+            let cls = 'score-drum-num';
+            if (i === centerIdx) {
+                cls += ' center';
+                if (hasScore) {
+                    const diff = n - par;
+                    if (diff <= -2) cls += ' eagle';
+                    else if (diff === -1) cls += ' birdie';
+                    else if (diff === 1) cls += ' bogey';
+                    else if (diff >= 2) cls += ' double-bogey';
+                }
+            }
+            return `<div class="${cls}">${n}</div>`;
+        }).join('');
+
+        const drumId = `drum-${scorePlayerId}-${holeNum}`;
+        if (!window._drumHandlers) window._drumHandlers = [];
+        window._drumHandlers.push({ drumId, playerId: scorePlayerId, currentScore, par, holeNum, centerIdx, canEdit, hasScore });
+
+        const noScoreCls = hasScore ? '' : ' no-score-yet';
+        const drumHTML = canEdit
+            ? `<div class="score-drum-wrap">
+                <div class="score-drum${noScoreCls}" id="${drumId}">
+                    <div class="score-drum-track" style="transform:translateX(${trackOffset}px);">${numCells}</div>
+                    <div class="${frameClass}"></div>
+                    <div class="score-drum-touch"></div>
+                </div>
+            </div>`
+            : `<div class="score-drum-wrap">
+                <div class="score-drum${noScoreCls}" id="${drumId}" style="opacity:0.6;pointer-events:none;">
+                    <div class="score-drum-track" style="transform:translateX(${trackOffset}px);">${numCells}</div>
+                    <div class="${frameClass}"></div>
+                </div>
+            </div>`;
 
         return `
             <div class="score-entry-row">
@@ -3342,14 +3571,7 @@
                     ${names}${strokeDots}
                     <span class="hcp-badge">${hcpDisplay}</span>
                 </div>
-                <div class="score-entry-controls">
-                    <button class="score-adj-btn" onclick="adjustScore('${scorePlayerId}', ${holeNum}, -1)">&minus;</button>
-                    <div class="score-value-display ${scoreClass}">
-                        ${displayScore}
-                        ${vsParText ? `<span class="score-vs-par">${vsParText}</span>` : ''}
-                    </div>
-                    <button class="score-adj-btn" onclick="adjustScore('${scorePlayerId}', ${holeNum}, 1)">+</button>
-                </div>
+                ${drumHTML}
             </div>`;
     }
 
@@ -3728,6 +3950,7 @@
     // ─────────────────────────────────────────────────────────
     function renderScoring() {
         const el = document.getElementById('scoring-content');
+        window._drumHandlers = [];
 
         try {
             if (Object.keys(S.matches).length === 0) {
@@ -3735,16 +3958,10 @@
                 return;
             }
 
-            // Viewers can see scores, small button to enable scoring if needed
+            // Viewers can see scores — lock icon in header handles scorer login
             const isViewOnly = !LiveSync.isAdmin && !LiveSync.isScorer;
             if (isViewOnly) {
-                el.innerHTML = `
-                    <div style="text-align:right;margin-bottom:8px;">
-                        <button class="btn btn-sm btn-outline" onclick="enableScoring()" style="font-size:0.8rem;padding:4px 12px;">🔓 Scorer Login</button>
-                    </div>
-                    <div id="scoring-content-viewer"></div>
-                `;
-                // Now continue to render the scoring interface below
+                el.innerHTML = `<div id="scoring-content-viewer"></div>`;
             }
 
             let html = '';
@@ -3819,6 +4036,117 @@
             } else {
                 el.innerHTML = html;
             }
+
+            // Wire up drum swipe/drag handlers
+            requestAnimationFrame(() => {
+                if (!window._drumHandlers || !window._drumHandlers.length) return;
+                window._drumHandlers.forEach(({ drumId, playerId, currentScore, par, holeNum, centerIdx, canEdit, hasScore }) => {
+                    if (!canEdit) return;
+                    const drumEl = document.getElementById(drumId);
+                    if (!drumEl) return;
+                    const touchEl = drumEl.querySelector('.score-drum-touch');
+                    const track = drumEl.querySelector('.score-drum-track');
+                    if (!touchEl || !track) return;
+
+                    let startX = 0, dragging = false, dx = 0;
+                    const baseOffset = (DRUM_W / 2) - (centerIdx * DRUM_CELL) - (DRUM_CELL / 2);
+
+                    const updateTrack = (off) => { track.style.transition = 'none'; track.style.transform = `translateX(${off}px)`; };
+                    const snapTrack = (off) => { track.style.transition = 'transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94)'; track.style.transform = `translateX(${off}px)`; };
+
+                    const commit = (newScore) => {
+                        drumClick();
+                        setScore(playerId, holeNum, newScore);
+                    };
+
+                    // Touch events
+                    touchEl.ontouchstart = (e) => {
+                        startX = e.touches[0].clientX; dragging = true; dx = 0;
+                        track.style.transition = 'none';
+                        if (!_drumAudioCtx) {
+                            try { _drumAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(err){}
+                        } else if (_drumAudioCtx.state === 'suspended') {
+                            try { _drumAudioCtx.resume(); } catch(err){}
+                        }
+                    };
+                    touchEl.ontouchmove = (e) => {
+                        if (!dragging) return;
+                        dx = e.touches[0].clientX - startX;
+                        const maxDrag = currentScore > MIN_SCORE ? DRUM_CELL : 0;
+                        const minDrag = currentScore < MAX_SCORE ? -DRUM_CELL : 0;
+                        updateTrack(baseOffset + Math.max(minDrag, Math.min(maxDrag, dx)));
+                        if (Math.abs(dx) > 5) e.preventDefault();
+                    };
+                    touchEl.ontouchend = () => {
+                        if (!dragging) return;
+                        dragging = false;
+                        const threshold = DRUM_CELL * 0.3;
+                        if (dx < -threshold && currentScore < MAX_SCORE) {
+                            snapTrack(baseOffset - DRUM_CELL);
+                            setTimeout(() => commit(currentScore + 1), 180);
+                        } else if (dx > threshold && currentScore > MIN_SCORE) {
+                            snapTrack(baseOffset + DRUM_CELL);
+                            setTimeout(() => commit(currentScore - 1), 180);
+                        } else {
+                            snapTrack(baseOffset);
+                            // If no score yet and user tapped without swiping, set par
+                            if (!hasScore) setTimeout(() => commit(currentScore), 180);
+                        }
+                    };
+                    touchEl.ontouchcancel = () => { dragging = false; snapTrack(baseOffset); };
+
+                    // Click on side numbers to increment/decrement
+                    touchEl.onclick = (e) => {
+                        const rect = drumEl.getBoundingClientRect();
+                        const clickX = e.clientX - rect.left;
+                        const mid = rect.width / 2;
+                        if (clickX < mid - 10 && currentScore > MIN_SCORE) {
+                            snapTrack(baseOffset + DRUM_CELL);
+                            setTimeout(() => commit(currentScore - 1), 180);
+                        } else if (clickX > mid + 10 && currentScore < MAX_SCORE) {
+                            snapTrack(baseOffset - DRUM_CELL);
+                            setTimeout(() => commit(currentScore + 1), 180);
+                        } else if (!hasScore) {
+                            // Click center to confirm par
+                            setTimeout(() => commit(currentScore), 50);
+                        }
+                    };
+
+                    // Mouse drag for desktop — attach move/up to document so drag works outside the drum
+                    touchEl.onmousedown = (e) => {
+                        startX = e.clientX; dragging = true; dx = 0;
+                        track.style.transition = 'none'; e.preventDefault();
+                        const onMouseMove = (ev) => {
+                            if (!dragging) return;
+                            dx = ev.clientX - startX;
+                            const maxDrag = currentScore > MIN_SCORE ? DRUM_CELL : 0;
+                            const minDrag = currentScore < MAX_SCORE ? -DRUM_CELL : 0;
+                            updateTrack(baseOffset + Math.max(minDrag, Math.min(maxDrag, dx)));
+                        };
+                        const onMouseUp = () => {
+                            document.removeEventListener('mousemove', onMouseMove);
+                            document.removeEventListener('mouseup', onMouseUp);
+                            if (!dragging) return;
+                            dragging = false;
+                            const threshold = DRUM_CELL * 0.3;
+                            if (dx < -threshold && currentScore < MAX_SCORE) {
+                                snapTrack(baseOffset - DRUM_CELL);
+                                setTimeout(() => commit(currentScore + 1), 180);
+                            } else if (dx > threshold && currentScore > MIN_SCORE) {
+                                snapTrack(baseOffset + DRUM_CELL);
+                                setTimeout(() => commit(currentScore - 1), 180);
+                            } else {
+                                snapTrack(baseOffset);
+                                if (!hasScore) setTimeout(() => commit(currentScore), 180);
+                            }
+                        };
+                        document.addEventListener('mousemove', onMouseMove);
+                        document.addEventListener('mouseup', onMouseUp);
+                    };
+                });
+                window._drumHandlers = [];
+            });
+
         } catch (error) {
             console.error('Scoring render error:', error);
             el.innerHTML = `
@@ -3909,6 +4237,7 @@
                 <div class="scoring-header">
                     <div class="match-label">${match.type === 'fourball' ? 'Four Ball' : match.type === 'foursomes' ? 'Foursomes' : 'Singles'} &middot; Day ${match.day}</div>
                     <div class="match-status-lg">${statusText}</div>
+                    ${!canEdit ? '<button class="scoring-lock-btn" onclick="enableScoring()" title="Unlock scoring">&#x1F512;</button>' : ''}
                 </div>
                 <div class="scoring-hole-nav">
                     <button class="hole-nav-btn" onclick="prevHole()" ${hole <= 1 ? 'disabled' : ''}>&larr;</button>
@@ -3955,33 +4284,76 @@
         const grossScore = holeScores[playerId];
         const hasScore = grossScore !== undefined && grossScore !== null;
         const par = holeInfo.par;
-
-        // Check if viewer mode (read-only)
         const canEdit = LiveSync.canScore(match.id);
 
-        // Strokes received on this hole (using match play strokes - spinning off the low)
         const matchPlayHcp = getMatchPlayStrokes(match, playerId);
         const strokesReceived = S.config.useHandicaps ? getStrokesOnHole(matchPlayHcp, holeInfo.hcp) : 0;
-
-        // Score display class
-        let scoreClass = 'no-score';
-        let vsParText = '';
-        if (hasScore) {
-            const diff = grossScore - par;
-            if (diff <= -2) { scoreClass = 'eagle'; vsParText = diff; }
-            else if (diff === -1) { scoreClass = 'birdie'; vsParText = '-1'; }
-            else if (diff === 0) { scoreClass = ''; vsParText = 'E'; }
-            else if (diff === 1) { scoreClass = 'bogey'; vsParText = '+1'; }
-            else { scoreClass = 'double-bogey'; vsParText = '+' + diff; }
-        }
-
-        const displayScore = hasScore ? grossScore : '-';
         const strokeDots = strokesReceived > 0 ? ' <span style="color:var(--masters-red);font-size:0.7rem;">' + '\u25CF'.repeat(strokesReceived) + '</span>' : '';
-
-        // Show full handicap and match play handicap
         const hcpDisplay = matchPlayHcp !== hcp && matchPlayHcp > 0
             ? `HCP ${hcp} (${matchPlayHcp})`
             : `HCP ${hcp}`;
+
+        // Drum values: default to par if no score entered
+        const currentScore = hasScore ? grossScore : par;
+        const drumNums = [];
+        for (let n = currentScore - 2; n <= currentScore + 2; n++) {
+            if (n >= MIN_SCORE && n <= MAX_SCORE) drumNums.push(n);
+        }
+        const centerIdx = drumNums.indexOf(currentScore);
+        const centerDiff = currentScore - par;
+
+        // Frame class for color coding
+        let frameClass = 'score-drum-frame';
+        if (hasScore) {
+            if (centerDiff <= -2) frameClass += ' eagle';
+            else if (centerDiff === -1) frameClass += ' birdie';
+            else if (centerDiff === 1) frameClass += ' bogey';
+            else if (centerDiff >= 2) frameClass += ' double-bogey';
+        } else {
+            frameClass += ' no-score-yet';
+        }
+
+        // Track offset to center the selected number
+        const drumCenter = DRUM_W / 2;
+        const trackOffset = drumCenter - (centerIdx * DRUM_CELL) - (DRUM_CELL / 2);
+
+        // Build drum number cells
+        const numCells = drumNums.map((n, i) => {
+            let cls = 'score-drum-num';
+            if (i === centerIdx) {
+                cls += ' center';
+                if (hasScore) {
+                    const diff = n - par;
+                    if (diff <= -2) cls += ' eagle';
+                    else if (diff === -1) cls += ' birdie';
+                    else if (diff === 1) cls += ' bogey';
+                    else if (diff >= 2) cls += ' double-bogey';
+                }
+            }
+            return `<div class="${cls}">${n}</div>`;
+        }).join('');
+
+        const drumId = `drum-${playerId}-${holeNum}`;
+
+        // Store handler data for post-render wiring
+        if (!window._drumHandlers) window._drumHandlers = [];
+        window._drumHandlers.push({ drumId, playerId, currentScore, par, holeNum, centerIdx, canEdit, hasScore });
+
+        const noScoreCls = hasScore ? '' : ' no-score-yet';
+        const drumHTML = canEdit
+            ? `<div class="score-drum-wrap">
+                <div class="score-drum${noScoreCls}" id="${drumId}">
+                    <div class="score-drum-track" style="transform:translateX(${trackOffset}px);">${numCells}</div>
+                    <div class="${frameClass}"></div>
+                    <div class="score-drum-touch"></div>
+                </div>
+            </div>`
+            : `<div class="score-drum-wrap">
+                <div class="score-drum${noScoreCls}" id="${drumId}" style="opacity:0.6;pointer-events:none;">
+                    <div class="score-drum-track" style="transform:translateX(${trackOffset}px);">${numCells}</div>
+                    <div class="${frameClass}"></div>
+                </div>
+            </div>`;
 
         return `
             <div class="score-entry-row">
@@ -3989,14 +4361,7 @@
                     ${name}${strokeDots}
                     <span class="hcp-badge">${hcpDisplay}</span>
                 </div>
-                <div class="score-entry-controls">
-                    <button class="score-adj-btn" onclick="adjustScore('${playerId}', ${holeNum}, -1)" ${!canEdit ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>&minus;</button>
-                    <div class="score-value-display ${scoreClass}">
-                        ${displayScore}
-                        ${vsParText ? `<span class="score-vs-par">${vsParText}</span>` : ''}
-                    </div>
-                    <button class="score-adj-btn" onclick="adjustScore('${playerId}', ${holeNum}, 1)" ${!canEdit ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>+</button>
-                </div>
+                ${drumHTML}
             </div>`;
     }
 
@@ -4122,7 +4487,12 @@
     let touchEndX = 0;
     let touchEndY = 0;
 
+    let _swipeStartedInDrum = false;
+
     function handleSwipe() {
+        // Skip tab swipe if touch originated inside a drum picker
+        if (_swipeStartedInDrum) return;
+
         const deltaX = touchEndX - touchStartX;
         const deltaY = touchEndY - touchStartY;
         const minSwipeDistance = 80;
@@ -4145,6 +4515,7 @@
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
+        _swipeStartedInDrum = !!(e.target && e.target.closest && e.target.closest('.score-drum-touch'));
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
@@ -4212,6 +4583,27 @@
         }
 
         // Update match status
+        updateMatchStatus(match);
+        saveState();
+        renderScoring();
+    }
+
+    function setScore(playerId, holeNum, newScore) {
+        const match = S.matches[S.ui.activeMatchId];
+        if (!match) return;
+        if (!LiveSync.canScore(S.ui.activeMatchId)) {
+            showToast('View only - you cannot edit this match');
+            return;
+        }
+        if (!match.holes[holeNum]) match.holes[holeNum] = {};
+        const clamped = Math.max(MIN_SCORE, Math.min(MAX_SCORE, newScore));
+        match.holes[holeNum][playerId] = clamped;
+
+        const par = getHoleInfo(holeNum).par;
+        if (clamped < par - 1) haptic([10, 30, 10]);
+        else if (clamped === par - 1) haptic(20);
+        else haptic(10);
+
         updateMatchStatus(match);
         saveState();
         renderScoring();
@@ -7177,6 +7569,7 @@
             hideSplash();
         }
 
+        initBottomNav();
         switchTab(S.ui.activeTab || 'schedule');
 
         // Check if we should show Add to Home Screen banner
