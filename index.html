@@ -4635,8 +4635,40 @@
         }
     }
 
+    // Auto-fill par for any unscored players on the current hole
+    function autoFillPar(match, holeNum) {
+        if (!match || !LiveSync.canScore(match.id)) return;
+        const par = getHoleInfo(holeNum).par;
+        if (!match.holes[holeNum]) match.holes[holeNum] = {};
+        const holeScores = match.holes[holeNum];
+
+        // Determine which player IDs need scores
+        let playerIds;
+        if (match.type === 'foursomes') {
+            // Foursomes: score stored under first player of each team
+            playerIds = [match.teamA[0], match.teamB[0]];
+        } else {
+            playerIds = [...match.teamA, ...match.teamB];
+        }
+
+        let filled = false;
+        playerIds.forEach(pid => {
+            if (holeScores[pid] === undefined || holeScores[pid] === null) {
+                holeScores[pid] = par;
+                filled = true;
+            }
+        });
+
+        if (filled) {
+            updateMatchStatus(match);
+            saveState();
+        }
+    }
+
     function prevHole() {
         if (S.ui.scoringHole > 1) {
+            const match = S.matches[S.ui.activeMatchId];
+            if (match) autoFillPar(match, S.ui.scoringHole);
             haptic(8);
             S.ui.scoringHole--;
             saveState();
@@ -4647,9 +4679,9 @@
     function nextHole() {
         if (S.ui.scoringHole >= 18) return;
 
-        // Check for birdies on current hole before advancing
         const match = S.matches[S.ui.activeMatchId];
         if (match) {
+            autoFillPar(match, S.ui.scoringHole);
             checkForBirdiesAndCelebrate(match, S.ui.scoringHole);
         }
 
@@ -4660,6 +4692,8 @@
     }
 
     function jumpToHole(h) {
+        const match = S.matches[S.ui.activeMatchId];
+        if (match) autoFillPar(match, S.ui.scoringHole);
         haptic(8);
         S.ui.scoringHole = h;
         saveState();
