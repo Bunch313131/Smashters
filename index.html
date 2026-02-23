@@ -4680,15 +4680,42 @@
         if (S.ui.scoringHole >= 18) return;
 
         const match = S.matches[S.ui.activeMatchId];
-        if (match) {
-            autoFillPar(match, S.ui.scoringHole);
-            checkForBirdiesAndCelebrate(match, S.ui.scoringHole);
-        }
+        if (!match) { S.ui.scoringHole++; saveState(); renderScoring(); return; }
 
-        haptic(8);
-        S.ui.scoringHole++;
-        saveState();
+        autoFillPar(match, S.ui.scoringHole);
+
+        // Re-render current hole so banner/best-ball update before we leave
         renderScoring();
+
+        // Check if there's something worth pausing for
+        const holeWinner = getHoleWinner(match, S.ui.scoringHole);
+        const holeInfo = getHoleInfo(S.ui.scoringHole);
+        const holeScores = match.holes[S.ui.scoringHole] || {};
+        const allPlayers = [...match.teamA, ...match.teamB];
+        const hasBirdieOrEagle = allPlayers.some(pid => {
+            const s = holeScores[pid];
+            return s !== undefined && s !== null && s < holeInfo.par;
+        });
+
+        if (holeWinner || hasBirdieOrEagle) {
+            // Celebrate birdies/eagles
+            if (hasBirdieOrEagle) {
+                checkForBirdiesAndCelebrate(match, S.ui.scoringHole);
+            }
+            // Wait so user can see the result banner + animation
+            const delay = hasBirdieOrEagle ? 2500 : 1200;
+            setTimeout(() => {
+                haptic(8);
+                S.ui.scoringHole++;
+                saveState();
+                renderScoring();
+            }, delay);
+        } else {
+            haptic(8);
+            S.ui.scoringHole++;
+            saveState();
+            renderScoring();
+        }
     }
 
     function jumpToHole(h) {
