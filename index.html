@@ -7604,30 +7604,29 @@
         LiveSync.autoStart();
 
         // ── Launch flow: gate → opt-in → splash ──
-        if (isMobile() && !isStandalone()) {
-            // Mobile browser: show "Add to Home Screen" gate
-            hideSplash();
-            showMobileGate();
-        } else if (shouldShowSplash()) {
-            // Standalone PWA or desktop: show opt-in, then splash on tap
-            hideSplash();
-            showOptIn();
-            document.getElementById('optInBtn').addEventListener('click', () => {
-                hideOptIn();
-                showSplash();
-            }, { once: true });
-        } else {
-            hideSplash();
-        }
+        // TEMP DISABLED FOR TESTING
+        // if (isMobile() && !isStandalone()) {
+        //     hideSplash();
+        //     showMobileGate();
+        // } else if (shouldShowSplash()) {
+        //     hideSplash();
+        //     showOptIn();
+        //     document.getElementById('optInBtn').addEventListener('click', () => {
+        //         hideOptIn();
+        //         showSplash();
+        //     }, { once: true });
+        // } else {
+        //     hideSplash();
+        // }
+        hideSplash();
 
         initBottomNav();
         switchTab(S.ui.activeTab || 'schedule');
 
-        // Check if we should show Add to Home Screen banner
-        // (skip if gate is already showing)
-        if (!(isMobile() && !isStandalone())) {
-            checkInstallBanner();
-        }
+        // TEMP DISABLED FOR TESTING
+        // if (!(isMobile() && !isStandalone())) {
+        //     checkInstallBanner();
+        // }
     }
 
     document.getElementById('modalOverlay').addEventListener('click', e => {
