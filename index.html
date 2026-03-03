@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#00432e">
+    <style>html,body{background:#00432e}</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Smashters">
-    <meta name="theme-color" content="#00432e">
     <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/apple-touch-icon.png">
@@ -64,14 +66,19 @@
         /* ═══════════════════════════════════════════════════════
            BASE STYLES
            ═══════════════════════════════════════════════════════ */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
+        html { overscroll-behavior: none; }
 
         body {
             font-family: 'Georgia', 'Times New Roman', serif;
             background: var(--masters-cream);
             color: var(--masters-black);
-            min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+            display: flex;
+            flex-direction: column;
+            height: var(--app-height, 100vh);
+            overflow: hidden;
         }
 
         /* Azalea: logo/title only. Clean sans-serif for UI headers (Masters broadcast style) */
@@ -90,8 +97,8 @@
             color: var(--masters-white);
             text-align: center;
             padding: 10px 12px 0;
-            position: sticky;
-            top: 0;
+            padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+            flex-shrink: 0;
             z-index: 100;
             box-shadow: 0 2px 12px rgba(0,0,0,0.3);
         }
@@ -216,9 +223,10 @@
 
         /* Mobile nav styles */
         @media (max-width: 768px) {
-            .hamburger-btn { display: block; }
+            .hamburger-btn { display: none; }
+            .tab-nav { display: none !important; }
 
-            .app-header { position: sticky; }
+            .app-header { flex-shrink: 0; padding-bottom: 10px; }
 
             .header-top {
                 /* Use grid for true centering - logo and hamburger take equal space */
@@ -334,6 +342,7 @@
                 transform: translateX(0);
             }
         }
+        .tab-content.active { display: block; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; min-height: 0; padding-bottom: 16px; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
@@ -1478,7 +1487,7 @@
 
         .toast {
             position: fixed;
-            bottom: 20px;
+            bottom: calc(20px + env(safe-area-inset-bottom, 0px));
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             background: var(--masters-dark);
@@ -1492,11 +1501,32 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
+        /* Bottom Navigation Bar */
+        .bottom-nav { display: none; background: var(--masters-dark); border-top: 2px solid var(--masters-gold); flex-shrink: 0; padding: 0 4px calc(env(safe-area-inset-bottom, 8px)); }
+        .bottom-nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px 4px; background: none; border: none; color: rgba(255,255,255,0.5); font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer; transition: color 0.2s; }
+        .bottom-nav-btn.active { color: var(--masters-yellow); }
+        .bottom-nav-btn svg { width: 22px; height: 22px; }
+        @media (max-width: 768px) { .bottom-nav { display: flex; } }
+
+        /* Slide-out Menu */
+        .menu-overlay { position: fixed; top: calc(-1 * env(safe-area-inset-top, 0px)); left: 0; right: 0; bottom: calc(-1 * env(safe-area-inset-bottom, 0px)); background: rgba(0,0,0,0.5); z-index: 150; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+        .menu-overlay.open { opacity: 1; visibility: visible; }
+        .slide-menu { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: var(--masters-dark); border-left: 2px solid var(--masters-gold); z-index: 151; transition: right 0.3s ease; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .slide-menu.open { right: 0; }
+        .slide-menu-header { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; }
+        .slide-menu-header h2 { margin: 0; font-size: 16px; color: var(--masters-yellow); font-family: 'Azalea', 'Georgia', serif; }
+        .slide-menu-close { background: none; border: none; color: var(--masters-white); font-size: 24px; cursor: pointer; padding: 4px 8px; }
+        .slide-menu-item { display: block; width: 100%; padding: 14px 16px; background: none; border: none; color: var(--masters-white); font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; text-align: left; cursor: pointer; transition: background 0.2s; letter-spacing: 0.5px; }
+        .slide-menu-item:hover { background: rgba(255,255,255,0.05); }
+        .slide-menu-item.active { color: var(--masters-yellow); background: rgba(255,255,255,0.08); }
+
         /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
-            inset: 0;
+            top: calc(-1 * env(safe-area-inset-top, 0px));
+            left: 0; right: 0;
+            bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
             background: rgba(0,0,0,0.5);
             z-index: 200;
             align-items: center;
@@ -1554,14 +1584,16 @@
            ═══════════════════════════════════════════════════════ */
         .gate-overlay, .optin-overlay {
             position: fixed;
-            inset: 0;
+            top: calc(-1 * env(safe-area-inset-top, 0px));
+            left: 0; right: 0;
+            bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
             z-index: 1100;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 40px 30px;
+            padding: calc(40px + env(safe-area-inset-top, 0px)) 30px calc(40px + env(safe-area-inset-bottom, 0px));
         }
         .gate-overlay.active, .optin-overlay.active {
             display: flex;
@@ -1689,7 +1721,9 @@
            ═══════════════════════════════════════════════════════ */
         .splash-overlay {
             position: fixed;
-            inset: 0;
+            top: calc(-1 * env(safe-area-inset-top, 0px));
+            left: 0; right: 0;
+            bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
             z-index: 999;
             display: flex;
             flex-direction: column;
@@ -2113,6 +2147,16 @@
             }
         }
     </style>
+<script>
+(function(){
+  function setAppHeight(){
+    document.documentElement.style.setProperty('--app-height', screen.height + 'px');
+  }
+  setAppHeight();
+  window.addEventListener('resize', setAppHeight);
+  window.addEventListener('orientationchange', function(){ setTimeout(setAppHeight, 100); });
+})();
+</script>
 </head>
 <body>
 
@@ -2207,6 +2251,47 @@
     <section class="tab-content" id="tab-players"><div id="players-content"></div></section>
     <section class="tab-content" id="tab-draft"><div id="draft-content"></div></section>
     <section class="tab-content" id="tab-settings"><div id="settings-content"></div></section>
+
+    <!-- Bottom Navigation Bar (mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="bottom-nav-btn active" data-tab="schedule">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Schedule
+        </button>
+        <button class="bottom-nav-btn" data-tab="leaderboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 22V8a2 2 0 0 0-2-2H6v6.5a4 4 0 0 0 4 4"/><path d="M14 22V8a2 2 0 0 1 2-2h2v6.5a4 4 0 0 1-4 4"/></svg>
+            Board
+        </button>
+        <button class="bottom-nav-btn" data-tab="scoring">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Scoring
+        </button>
+        <button class="bottom-nav-btn" data-tab="matches">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Matches
+        </button>
+        <button class="bottom-nav-btn" id="bottomNavMore">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            More
+        </button>
+    </nav>
+
+    <!-- Slide-out Menu -->
+    <div class="menu-overlay" id="slideMenuOverlay"></div>
+    <div class="slide-menu" id="slideMenu">
+        <div class="slide-menu-header">
+            <h2>The Smashters</h2>
+            <button class="slide-menu-close" id="slideMenuClose">&times;</button>
+        </div>
+        <button class="slide-menu-item" data-tab="schedule">Schedule</button>
+        <button class="slide-menu-item" data-tab="leaderboard">Leaderboard</button>
+        <button class="slide-menu-item" data-tab="individual">Individual Stats</button>
+        <button class="slide-menu-item" data-tab="scoring">Scoring</button>
+        <button class="slide-menu-item" data-tab="matches">Matches</button>
+        <button class="slide-menu-item" data-tab="players">Players</button>
+        <button class="slide-menu-item" data-tab="draft">Draft</button>
+        <button class="slide-menu-item" data-tab="settings">Settings</button>
+    </div>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="modalContainer"></div>
@@ -2400,6 +2485,20 @@
         }
     }
 
+    // Debounced save — batches rapid saves into a single write
+    let _saveTimer = null;
+    function scheduleSave(skipFirebaseSync = false) {
+        clearTimeout(_saveTimer);
+        _saveTimer = setTimeout(() => saveState(skipFirebaseSync), 200);
+    }
+
+    // Debounced render — batches rapid renders
+    let _renderTimer = null;
+    function scheduleRender(tabId) {
+        clearTimeout(_renderTimer);
+        _renderTimer = setTimeout(() => renderTab(tabId || S.ui.activeTab), 120);
+    }
+
     function genId() {
         return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     }
@@ -2498,6 +2597,10 @@
         }
 
         previousTab = tabId;
+        // Update bottom nav active state
+        document.querySelectorAll('.bottom-nav-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+        // Update slide menu active state
+        document.querySelectorAll('.slide-menu-item').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
         S.ui.activeTab = tabId;
         saveState();
         renderTab(tabId);
@@ -2509,6 +2612,29 @@
             switchTab(e.target.dataset.tab);
             closeMobileMenu();
         }
+    });
+
+    // Bottom nav
+    document.getElementById('bottomNav').addEventListener('click', e => {
+        const btn = e.target.closest('.bottom-nav-btn[data-tab]');
+        if (btn) switchTab(btn.dataset.tab);
+    });
+
+    // Slide-out menu
+    function openSlideMenu() {
+        document.getElementById('slideMenu').classList.add('open');
+        document.getElementById('slideMenuOverlay').classList.add('open');
+    }
+    function closeSlideMenu() {
+        document.getElementById('slideMenu').classList.remove('open');
+        document.getElementById('slideMenuOverlay').classList.remove('open');
+    }
+    document.getElementById('bottomNavMore').addEventListener('click', openSlideMenu);
+    document.getElementById('slideMenuOverlay').addEventListener('click', closeSlideMenu);
+    document.getElementById('slideMenuClose').addEventListener('click', closeSlideMenu);
+    document.getElementById('slideMenu').addEventListener('click', e => {
+        const item = e.target.closest('.slide-menu-item');
+        if (item) { switchTab(item.dataset.tab); closeSlideMenu(); }
     });
 
     // ─────────────────────────────────────────────────────────
@@ -2537,7 +2663,7 @@
     }
 
     // ─────────────────────────────────────────────────────────
-    // MOBILE HAMBURGER MENU
+    // MOBILE HAMBURGER MENU (legacy - kept for desktop tab nav)
     // ─────────────────────────────────────────────────────────
     function toggleMobileMenu() {
         const nav = document.getElementById('tabNav');
