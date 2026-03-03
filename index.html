@@ -7677,30 +7677,27 @@
         LiveSync.autoStart();
 
         // ── Launch flow: gate → opt-in → splash ──
-        // TEMP DISABLED FOR TESTING
-        // if (isMobile() && !isStandalone()) {
-        //     hideSplash();
-        //     showMobileGate();
-        // } else if (shouldShowSplash()) {
-        //     hideSplash();
-        //     showOptIn();
-        //     document.getElementById('optInBtn').addEventListener('click', () => {
-        //         hideOptIn();
-        //         showSplash();
-        //     }, { once: true });
-        // } else {
-        //     hideSplash();
-        // }
-        hideSplash();
+        if (isMobile() && !isStandalone()) {
+            hideSplash();
+            showMobileGate();
+        } else if (shouldShowSplash()) {
+            hideSplash();
+            showOptIn();
+            document.getElementById('optInBtn').addEventListener('click', () => {
+                hideOptIn();
+                showSplash();
+            }, { once: true });
+        } else {
+            hideSplash();
+        }
 
         document.body.classList.add('has-bottom-nav');
         updateBottomNavActive();
         switchTab(S.ui.activeTab || 'schedule');
 
-        // TEMP DISABLED FOR TESTING
-        // if (!(isMobile() && !isStandalone())) {
-        //     checkInstallBanner();
-        // }
+        if (!(isMobile() && !isStandalone())) {
+            checkInstallBanner();
+        }
     }
 
     document.getElementById('modalOverlay').addEventListener('click', e => {
