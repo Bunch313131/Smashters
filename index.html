@@ -4505,42 +4505,6 @@
     }
 
     // ─────────────────────────────────────────────────────────
-    // DEPTH/PARALLAX SCROLLING
-    // ─────────────────────────────────────────────────────────
-    function initParallax() {
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabContents.forEach(container => {
-            container.addEventListener('scroll', () => {
-                const scrolled = container.scrollTop;
-
-                // Apply parallax to section headers (slower scroll)
-                container.querySelectorAll('.lb-section-header').forEach(header => {
-                    const offset = header.offsetTop;
-                    const distance = scrolled - offset;
-                    if (Math.abs(distance) < 800) {
-                        header.style.transform = `translateY(${distance * 0.3}px)`;
-                    } else {
-                        header.style.transform = '';
-                    }
-                });
-
-                // Apply parallax to totals row (medium speed)
-                container.querySelectorAll('.lb-totals-row').forEach(row => {
-                    const offset = row.offsetTop;
-                    const distance = scrolled - offset;
-                    if (Math.abs(distance) < 600) {
-                        row.style.transform = `translateY(${distance * 0.15}px) scale(${1 - Math.abs(distance) / 3000})`;
-                    }
-                });
-            }, { passive: true });
-        });
-    }
-
-    // Initialize parallax after a short delay
-    setTimeout(initParallax, 500);
-
-    // ─────────────────────────────────────────────────────────
     // EXPANDABLE MATCH DETAILS TOGGLE
     // ─────────────────────────────────────────────────────────
     function toggleMatchExpand(event, matchId) {
@@ -6880,9 +6844,10 @@
     const SPLASH_SESSION_KEY = 'smashters-splash-shown';
 
     function shouldShowSplash() {
-        // Show splash on every fresh launch, but not when returning
-        // from background (tab switch, app switcher, etc.)
-        return !sessionStorage.getItem(SPLASH_SESSION_KEY);
+        // Show splash once per day — stored in localStorage with today's date
+        const lastShown = localStorage.getItem(SPLASH_SESSION_KEY);
+        const today = new Date().toDateString();
+        return lastShown !== today;
     }
 
     // ─────────────────────────────────────────────────────────
@@ -7022,7 +6987,7 @@
         const themeMeta = document.querySelector('meta[name="theme-color"]');
         document.getElementById('splashYear').textContent = S.config.year;
 
-        sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
+        localStorage.setItem(SPLASH_SESSION_KEY, new Date().toDateString());
 
         if (themeMeta) themeMeta.content = '#ffffff';
 
