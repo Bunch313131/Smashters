@@ -1645,7 +1645,7 @@
         .optin-overlay {
             background: #ffffff;
             color: var(--masters-dark);
-            padding: 50px 28px 40px;
+            padding: calc(50px + env(safe-area-inset-top, 0px)) 28px calc(40px + env(safe-area-inset-bottom, 0px));
             justify-content: flex-start;
         }
         .optin-title {
@@ -1816,7 +1816,9 @@
 
         #burnCanvas {
             position: fixed;
-            inset: 0;
+            top: calc(-1 * env(safe-area-inset-top, 0px));
+            left: 0; right: 0;
+            bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
             z-index: 1001;
             pointer-events: none;
         }
@@ -7081,7 +7083,11 @@
         const canvas = document.getElementById('burnCanvas');
         const ctx = canvas.getContext('2d');
         const W = window.innerWidth;
-        const H = window.innerHeight;
+        // Size canvas to match overlay (extends into safe areas)
+        const rect = phase2El.getBoundingClientRect();
+        const safeTop = Math.max(0, -rect.top);
+        const safeBot = Math.max(0, rect.bottom - window.innerHeight);
+        const H = window.innerHeight + safeTop + safeBot;
         canvas.width = W;
         canvas.height = H;
 
