@@ -4520,7 +4520,8 @@
                     const distance = scrolled - offset;
                     if (Math.abs(distance) < 800) {
                         header.style.transform = `translateY(${distance * 0.3}px)`;
-                        header.style.opacity = 1 - (Math.abs(distance) / 1000);
+                    } else {
+                        header.style.transform = '';
                     }
                 });
 
