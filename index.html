@@ -2467,6 +2467,9 @@
         const code = prompt(`Admin access required to ${operation}.\nEnter admin code:`);
         if (code === '1313') {
             S.ui.settingsUnlocked = true;
+            LiveSync.isAdmin = true;
+            LiveSync.isViewer = false;
+            LiveSync.isScorer = false;
             saveState();
             showToast('Admin access granted');
             return true;
@@ -6230,15 +6233,8 @@
                         mode: this.isViewer ? 'viewer' : 'other'
                     });
 
-                    // As a viewer, always pull from Firebase (read-only mode)
-                    if (this.isViewer) {
-                        console.log('Viewer mode: Pulling from Firebase...');
-                        this.applyState(firebaseData);
-                        renderTab(S.ui.activeTab);
-                        showToast('Connected to live event');
-                    }
                     // PRIORITY 1: If Firebase has more players, always pull from Firebase
-                    else if (firebasePlayerCount > localPlayerCount) {
+                    if (firebasePlayerCount > localPlayerCount) {
                         console.log('Pulling from Firebase (has more players)...');
                         this.applyState(firebaseData);
                         renderTab(S.ui.activeTab);
