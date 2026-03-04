@@ -2453,6 +2453,10 @@
             flex-wrap: wrap;
             margin: 16px 0;
         }
+        .broadcast-nine {
+            display: flex;
+            gap: 6px;
+        }
         .broadcast-hole-dot {
             width: clamp(20px, 2.8vw, 36px);
             height: clamp(20px, 2.8vw, 36px);
@@ -8417,9 +8421,10 @@
         }
         if (status.isDormie) statusText += ' (DORMIE)';
 
-        // Hole-by-hole dots
-        let holesHtml = '';
+        // Hole-by-hole dots grouped by front/back 9
+        let holesHtml = '<div class="broadcast-nine">';
         for (let h = 1; h <= 18; h++) {
+            if (h === 10) holesHtml += '</div><div class="broadcast-nine">';
             const winner = getHoleWinner(match, h);
             let cls = 'not-played';
             if (winner === 'A') cls = 'team-a';
@@ -8427,6 +8432,7 @@
             else if (winner === 'halved') cls = 'halved';
             holesHtml += `<div class="broadcast-hole-dot ${cls}">${h}</div>`;
         }
+        holesHtml += '</div>';
 
         // Build highlights for this match
         let highlightsHtml = '';
