@@ -2420,6 +2420,18 @@
             line-height: 1.3;
             color: #fff;
         }
+        .broadcast-player-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .broadcast-player-bar {
+            display: inline-block;
+            width: 4px;
+            height: 0.9em;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
         .broadcast-spotlight-vs {
             font-size: clamp(14px, 1.8vw, 22px);
             color: rgba(255,255,255,0.45);
@@ -8226,9 +8238,10 @@
         const fullNamesA = match.teamA.map(id => getPlayerName(id)).join(' / ');
         const fullNamesB = match.teamB.map(id => getPlayerName(id)).join(' / ');
 
+        // Status color — use bright readable colors on green bg
         let statusColor = '#fff';
-        if (status.leader === 'A') statusColor = S.config.teamA.color;
-        else if (status.leader === 'B') statusColor = S.config.teamB.color;
+        if (status.leader === 'A') statusColor = '#ff6b81'; // bright red
+        else if (status.leader === 'B') statusColor = '#74b9ff'; // bright blue
 
         let statusText = status.text;
         if (!status.isComplete && status.holesPlayed > 0) {
@@ -8286,9 +8299,9 @@
             <div>
                 <div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>
                 <div class="broadcast-spotlight-players">
-                    <span style="color:${S.config.teamA.color}">${fullNamesA}</span>
+                    <span class="broadcast-player-tag"><span class="broadcast-player-bar" style="background:${S.config.teamA.color}"></span>${fullNamesA}</span>
                     <span class="broadcast-spotlight-vs"> vs </span>
-                    <span style="color:${S.config.teamB.color}">${fullNamesB}</span>
+                    <span class="broadcast-player-tag"><span class="broadcast-player-bar" style="background:${S.config.teamB.color}"></span>${fullNamesB}</span>
                 </div>
                 <div class="broadcast-spotlight-status" style="color:${statusColor}">${statusText}</div>
                 <div class="broadcast-spotlight-holes">${holesHtml}</div>
