@@ -2085,9 +2085,9 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 28px;
+            padding: 8px 28px;
             background: linear-gradient(180deg, var(--masters-darkest) 0%, var(--masters-dark) 100%);
-            border-bottom: 3px solid var(--masters-gold);
+            border-bottom: 3px solid #FFDF00;
             flex-shrink: 0;
         }
         .broadcast-header-left {
@@ -2104,17 +2104,34 @@
         .broadcast-event-name {
             font-family: 'Azalea', 'Georgia', serif;
             font-size: clamp(28px, 4.5vw, 56px);
-            color: var(--masters-yellow);
+            color: #FFDF00;
             letter-spacing: 2px;
             line-height: 1;
+        }
+        .broadcast-event-year {
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: clamp(28px, 4.5vw, 56px);
+            color: #FFDF00;
+            letter-spacing: 3px;
+            line-height: 1;
+        }
+        /* ── LIVE badge + clock — top-right of spotlight panel ── */
+        .broadcast-live-badge {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
         }
         .broadcast-live {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: clamp(9px, 1vw, 13px);
+            font-size: clamp(9px, 1.1vw, 14px);
             font-weight: 700;
-            color: rgba(255,255,255,0.6);
+            color: rgba(255,255,255,0.7);
             letter-spacing: 1.5px;
         }
         .broadcast-live-dot {
@@ -2124,20 +2141,6 @@
             background: #ff3333;
             box-shadow: 0 0 6px rgba(255,51,51,0.5);
             animation: livePulse 2s infinite;
-        }
-        .broadcast-header-right {
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 2px;
-        }
-        .broadcast-event-year {
-            font-family: 'Trebuchet MS', sans-serif;
-            font-size: clamp(14px, 2vw, 24px);
-            color: rgba(255,255,255,0.7);
-            letter-spacing: 4px;
-            font-weight: 600;
         }
         .broadcast-clock {
             font-size: clamp(10px, 1.1vw, 14px);
@@ -2171,6 +2174,7 @@
             padding: 28px 32px;
             background: linear-gradient(170deg, var(--masters-dark) 0%, var(--masters-green) 50%, var(--masters-dark) 100%);
             transition: opacity 0.5s ease;
+            position: relative;
         }
 
         /* Portrait: stack vertically */
@@ -2478,7 +2482,7 @@
         .broadcast-ticker {
             flex-shrink: 0;
             background: var(--masters-darkest);
-            border-top: 2px solid var(--masters-gold);
+            border-top: 2px solid #FFDF00;
             overflow: hidden;
             height: clamp(36px, 4.5vh, 52px);
             display: flex;
@@ -2487,7 +2491,7 @@
         }
         .broadcast-ticker-label {
             flex-shrink: 0;
-            background: linear-gradient(135deg, var(--masters-gold) 0%, #d4b85a 100%);
+            background: linear-gradient(135deg, #FFDF00 0%, #ffe433 100%);
             color: var(--masters-darkest);
             font-weight: 800;
             font-size: clamp(10px, 1.2vw, 14px);
@@ -2512,7 +2516,7 @@
             font-weight: 500;
         }
         .broadcast-ticker-item .sep {
-            color: var(--masters-gold);
+            color: #FFDF00;
             margin: 0 20px;
         }
 
@@ -2742,15 +2746,16 @@
                 <img src="assets/images/smashters-logo-green.png" alt="" class="broadcast-logo">
                 <div class="broadcast-event-name" id="broadcastEventName">The Smashters</div>
             </div>
-            <div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div>
-            <div class="broadcast-header-right">
-                <div class="broadcast-event-year">2026</div>
-                <div class="broadcast-clock" id="broadcastClock"></div>
-            </div>
+            <div class="broadcast-event-year">2026</div>
         </div>
         <div class="broadcast-body">
             <div class="broadcast-scoreboard" id="broadcastScoreboard"></div>
-            <div class="broadcast-spotlight" id="broadcastSpotlight"></div>
+            <div class="broadcast-spotlight" id="broadcastSpotlight">
+                <div class="broadcast-live-badge">
+                    <div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div>
+                    <div class="broadcast-clock" id="broadcastClock"></div>
+                </div>
+            </div>
         </div>
         <div class="broadcast-ticker">
             <div class="broadcast-ticker-label">UPDATES</div>
