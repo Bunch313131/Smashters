@@ -2264,15 +2264,14 @@
         /* ── Session group ── */
         .broadcast-session-label {
             font-size: clamp(10px, 1.1vw, 13px);
-            color: var(--masters-green);
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: 700;
-            margin: 14px 0 6px 0;
+            margin: 14px 0 0 0;
             padding: 6px 10px;
             background: var(--masters-green);
             color: var(--masters-yellow);
-            border-radius: 4px;
+            border-radius: 8px 8px 0 0;
         }
 
         /* ── Match rows (leaderboard-style) ── */
@@ -2489,6 +2488,13 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
+        .broadcast-bonus-notes {
+            font-size: clamp(8px, 1vw, 12px);
+            font-weight: 400;
+            opacity: 0.7;
+            display: block;
+            margin-top: 1px;
+        }
         .broadcast-bonus-row {
             display: grid;
             grid-template-columns: 1fr clamp(80px, 12vw, 130px) 1fr;
@@ -2498,6 +2504,14 @@
         .broadcast-bonus-row .broadcast-match-teamA,
         .broadcast-bonus-row .broadcast-match-teamB {
             font-size: clamp(10px, 1.3vw, 15px);
+            flex-direction: column;
+            gap: 0;
+        }
+        .broadcast-bonus-row .broadcast-match-teamA {
+            align-items: flex-end;
+        }
+        .broadcast-bonus-row .broadcast-match-teamB {
+            align-items: flex-start;
         }
         .broadcast-bonus-row .broadcast-match-status {
             font-size: clamp(8px, 1vw, 12px);
@@ -2508,6 +2522,8 @@
             display: grid;
             grid-template-columns: 1fr clamp(80px, 12vw, 130px) 1fr;
             min-height: clamp(32px, 4vh, 44px);
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
         }
         .broadcast-subtotal-cell {
             display: flex;
@@ -8286,11 +8302,13 @@
                 if (isALeading) cellAClass = 'leading';
                 else if (isBLeading) cellBClass = 'leading';
 
+                const noteA = evt.notesA ? `<span class="broadcast-bonus-notes">${evt.notesA}</span>` : '';
+                const noteB = evt.notesB ? `<span class="broadcast-bonus-notes">${evt.notesB}</span>` : '';
                 html += `<div class="broadcast-bonus-label">${evt.name}</div>`;
                 html += `<div class="broadcast-match-row broadcast-bonus-row">
-                    <div class="broadcast-match-teamA ${cellAClass}">${ptsA > 0 ? formatScore(ptsA) + ' pts' : ''}</div>
+                    <div class="broadcast-match-teamA ${cellAClass}">${ptsA > 0 ? formatScore(ptsA) + ' pts' : ''}${noteA}</div>
                     <div class="broadcast-match-status">&#9733;</div>
-                    <div class="broadcast-match-teamB ${cellBClass}">${ptsB > 0 ? formatScore(ptsB) + ' pts' : ''}</div>
+                    <div class="broadcast-match-teamB ${cellBClass}">${ptsB > 0 ? formatScore(ptsB) + ' pts' : ''}${noteB}</div>
                 </div>`;
             });
 
@@ -8324,11 +8342,13 @@
                 if (isALeading) cellAClass = 'leading';
                 else if (isBLeading) cellBClass = 'leading';
 
+                const noteA = evt.notesA ? `<span class="broadcast-bonus-notes">${evt.notesA}</span>` : '';
+                const noteB = evt.notesB ? `<span class="broadcast-bonus-notes">${evt.notesB}</span>` : '';
                 html += `<div class="broadcast-bonus-label">${evt.name}</div>`;
                 html += `<div class="broadcast-match-row broadcast-bonus-row">
-                    <div class="broadcast-match-teamA ${cellAClass}">${ptsA > 0 ? formatScore(ptsA) + ' pts' : ''}</div>
+                    <div class="broadcast-match-teamA ${cellAClass}">${ptsA > 0 ? formatScore(ptsA) + ' pts' : ''}${noteA}</div>
                     <div class="broadcast-match-status">&#9733;</div>
-                    <div class="broadcast-match-teamB ${cellBClass}">${ptsB > 0 ? formatScore(ptsB) + ' pts' : ''}</div>
+                    <div class="broadcast-match-teamB ${cellBClass}">${ptsB > 0 ? formatScore(ptsB) + ' pts' : ''}${noteB}</div>
                 </div>`;
             });
 
@@ -8365,8 +8385,10 @@
             renderBroadcastSpotlight(spotlightPool[broadcastSpotlightIndex]);
         } else {
             document.getElementById('broadcastSpotlight').innerHTML =
+                '<div class="broadcast-live-badge"><div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div><div class="broadcast-clock" id="broadcastClock"></div></div>' +
                 '<div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>' +
                 '<div style="color:rgba(255,255,255,0.4);font-size:clamp(14px,2vw,20px);">No matches in progress</div>';
+            updateBroadcastClock();
         }
 
         // Detect score changes for ticker
@@ -8442,6 +8464,10 @@
 
         const el = document.getElementById('broadcastSpotlight');
         el.innerHTML = `
+            <div class="broadcast-live-badge">
+                <div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div>
+                <div class="broadcast-clock" id="broadcastClock"></div>
+            </div>
             <div>
                 <div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>
                 <div class="broadcast-spotlight-players">
@@ -8466,7 +8492,8 @@
             </div>
         `;
 
-        // Draw the probability chart
+        // Update clock in the re-rendered badge, then draw chart
+        updateBroadcastClock();
         requestAnimationFrame(() => drawProbChart(match));
     }
 
