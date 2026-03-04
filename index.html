@@ -2116,20 +2116,22 @@
             margin-top: 2px;
         }
         .broadcast-live {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: clamp(12px, 1.5vw, 18px);
+            gap: 5px;
+            font-size: clamp(8px, 0.9vw, 11px);
             font-weight: 700;
-            color: #fff;
+            color: rgba(255,255,255,0.6);
             letter-spacing: 1px;
+            margin-left: 8px;
+            vertical-align: middle;
         }
         .broadcast-live-dot {
-            width: 12px;
-            height: 12px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: #ff3333;
-            box-shadow: 0 0 8px rgba(255,51,51,0.6);
+            box-shadow: 0 0 6px rgba(255,51,51,0.5);
             animation: livePulse 2s infinite;
         }
         .broadcast-header-right {
@@ -2743,10 +2745,9 @@
                 <img src="assets/images/smashters-logo-green.png" alt="" class="broadcast-logo">
                 <div>
                     <div class="broadcast-event-name" id="broadcastEventName">The Smashters</div>
-                    <div class="broadcast-event-year">2026</div>
+                    <div class="broadcast-event-year">2026 <span class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</span></div>
                 </div>
             </div>
-            <div class="broadcast-live"><div class="broadcast-live-dot"></div> LIVE</div>
             <div class="broadcast-header-right">
                 <div class="broadcast-course" id="broadcastCourse">Haggin Oaks CC</div>
                 <div class="broadcast-clock" id="broadcastClock"></div>
