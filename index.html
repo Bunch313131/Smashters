@@ -2156,6 +2156,8 @@
         }
         .broadcast-scoreboard {
             flex: 1.1;
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
             padding: 20px 24px;
             background: #fff;
@@ -2163,6 +2165,7 @@
             scrollbar-width: none;
         }
         .broadcast-scoreboard::-webkit-scrollbar { display: none; }
+        .broadcast-matches-list { flex-shrink: 0; }
         .broadcast-spotlight {
             flex: 0.9;
             display: flex;
@@ -2238,26 +2241,20 @@
             letter-spacing: 1px;
         }
 
-        /* ── DFGC logo watermark on white area ── */
-        .broadcast-dfgc-bar {
+        /* ── DFGC logo — fills space below matches ── */
+        .broadcast-dfgc-fill {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 8px 0;
-            margin-bottom: 12px;
-            opacity: 0.35;
+            min-height: 80px;
+            padding: 20px;
         }
-        .broadcast-dfgc-bar img {
-            height: clamp(24px, 3vw, 36px);
+        .broadcast-dfgc-fill img {
+            max-width: clamp(100px, 20vw, 220px);
+            max-height: 100%;
             object-fit: contain;
-        }
-        .broadcast-dfgc-bar span {
-            font-size: clamp(9px, 1vw, 12px);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--masters-dark);
+            opacity: 0.12;
         }
 
         /* ── Session group ── */
@@ -2337,37 +2334,52 @@
             white-space: nowrap;
         }
 
-        /* ── Highlights section ── */
-        .broadcast-highlights {
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(0,0,0,0.08);
+        /* ── Probability chart (Outcome IQ style) ── */
+        .broadcast-prob-wrap {
+            margin-top: 16px;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
         }
-        .broadcast-highlights-title {
+        .broadcast-prob-title {
             font-size: clamp(9px, 1vw, 12px);
-            color: var(--masters-green);
+            color: var(--masters-yellow);
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
-        .broadcast-highlight-item {
-            font-size: clamp(11px, 1.3vw, 15px);
-            color: #555;
-            padding: 3px 0;
+        .broadcast-prob-chart {
+            flex: 1;
+            min-height: 100px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .broadcast-prob-chart canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .broadcast-prob-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding-top: 8px;
+            font-size: clamp(9px, 1vw, 12px);
+            color: rgba(255,255,255,0.7);
+        }
+        .broadcast-prob-legend span {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
-        .broadcast-highlight-item .hl-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            flex-shrink: 0;
+        .broadcast-prob-legend .leg-swatch {
+            width: 12px;
+            height: 3px;
+            border-radius: 2px;
         }
-        .broadcast-highlight-item .hl-dot.team-a { background: var(--team-a-color); }
-        .broadcast-highlight-item .hl-dot.team-b { background: var(--team-b-color); }
-        .broadcast-highlight-item .hl-dot.neutral { background: var(--masters-gold); }
 
         /* ── Spotlight panel ── */
         .broadcast-spotlight-label {
@@ -8111,15 +8123,9 @@
             </div>
         </div>`;
 
-        // DFGC logo bar on white background
-        html += `<div class="broadcast-dfgc-bar">
-            <img src="assets/images/Phone Size DFCG No Background.png" alt="">
-            <span>Dumpster Fire Golf Club</span>
-        </div>`;
-
         // Match list grouped by session
+        html += `<div class="broadcast-matches-list">`;
         const allMatches = [];
-        const highlights = [];
         sessions.forEach(session => {
             const matches = getMatchesBySession(session.id);
             if (matches.length === 0) return;
@@ -8131,29 +8137,24 @@
                 const namesA = m.teamA.map(id => getPlayerName(id).split(' ').pop()).join('/');
                 const namesB = m.teamB.map(id => getPlayerName(id).split(' ').pop()).join('/');
 
-                // Determine cell classes (leaderboard style)
                 let cellAClass = 'tied';
                 let cellBClass = 'tied';
                 let statusText = '-';
                 if (status.isComplete) {
                     if (status.text === 'HALVED') {
                         statusText = 'HALVED';
-                        highlights.push({ text: `${namesA} vs ${namesB} — Halved`, team: 'neutral' });
                     } else if (status.leader === 'A') {
                         cellAClass = 'leading';
                         statusText = status.text;
-                        highlights.push({ text: `${namesA} wins ${status.text}`, team: 'a' });
                     } else {
                         cellBClass = 'leading';
                         statusText = status.text;
-                        highlights.push({ text: `${namesB} wins ${status.text}`, team: 'b' });
                     }
                 } else if (status.holesPlayed > 0) {
                     if (status.leader === 'A') { cellAClass = 'leading'; statusText = `${status.text}`; }
                     else if (status.leader === 'B') { cellBClass = 'leading'; statusText = `${status.text}`; }
                     else { statusText = 'AS'; }
                     statusText += ` thru ${status.holesPlayed}`;
-                    if (status.isDormie) highlights.push({ text: `DORMIE — ${status.leader === 'A' ? namesA : namesB} ${status.text}`, team: status.leader === 'A' ? 'a' : 'b' });
                 } else {
                     cellAClass = 'pending';
                     cellBClass = 'pending';
@@ -8166,17 +8167,12 @@
                 </div>`;
             });
         });
+        html += `</div>`;
 
-        // Highlights section below scores
-        if (highlights.length > 0) {
-            html += `<div class="broadcast-highlights">
-                <div class="broadcast-highlights-title">Highlights</div>`;
-            highlights.slice(0, 6).forEach(h => {
-                const dotClass = h.team === 'a' ? 'team-a' : h.team === 'b' ? 'team-b' : 'neutral';
-                html += `<div class="broadcast-highlight-item"><span class="hl-dot ${dotClass}"></span>${h.text}</div>`;
-            });
-            html += `</div>`;
-        }
+        // DFGC logo fills remaining space
+        html += `<div class="broadcast-dfgc-fill">
+            <img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC">
+        </div>`;
 
         document.getElementById('broadcastScoreboard').innerHTML = html;
 
@@ -8230,15 +8226,190 @@
 
         const el = document.getElementById('broadcastSpotlight');
         el.innerHTML = `
-            <div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>
-            <div class="broadcast-spotlight-players">
-                <span style="color:${S.config.teamA.color}">${fullNamesA}</span>
-                <span class="broadcast-spotlight-vs"> vs </span>
-                <span style="color:${S.config.teamB.color}">${fullNamesB}</span>
+            <div>
+                <div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>
+                <div class="broadcast-spotlight-players">
+                    <span style="color:${S.config.teamA.color}">${fullNamesA}</span>
+                    <span class="broadcast-spotlight-vs"> vs </span>
+                    <span style="color:${S.config.teamB.color}">${fullNamesB}</span>
+                </div>
+                <div class="broadcast-spotlight-status" style="color:${statusColor}">${statusText}</div>
+                <div class="broadcast-spotlight-holes">${holesHtml}</div>
             </div>
-            <div class="broadcast-spotlight-status" style="color:${statusColor}">${statusText}</div>
-            <div class="broadcast-spotlight-holes">${holesHtml}</div>
+            <div class="broadcast-prob-wrap">
+                <div class="broadcast-prob-title">Match Probability</div>
+                <div class="broadcast-prob-chart"><canvas id="broadcastProbCanvas"></canvas></div>
+                <div class="broadcast-prob-legend">
+                    <span><span class="leg-swatch" style="background:${S.config.teamA.color}"></span>${S.config.teamA.name}</span>
+                    <span><span class="leg-swatch" style="background:rgba(255,255,255,0.4)"></span>Tie</span>
+                    <span><span class="leg-swatch" style="background:${S.config.teamB.color}"></span>${S.config.teamB.name}</span>
+                </div>
+            </div>
         `;
+
+        // Draw the probability chart
+        requestAnimationFrame(() => drawProbChart(match));
+    }
+
+    // Match play win probability using dynamic programming
+    function calcMatchProb(lead, remaining) {
+        // P(A wins hole) ≈ 0.30, P(B wins hole) ≈ 0.30, P(halve) ≈ 0.40
+        const pA = 0.30, pB = 0.30, pH = 0.40;
+        const cache = {};
+        function dp(d, n) {
+            if (n === 0) return d > 0 ? { A: 1, B: 0 } : d < 0 ? { A: 0, B: 1 } : { A: 0, B: 0 };
+            if (d > n) return { A: 1, B: 0 };
+            if (-d > n) return { A: 0, B: 1 };
+            const key = d + ',' + n;
+            if (cache[key]) return cache[key];
+            const w = dp(d + 1, n - 1);
+            const l = dp(d - 1, n - 1);
+            const h = dp(d, n - 1);
+            cache[key] = { A: pA * w.A + pB * l.A + pH * h.A, B: pA * w.B + pB * l.B + pH * h.B };
+            return cache[key];
+        }
+        return dp(lead, remaining);
+    }
+
+    function drawProbChart(match) {
+        const canvas = document.getElementById('broadcastProbCanvas');
+        if (!canvas) return;
+        const container = canvas.parentElement;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = container.clientWidth * dpr;
+        canvas.height = container.clientHeight * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        const W = container.clientWidth;
+        const H = container.clientHeight;
+
+        const padL = 32, padR = 12, padT = 12, padB = 22;
+        const cW = W - padL - padR;
+        const cH = H - padT - padB;
+
+        // Build probability data hole by hole
+        const probA = [0.5], probB = [0.5], probTie = [0.5];
+        let score = 0;
+        let lastPlayedHole = 0;
+
+        for (let h = 1; h <= 18; h++) {
+            const winner = getHoleWinner(match, h);
+            if (winner === null) break;
+            if (winner === 'A') score++;
+            else if (winner === 'B') score--;
+            lastPlayedHole = h;
+            const remaining = 18 - h;
+            const p = calcMatchProb(score, remaining);
+            probA.push(p.A);
+            probB.push(p.B);
+            probTie.push(1 - p.A - p.B);
+        }
+
+        if (probA.length < 2) {
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.font = `${Math.max(12, H * 0.08)}px Trebuchet MS`;
+            ctx.textAlign = 'center';
+            ctx.fillText('No holes completed yet', W / 2, H / 2);
+            return;
+        }
+
+        const xStep = cW / 18; // always scale to 18 holes
+
+        // Clear
+        ctx.clearRect(0, 0, W, H);
+
+        // Background fill
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.fillRect(padL, padT, cW, cH);
+
+        // Grid lines (25%, 50%, 75%)
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 1;
+        [0.25, 0.5, 0.75].forEach(p => {
+            const y = padT + cH - p * cH;
+            ctx.beginPath();
+            ctx.moveTo(padL, y);
+            ctx.lineTo(padL + cW, y);
+            ctx.stroke();
+        });
+
+        // 50% line (gold, dashed)
+        ctx.strokeStyle = 'rgba(200,169,81,0.3)';
+        ctx.setLineDash([4, 4]);
+        const y50 = padT + cH * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(padL, y50);
+        ctx.lineTo(padL + cW, y50);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Y-axis labels
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.font = `${Math.max(8, W * 0.018)}px Trebuchet MS`;
+        ctx.textAlign = 'right';
+        ['100%', '75%', '50%', '25%', '0%'].forEach((label, i) => {
+            const y = padT + (i / 4) * cH;
+            ctx.fillText(label, padL - 4, y + 3);
+        });
+
+        // X-axis hole numbers
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        for (let h = 1; h <= 18; h++) {
+            const x = padL + h * xStep;
+            ctx.fillText(h, x, padT + cH + 14);
+        }
+
+        // Draw area fills
+        function drawArea(data, color, alpha) {
+            ctx.fillStyle = color.replace(')', `,${alpha})`).replace('rgb', 'rgba');
+            ctx.beginPath();
+            ctx.moveTo(padL, padT + cH);
+            for (let i = 0; i < data.length; i++) {
+                const x = padL + i * xStep;
+                const y = padT + cH - data[i] * cH;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(padL + (data.length - 1) * xStep, padT + cH);
+            ctx.closePath();
+            ctx.fill();
+        }
+        drawArea(probA, S.config.teamA.color, 0.15);
+        drawArea(probB, S.config.teamB.color, 0.15);
+
+        // Draw lines
+        function drawLine(data, color, width) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            for (let i = 0; i < data.length; i++) {
+                const x = padL + i * xStep;
+                const y = padT + cH - data[i] * cH;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+        drawLine(probTie, 'rgba(255,255,255,0.25)', 1.5);
+        drawLine(probA, S.config.teamA.color, 2.5);
+        drawLine(probB, S.config.teamB.color, 2.5);
+
+        // Current probability dots at last point
+        const lastI = probA.length - 1;
+        const dotX = padL + lastI * xStep;
+        [{ data: probA, color: S.config.teamA.color }, { data: probB, color: S.config.teamB.color }].forEach(({ data, color }) => {
+            const dotY = padT + cH - data[lastI] * cH;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${Math.max(9, W * 0.02)}px Trebuchet MS`;
+            ctx.textAlign = 'left';
+            ctx.fillText(Math.round(data[lastI] * 100) + '%', dotX + 7, dotY + 4);
+        });
     }
 
     function startBroadcastCycle() {
