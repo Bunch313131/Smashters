@@ -2190,7 +2190,7 @@
         /* ── Team score bar (leaderboard-style) ── */
         .broadcast-teams {
             display: grid;
-            grid-template-columns: 1fr 44px 1fr;
+            grid-template-columns: 1fr clamp(80px, 12vw, 130px) 1fr;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,0.12);
@@ -2274,7 +2274,7 @@
         /* ── Match rows (leaderboard-style) ── */
         .broadcast-match-row {
             display: grid;
-            grid-template-columns: 1fr 44px 1fr;
+            grid-template-columns: 1fr clamp(80px, 12vw, 130px) 1fr;
             min-height: 48px;
             border-bottom: 1px solid rgba(0,0,0,0.06);
             font-size: clamp(14px, 2vw, 22px);
@@ -2334,11 +2334,31 @@
             white-space: nowrap;
         }
 
-        /* ── Probability chart (Outcome IQ style) ── */
+        /* ── Highlights (between hole dots and chart) ── */
+        .broadcast-highlights {
+            margin: 12px 0;
+        }
+        .broadcast-highlight-item {
+            font-size: clamp(11px, 1.4vw, 16px);
+            color: rgba(255,255,255,0.8);
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .broadcast-highlight-item .hl-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .broadcast-highlight-item .hl-dot.team-a { background: var(--team-a-color); }
+        .broadcast-highlight-item .hl-dot.team-b { background: var(--team-b-color); }
+        .broadcast-highlight-item .hl-dot.neutral { background: var(--masters-gold); }
+
+        /* ── Probability chart — white floating card ── */
         .broadcast-prob-wrap {
-            margin-top: 16px;
-            flex: 1;
-            min-height: 0;
+            margin-top: 12px;
             display: flex;
             flex-direction: column;
         }
@@ -2350,12 +2370,15 @@
             font-weight: 700;
             margin-bottom: 8px;
         }
-        .broadcast-prob-chart {
-            flex: 1;
-            min-height: 100px;
-            border-radius: 8px;
-            background: rgba(0,0,0,0.2);
+        .broadcast-prob-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            padding: 12px 8px 8px;
             overflow: hidden;
+        }
+        .broadcast-prob-chart {
+            height: clamp(90px, 14vh, 150px);
         }
         .broadcast-prob-chart canvas {
             width: 100%;
@@ -2365,19 +2388,19 @@
         .broadcast-prob-legend {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            padding-top: 8px;
-            font-size: clamp(9px, 1vw, 12px);
-            color: rgba(255,255,255,0.7);
+            gap: 16px;
+            padding-top: 6px;
+            font-size: clamp(8px, 0.9vw, 11px);
+            color: #777;
         }
         .broadcast-prob-legend span {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
         .broadcast-prob-legend .leg-swatch {
-            width: 12px;
-            height: 3px;
+            width: 14px;
+            height: 2.5px;
             border-radius: 2px;
         }
 
@@ -8224,6 +8247,40 @@
             holesHtml += `<div class="broadcast-hole-dot ${cls}">${h}</div>`;
         }
 
+        // Build highlights for this match
+        let highlightsHtml = '';
+        const hlItems = [];
+        if (status.isComplete) {
+            if (status.text === 'HALVED') {
+                hlItems.push({ text: 'Match Halved', team: 'neutral' });
+            } else {
+                const winNames = (status.leader === 'A' ? match.teamA : match.teamB).map(id => getPlayerName(id).split(' ').pop()).join('/');
+                hlItems.push({ text: `${winNames} wins ${status.text}`, team: status.leader === 'A' ? 'a' : 'b' });
+            }
+        }
+        if (status.isDormie) {
+            const dormieNames = (status.leader === 'A' ? match.teamA : match.teamB).map(id => getPlayerName(id).split(' ').pop()).join('/');
+            hlItems.push({ text: `DORMIE — ${dormieNames} ${status.text}`, team: status.leader === 'A' ? 'a' : 'b' });
+        }
+        // Count holes won by each team
+        let winsA = 0, winsB = 0;
+        for (let h = 1; h <= 18; h++) {
+            const w = getHoleWinner(match, h);
+            if (w === 'A') winsA++;
+            else if (w === 'B') winsB++;
+        }
+        if (winsA > 0 || winsB > 0) {
+            hlItems.push({ text: `Holes won: ${S.config.teamA.name} ${winsA} — ${S.config.teamB.name} ${winsB}`, team: 'neutral' });
+        }
+        if (hlItems.length > 0) {
+            highlightsHtml = `<div class="broadcast-highlights">`;
+            hlItems.forEach(h => {
+                const dotClass = h.team === 'a' ? 'team-a' : h.team === 'b' ? 'team-b' : 'neutral';
+                highlightsHtml += `<div class="broadcast-highlight-item"><span class="hl-dot ${dotClass}"></span>${h.text}</div>`;
+            });
+            highlightsHtml += `</div>`;
+        }
+
         const el = document.getElementById('broadcastSpotlight');
         el.innerHTML = `
             <div>
@@ -8235,14 +8292,17 @@
                 </div>
                 <div class="broadcast-spotlight-status" style="color:${statusColor}">${statusText}</div>
                 <div class="broadcast-spotlight-holes">${holesHtml}</div>
+                ${highlightsHtml}
             </div>
             <div class="broadcast-prob-wrap">
                 <div class="broadcast-prob-title">Match Probability</div>
-                <div class="broadcast-prob-chart"><canvas id="broadcastProbCanvas"></canvas></div>
-                <div class="broadcast-prob-legend">
-                    <span><span class="leg-swatch" style="background:${S.config.teamA.color}"></span>${S.config.teamA.name}</span>
-                    <span><span class="leg-swatch" style="background:rgba(255,255,255,0.4)"></span>Tie</span>
-                    <span><span class="leg-swatch" style="background:${S.config.teamB.color}"></span>${S.config.teamB.name}</span>
+                <div class="broadcast-prob-card">
+                    <div class="broadcast-prob-chart"><canvas id="broadcastProbCanvas"></canvas></div>
+                    <div class="broadcast-prob-legend">
+                        <span><span class="leg-swatch" style="background:${S.config.teamA.color}"></span>${S.config.teamA.name}</span>
+                        <span><span class="leg-swatch" style="background:#aaa"></span>Tie</span>
+                        <span><span class="leg-swatch" style="background:${S.config.teamB.color}"></span>${S.config.teamB.name}</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -8283,21 +8343,19 @@
         const W = container.clientWidth;
         const H = container.clientHeight;
 
-        const padL = 32, padR = 12, padT = 12, padB = 22;
+        const padL = 28, padR = 36, padT = 8, padB = 18;
         const cW = W - padL - padR;
         const cH = H - padT - padB;
 
         // Build probability data hole by hole
         const probA = [0.5], probB = [0.5], probTie = [0.5];
         let score = 0;
-        let lastPlayedHole = 0;
 
         for (let h = 1; h <= 18; h++) {
             const winner = getHoleWinner(match, h);
             if (winner === null) break;
             if (winner === 'A') score++;
             else if (winner === 'B') score--;
-            lastPlayedHole = h;
             const remaining = 18 - h;
             const p = calcMatchProb(score, remaining);
             probA.push(p.A);
@@ -8305,25 +8363,21 @@
             probTie.push(1 - p.A - p.B);
         }
 
+        // Clear to white
+        ctx.clearRect(0, 0, W, H);
+
         if (probA.length < 2) {
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
-            ctx.font = `${Math.max(12, H * 0.08)}px Trebuchet MS`;
+            ctx.fillStyle = '#bbb';
+            ctx.font = `${Math.max(10, H * 0.1)}px Trebuchet MS`;
             ctx.textAlign = 'center';
             ctx.fillText('No holes completed yet', W / 2, H / 2);
             return;
         }
 
-        const xStep = cW / 18; // always scale to 18 holes
+        const xStep = cW / 18;
 
-        // Clear
-        ctx.clearRect(0, 0, W, H);
-
-        // Background fill
-        ctx.fillStyle = 'rgba(0,0,0,0.1)';
-        ctx.fillRect(padL, padT, cW, cH);
-
-        // Grid lines (25%, 50%, 75%)
-        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        // Light grid lines
+        ctx.strokeStyle = '#eee';
         ctx.lineWidth = 1;
         [0.25, 0.5, 0.75].forEach(p => {
             const y = padT + cH - p * cH;
@@ -8333,51 +8387,32 @@
             ctx.stroke();
         });
 
-        // 50% line (gold, dashed)
-        ctx.strokeStyle = 'rgba(200,169,81,0.3)';
-        ctx.setLineDash([4, 4]);
-        const y50 = padT + cH * 0.5;
+        // 50% baseline (dashed)
+        ctx.strokeStyle = '#ccc';
+        ctx.setLineDash([3, 3]);
         ctx.beginPath();
-        ctx.moveTo(padL, y50);
-        ctx.lineTo(padL + cW, y50);
+        ctx.moveTo(padL, padT + cH * 0.5);
+        ctx.lineTo(padL + cW, padT + cH * 0.5);
         ctx.stroke();
         ctx.setLineDash([]);
 
         // Y-axis labels
-        ctx.fillStyle = 'rgba(255,255,255,0.35)';
-        ctx.font = `${Math.max(8, W * 0.018)}px Trebuchet MS`;
+        ctx.fillStyle = '#aaa';
+        ctx.font = `${Math.max(7, W * 0.018)}px Trebuchet MS`;
         ctx.textAlign = 'right';
-        ['100%', '75%', '50%', '25%', '0%'].forEach((label, i) => {
-            const y = padT + (i / 4) * cH;
+        ['100%', '50%', '0%'].forEach((label, i) => {
+            const y = padT + (i / 2) * cH;
             ctx.fillText(label, padL - 4, y + 3);
         });
 
         // X-axis hole numbers
         ctx.textAlign = 'center';
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        for (let h = 1; h <= 18; h++) {
-            const x = padL + h * xStep;
-            ctx.fillText(h, x, padT + cH + 14);
+        ctx.fillStyle = '#bbb';
+        for (let h = 1; h <= 18; h += (W < 300 ? 2 : 1)) {
+            ctx.fillText(h, padL + h * xStep, padT + cH + 13);
         }
 
-        // Draw area fills
-        function drawArea(data, color, alpha) {
-            ctx.fillStyle = color.replace(')', `,${alpha})`).replace('rgb', 'rgba');
-            ctx.beginPath();
-            ctx.moveTo(padL, padT + cH);
-            for (let i = 0; i < data.length; i++) {
-                const x = padL + i * xStep;
-                const y = padT + cH - data[i] * cH;
-                ctx.lineTo(x, y);
-            }
-            ctx.lineTo(padL + (data.length - 1) * xStep, padT + cH);
-            ctx.closePath();
-            ctx.fill();
-        }
-        drawArea(probA, S.config.teamA.color, 0.15);
-        drawArea(probB, S.config.teamB.color, 0.15);
-
-        // Draw lines
+        // Draw lines only — no area fills
         function drawLine(data, color, width) {
             ctx.strokeStyle = color;
             ctx.lineWidth = width;
@@ -8392,23 +8427,28 @@
             }
             ctx.stroke();
         }
-        drawLine(probTie, 'rgba(255,255,255,0.25)', 1.5);
+        drawLine(probTie, '#ccc', 1);
         drawLine(probA, S.config.teamA.color, 2.5);
         drawLine(probB, S.config.teamB.color, 2.5);
 
-        // Current probability dots at last point
+        // End dots + percentage labels
         const lastI = probA.length - 1;
         const dotX = padL + lastI * xStep;
         [{ data: probA, color: S.config.teamA.color }, { data: probB, color: S.config.teamB.color }].forEach(({ data, color }) => {
             const dotY = padT + cH - data[lastI] * cH;
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+            ctx.arc(dotX, dotY, 3.5, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = '#fff';
-            ctx.font = `bold ${Math.max(9, W * 0.02)}px Trebuchet MS`;
+            // White outline
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            // Percentage label
+            ctx.fillStyle = color;
+            ctx.font = `bold ${Math.max(9, W * 0.022)}px Trebuchet MS`;
             ctx.textAlign = 'left';
-            ctx.fillText(Math.round(data[lastI] * 100) + '%', dotX + 7, dotY + 4);
+            ctx.fillText(Math.round(data[lastI] * 100) + '%', dotX + 6, dotY + 4);
         });
     }
 
@@ -8471,24 +8511,50 @@
         return events;
     }
 
+    function getBroadcastPlayerScores() {
+        // Calculate each player's gross score to par across all their matches
+        const playerScores = {};
+        Object.values(S.matches).forEach(match => {
+            if (match.type === 'foursomes') return;
+            const allIds = [...match.teamA, ...match.teamB];
+            allIds.forEach(playerId => {
+                if (!playerScores[playerId]) playerScores[playerId] = { gross: 0, par: 0, holes: 0 };
+                Object.keys(match.holes || {}).forEach(holeNum => {
+                    const score = match.holes[holeNum]?.[playerId];
+                    if (score === undefined || score === null) return;
+                    const par = getHoleInfo(parseInt(holeNum)).par;
+                    playerScores[playerId].gross += score;
+                    playerScores[playerId].par += par;
+                    playerScores[playerId].holes++;
+                });
+            });
+        });
+        return playerScores;
+    }
+
     function renderBroadcastTicker() {
         const track = document.getElementById('broadcastTicker');
-        if (broadcastTickerEvents.length === 0) {
-            // Show default messages
-            const scores = getTeamScores();
-            const items = [
-                `${S.config.teamA.name} ${formatScore(scores.A)} - ${formatScore(scores.B)} ${S.config.teamB.name}`,
-                `${S.config.eventName || 'The Smashters'} - Live Scores`,
-                `${Object.keys(S.matches).length} matches in play`
-            ];
-            track.innerHTML = items.concat(items).map(t =>
-                `<span class="broadcast-ticker-item">${t}<span class="sep">&bull;</span></span>`
-            ).join('');
-            return;
+        const playerScores = getBroadcastPlayerScores();
+
+        // Build ticker items: "Player Name +3 (14 holes)"
+        const items = [];
+        Object.entries(playerScores)
+            .filter(([_, s]) => s.holes > 0)
+            .sort((a, b) => (a[1].gross - a[1].par) - (b[1].gross - b[1].par))
+            .forEach(([playerId, s]) => {
+                const diff = s.gross - s.par;
+                const diffStr = diff === 0 ? 'E' : diff > 0 ? `+${diff}` : `${diff}`;
+                const name = getPlayerName(playerId);
+                items.push(`${name} ${diffStr} (${s.holes} holes)`);
+            });
+
+        if (items.length === 0) {
+            items.push(`${S.config.eventName || 'The Smashters'} — Live Scores`);
         }
-        // Duplicate events for seamless loop
-        const items = broadcastTickerEvents.concat(broadcastTickerEvents);
-        track.innerHTML = items.map(t =>
+
+        // Duplicate for seamless loop
+        const doubled = items.concat(items);
+        track.innerHTML = doubled.map(t =>
             `<span class="broadcast-ticker-item">${t}<span class="sep">&bull;</span></span>`
         ).join('');
     }
