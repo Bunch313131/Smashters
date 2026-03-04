@@ -8589,7 +8589,8 @@
 
         // ── TV / Broadcast mode ──
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('tv') === '1') {
+        const isTvMode = urlParams.get('tv') === '1' || window.location.pathname.replace(/\/$/, '').endsWith('/display');
+        if (isTvMode) {
             document.body.classList.add('tv-mode');
             document.getElementById('broadcastDisplay').style.display = '';
             document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
