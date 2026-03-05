@@ -119,6 +119,10 @@
             filter: brightness(0) invert(1);
         }
 
+        .header-logo-right {
+            display: none;
+        }
+
 
         .header-titles { text-align: center; }
 
@@ -129,14 +133,6 @@
             line-height: 1.1;
         }
 
-        .header-titles .subtitle {
-            font-size: 0.75rem;
-            color: var(--masters-white);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
-            opacity: 0.9;
-        }
 
         /* ═══════════════════════════════════════════════════════
            TAB NAVIGATION
@@ -237,6 +233,15 @@
 
             .header-logo {
                 grid-column: 1;
+            }
+
+            .header-logo-right {
+                display: block;
+                grid-column: 3;
+                width: 48px;
+                height: 48px;
+                object-fit: contain;
+                justify-self: end;
             }
 
             .header-titles {
@@ -2024,7 +2029,6 @@
         @media (max-width: 600px) {
             .desktop-only { display: none !important; }
             .header-titles h1 { font-size: 1.5rem; }
-            .header-titles .subtitle { font-size: 0.7rem; }
             .lb-team-pts { font-size: 2.2rem; }
             .form-row { grid-template-columns: 1fr; }
             .draft-board { grid-template-columns: 1fr; }
@@ -2675,6 +2679,9 @@
             background: var(--masters-yellow);
             box-shadow: 0 0 4px rgba(255,223,0,0.3);
         }
+        .modal .seg-digit .seg { background: rgba(0,0,0,0.06); }
+        .modal .seg-digit .seg.on { background: #222; box-shadow: none; }
+        .modal .seg-colon-dot, .modal .seg-dot-circle { background: #222; }
         /* Horizontal segments */
         .seg-digit .seg-a, .seg-digit .seg-d, .seg-digit .seg-g {
             left: 10%;
@@ -2890,8 +2897,8 @@
             </button>
             <div class="header-titles">
                 <h1>The Smashters</h1>
-                <div class="subtitle">Dumpster Fire Golf Club</div>
             </div>
+            <img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC" class="header-logo-right">
         </div>
         <nav class="tab-nav" id="tabNav">
             <button class="tab-btn active" data-tab="schedule">Schedule</button>
@@ -2924,7 +2931,7 @@
     <!-- Bottom Navigation Bar (mobile) -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="bottom-nav-btn active" data-tab="leaderboard">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 22V8a2 2 0 0 0-2-2H6v6.5a4 4 0 0 0 4 4"/><path d="M14 22V8a2 2 0 0 1 2-2h2v6.5a4 4 0 0 1-4 4"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="1"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="2" y1="12.5" x2="22" y2="12.5"/><line x1="2" y1="17" x2="22" y2="17"/><line x1="8" y1="3" x2="8" y2="21"/></svg>
             Leaderboard
         </button>
         <button class="bottom-nav-btn" data-tab="scoring">
@@ -6106,10 +6113,7 @@
         const el = document.getElementById('schedule-content');
         const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
 
-        let html = `<h2 class="section-title">Tournament Schedule</h2>
-            <p class="text-sm text-muted" style="margin-bottom:20px;text-align:center;">
-                Edit dates in Settings • Edit tee times in Matches tab
-            </p>`;
+        let html = `<h2 class="section-title">Tournament Schedule</h2>`;
 
         // Display schedule by session
         sessions.forEach(session => {
@@ -8962,7 +8966,7 @@
         const body = `
             <div style="text-align:center;">
                 <div style="margin-bottom:16px;">
-                    <label style="display:block;margin-bottom:6px;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);">Select Team</label>
+                    <label style="display:block;margin-bottom:6px;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:rgba(0,0,0,0.5);">Select Team</label>
                     <div style="display:flex;gap:8px;justify-content:center;">
                         <button id="htTeamA" class="btn" style="flex:1;max-width:160px;background:${teamAColor};color:#fff;border:3px solid transparent;font-weight:700;" onclick="selectHoleTimerTeam('A')">${teamAName}</button>
                         <button id="htTeamB" class="btn" style="flex:1;max-width:160px;background:${teamBColor};color:#fff;border:3px solid transparent;font-weight:700;" onclick="selectHoleTimerTeam('B')">${teamBName}</button>
@@ -9076,7 +9080,7 @@
 
     function renderHoleTimerLog() {
         if (!S.holeTimes || S.holeTimes.length === 0) {
-            return '<div style="text-align:center;color:rgba(255,255,255,0.3);font-style:italic;padding:12px;font-size:0.85rem;">No logged times yet</div>';
+            return '<div style="text-align:center;color:rgba(0,0,0,0.35);font-style:italic;padding:12px;font-size:0.85rem;">No logged times yet</div>';
         }
         // Sort by fastest time
         const sorted = [...S.holeTimes].sort((a, b) => a.timeMs - b.timeMs);
@@ -9089,21 +9093,21 @@
             const timeStr = formatTimerDisplay(entry.timeMs);
             const when = new Date(entry.loggedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
             const isLeader = entry.id === leaderId;
-            const rowBg = isLeader ? 'background:rgba(255,223,0,0.1);border-left:3px solid var(--masters-yellow);' : '';
-            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);${rowBg}">
+            const rowBg = isLeader ? 'background:rgba(255,223,0,0.12);border-left:3px solid var(--masters-gold);' : '';
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.08);${rowBg}">
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.35);width:18px;text-align:right;">${i + 1}.</span>
+                    <span style="font-size:0.75rem;color:rgba(0,0,0,0.4);width:18px;text-align:right;">${i + 1}.</span>
                     <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${teamColor};flex-shrink:0;"></span>
-                    <span style="font-weight:600;">${teamName}</span>
-                    <span style="font-family:'Courier New',monospace;font-size:1.1rem;color:${isLeader ? 'var(--masters-yellow)' : '#fff'};font-weight:bold;">${timeStr}</span>
+                    <span style="font-weight:600;color:#222;">${teamName}</span>
+                    <span style="font-family:'Courier New',monospace;font-size:1.1rem;color:${isLeader ? 'var(--masters-green)' : '#222'};font-weight:bold;">${timeStr}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">${when}</span>
-                    <button onclick="deleteHoleTime('${entry.id}')" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:1rem;padding:2px 6px;">&times;</button>
+                    <span style="font-size:0.7rem;color:rgba(0,0,0,0.35);">${when}</span>
+                    <button onclick="deleteHoleTime('${entry.id}')" style="background:none;border:none;color:rgba(0,0,0,0.3);cursor:pointer;font-size:1rem;padding:2px 6px;">&times;</button>
                 </div>
             </div>`;
         });
-        html += `<div style="text-align:center;padding:8px;"><button onclick="clearAllHoleTimes()" style="background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;">clear all</button></div>`;
+        html += `<div style="text-align:center;padding:8px;"><button onclick="clearAllHoleTimes()" style="background:none;border:none;color:rgba(0,0,0,0.3);cursor:pointer;font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;">clear all</button></div>`;
         return html;
     }
 
