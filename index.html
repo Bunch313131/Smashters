@@ -2884,6 +2884,7 @@
         <button class="slide-menu-item" data-tab="matches">Matches</button>
         <button class="slide-menu-item" data-tab="players">Players</button>
         <button class="slide-menu-item" data-tab="draft">Draft</button>
+        <button class="slide-menu-item" id="slideMenuTimer">Hole Timer</button>
         <button class="slide-menu-item" data-tab="settings">Settings</button>
     </div>
 
@@ -2984,6 +2985,7 @@
         },
         matches: {},
         bonusEvents: {},
+        holeTimes: [],
         ui: {
             activeTab: 'schedule',
             activeMatchId: null,
@@ -3027,6 +3029,7 @@
                     draft: { ...base.draft, ...parsed.draft },
                     matches,
                     bonusEvents: parsed.bonusEvents || {},
+                    holeTimes: parsed.holeTimes || [],
                     ui: { ...base.ui, ...parsed.ui, settingsUnlocked: false },
                 };
 
@@ -3237,7 +3240,9 @@
     document.getElementById('slideMenuClose').addEventListener('click', closeSlideMenu);
     document.getElementById('slideMenu').addEventListener('click', e => {
         const item = e.target.closest('.slide-menu-item');
-        if (item) { switchTab(item.dataset.tab); closeSlideMenu(); }
+        if (!item) return;
+        if (item.id === 'slideMenuTimer') { openHoleTimer(); closeSlideMenu(); return; }
+        if (item.dataset.tab) { switchTab(item.dataset.tab); closeSlideMenu(); }
     });
 
     // ─────────────────────────────────────────────────────────
@@ -6894,6 +6899,7 @@
                                 players: S.players,
                                 matches: S.matches,
                                 bonusEvents: S.bonusEvents,
+                                holeTimes: S.holeTimes,
                                 scorerCode: this.scorerCode,
                                 adminPin: this.adminPin,
                                 updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -6922,6 +6928,7 @@
                                 players: S.players,
                                 matches: S.matches,
                                 bonusEvents: S.bonusEvents,
+                                holeTimes: S.holeTimes,
                                 scorerCode: this.scorerCode,
                                 adminPin: this.adminPin,
                                 updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -6952,6 +6959,7 @@
                         players: S.players,
                         matches: S.matches,
                         bonusEvents: S.bonusEvents,
+                        holeTimes: S.holeTimes,
                         scorerCode: this.scorerCode,
                         adminPin: this.adminPin,
                         updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -7018,6 +7026,7 @@
                     players: S.players,
                     matches: S.matches,
                     bonusEvents: S.bonusEvents,
+                    holeTimes: S.holeTimes,
                     matchCodes: codeToMatch,
                     scorerCode: this.scorerCode,
                     adminPin: this.adminPin,
@@ -7081,6 +7090,7 @@
                     players: S.players,
                     matches: S.matches,
                     bonusEvents: S.bonusEvents,
+                    holeTimes: S.holeTimes,
                     updatedAt: firebase.database.ServerValue.TIMESTAMP,
                 }).then(() => {
                     setTimeout(() => { this._suppressListener = false; }, 500);
@@ -7178,6 +7188,7 @@
             S.players = val.players || {};
             S.matches = val.matches || {};
             S.bonusEvents = val.bonusEvents || {};
+            S.holeTimes = val.holeTimes || [];
 
             // Ensure all matches have holes property initialized
             Object.values(S.matches).forEach(match => {
@@ -8817,6 +8828,163 @@
         track.innerHTML = doubled.map(t =>
             `<span class="broadcast-ticker-item">${t}<span class="sep">&bull;</span></span>`
         ).join('');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // HOLE TIMER
+    // ─────────────────────────────────────────────────────────
+    let holeTimerInterval = null;
+    let holeTimerStartTime = 0;
+    let holeTimerElapsed = 0;
+    let holeTimerRunning = false;
+    let holeTimerSelectedTeam = null;
+
+    function formatTimerDisplay(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const min = Math.floor(totalSec / 60);
+        const sec = totalSec % 60;
+        const tenths = Math.floor((ms % 1000) / 100);
+        return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${tenths}`;
+    }
+
+    function openHoleTimer() {
+        const teamAName = S.config.teamA.name;
+        const teamBName = S.config.teamB.name;
+        const teamAColor = S.config.teamA.color;
+        const teamBColor = S.config.teamB.color;
+
+        const body = `
+            <div style="text-align:center;">
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;margin-bottom:6px;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);">Select Team</label>
+                    <div style="display:flex;gap:8px;justify-content:center;">
+                        <button id="htTeamA" class="btn" style="flex:1;max-width:160px;background:${teamAColor};color:#fff;border:3px solid transparent;font-weight:700;" onclick="selectHoleTimerTeam('A')">${teamAName}</button>
+                        <button id="htTeamB" class="btn" style="flex:1;max-width:160px;background:${teamBColor};color:#fff;border:3px solid transparent;font-weight:700;" onclick="selectHoleTimerTeam('B')">${teamBName}</button>
+                    </div>
+                </div>
+                <div id="holeTimerDisplay" style="font-family:'Courier New',monospace;font-size:clamp(48px,12vw,72px);font-weight:bold;color:var(--masters-yellow);letter-spacing:2px;margin:20px 0;">00:00.0</div>
+                <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;">
+                    <button id="htStartStop" class="btn btn-primary" style="min-width:100px;font-size:1rem;" onclick="startStopHoleTimer()">Start</button>
+                    <button class="btn btn-outline" style="min-width:80px;" onclick="resetHoleTimer()">Reset</button>
+                    <button id="htLog" class="btn btn-gold" style="min-width:80px;font-size:1rem;" onclick="logHoleTime()">Log</button>
+                </div>
+            </div>
+            <div id="holeTimerLog" style="max-height:200px;overflow-y:auto;margin-top:8px;">${renderHoleTimerLog()}</div>
+        `;
+
+        openModal('Hole Timer', body, '');
+
+        // Restore selected team if any
+        if (holeTimerSelectedTeam) selectHoleTimerTeam(holeTimerSelectedTeam);
+        // Restore display if timer was running or has elapsed time
+        if (holeTimerElapsed > 0 || holeTimerRunning) {
+            const display = document.getElementById('holeTimerDisplay');
+            if (display) display.textContent = formatTimerDisplay(holeTimerRunning ? holeTimerElapsed + (Date.now() - holeTimerStartTime) : holeTimerElapsed);
+        }
+        if (holeTimerRunning) {
+            const btn = document.getElementById('htStartStop');
+            if (btn) { btn.textContent = 'Stop'; btn.style.background = '#c0392b'; }
+            // Restart the display interval
+            clearInterval(holeTimerInterval);
+            holeTimerInterval = setInterval(updateHoleTimerDisplay, 100);
+        }
+    }
+
+    function selectHoleTimerTeam(team) {
+        holeTimerSelectedTeam = team;
+        const btnA = document.getElementById('htTeamA');
+        const btnB = document.getElementById('htTeamB');
+        if (btnA) btnA.style.borderColor = team === 'A' ? 'var(--masters-yellow)' : 'transparent';
+        if (btnB) btnB.style.borderColor = team === 'B' ? 'var(--masters-yellow)' : 'transparent';
+    }
+
+    function updateHoleTimerDisplay() {
+        const display = document.getElementById('holeTimerDisplay');
+        if (!display) return;
+        const current = holeTimerElapsed + (Date.now() - holeTimerStartTime);
+        display.textContent = formatTimerDisplay(current);
+    }
+
+    function startStopHoleTimer() {
+        const btn = document.getElementById('htStartStop');
+        if (holeTimerRunning) {
+            // Stop
+            clearInterval(holeTimerInterval);
+            holeTimerElapsed += Date.now() - holeTimerStartTime;
+            holeTimerRunning = false;
+            if (btn) { btn.textContent = 'Start'; btn.style.background = ''; }
+            updateHoleTimerDisplay();
+        } else {
+            // Start
+            holeTimerStartTime = Date.now();
+            holeTimerRunning = true;
+            holeTimerInterval = setInterval(updateHoleTimerDisplay, 100);
+            if (btn) { btn.textContent = 'Stop'; btn.style.background = '#c0392b'; }
+        }
+    }
+
+    function resetHoleTimer() {
+        clearInterval(holeTimerInterval);
+        holeTimerRunning = false;
+        holeTimerElapsed = 0;
+        holeTimerStartTime = 0;
+        const display = document.getElementById('holeTimerDisplay');
+        const btn = document.getElementById('htStartStop');
+        if (display) display.textContent = '00:00.0';
+        if (btn) { btn.textContent = 'Start'; btn.style.background = ''; }
+    }
+
+    function logHoleTime() {
+        if (!holeTimerSelectedTeam) { showToast('Select a team first'); return; }
+        const elapsed = holeTimerRunning ? holeTimerElapsed + (Date.now() - holeTimerStartTime) : holeTimerElapsed;
+        if (elapsed === 0) { showToast('Timer has not started'); return; }
+
+        if (!S.holeTimes) S.holeTimes = [];
+        S.holeTimes.unshift({
+            id: 'ht-' + Date.now(),
+            team: holeTimerSelectedTeam,
+            timeMs: elapsed,
+            loggedAt: Date.now()
+        });
+        saveState();
+        showToast(`Logged ${formatTimerDisplay(elapsed)} for ${holeTimerSelectedTeam === 'A' ? S.config.teamA.name : S.config.teamB.name}`);
+
+        // Re-render log list
+        const logEl = document.getElementById('holeTimerLog');
+        if (logEl) logEl.innerHTML = renderHoleTimerLog();
+    }
+
+    function deleteHoleTime(id) {
+        if (!S.holeTimes) return;
+        S.holeTimes = S.holeTimes.filter(t => t.id !== id);
+        saveState();
+        const logEl = document.getElementById('holeTimerLog');
+        if (logEl) logEl.innerHTML = renderHoleTimerLog();
+    }
+
+    function renderHoleTimerLog() {
+        if (!S.holeTimes || S.holeTimes.length === 0) {
+            return '<div style="text-align:center;color:rgba(255,255,255,0.3);font-style:italic;padding:12px;font-size:0.85rem;">No logged times yet</div>';
+        }
+        let html = '';
+        S.holeTimes.forEach(entry => {
+            const teamName = entry.team === 'A' ? S.config.teamA.name : S.config.teamB.name;
+            const teamColor = entry.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const timeStr = formatTimerDisplay(entry.timeMs);
+            const when = new Date(entry.loggedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${teamColor};flex-shrink:0;"></span>
+                    <span style="font-weight:600;">${teamName}</span>
+                    <span style="font-family:'Courier New',monospace;font-size:1.1rem;color:var(--masters-yellow);font-weight:bold;">${timeStr}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">${when}</span>
+                    <button onclick="deleteHoleTime('${entry.id}')" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:1rem;padding:2px 6px;">&times;</button>
+                </div>
+            </div>`;
+        });
+        return html;
     }
 
     // ─────────────────────────────────────────────────────────
