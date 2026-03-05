@@ -2626,6 +2626,77 @@
             font-weight: 600;
         }
 
+        /* ── 7-Segment Digital Clock ── */
+        .seg-clock {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin: 16px 0;
+        }
+        .seg-digit {
+            position: relative;
+            width: clamp(28px, 7vw, 44px);
+            height: clamp(48px, 12vw, 76px);
+        }
+        .seg-colon {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(12px, 3vw, 20px);
+            width: clamp(10px, 2.5vw, 16px);
+        }
+        .seg-colon-dot {
+            width: clamp(5px, 1.2vw, 8px);
+            height: clamp(5px, 1.2vw, 8px);
+            border-radius: 50%;
+            background: var(--masters-yellow);
+        }
+        .seg-dot {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            width: clamp(8px, 2vw, 12px);
+            padding-bottom: 2px;
+        }
+        .seg-dot-circle {
+            width: clamp(5px, 1.2vw, 8px);
+            height: clamp(5px, 1.2vw, 8px);
+            border-radius: 50%;
+            background: var(--masters-yellow);
+        }
+        .seg-digit .seg {
+            position: absolute;
+            background: rgba(255,223,0,0.06);
+            transition: background 0.15s;
+        }
+        .seg-digit .seg.on {
+            background: var(--masters-yellow);
+            box-shadow: 0 0 4px rgba(255,223,0,0.3);
+        }
+        /* Horizontal segments */
+        .seg-digit .seg-a, .seg-digit .seg-d, .seg-digit .seg-g {
+            left: 10%;
+            right: 10%;
+            height: 8%;
+            border-radius: 1px;
+        }
+        .seg-digit .seg-a { top: 0; }
+        .seg-digit .seg-g { top: 46%; }
+        .seg-digit .seg-d { bottom: 0; }
+        /* Vertical segments */
+        .seg-digit .seg-b, .seg-digit .seg-c, .seg-digit .seg-e, .seg-digit .seg-f {
+            width: 12%;
+            top: 8%;
+            height: 42%;
+            border-radius: 1px;
+        }
+        .seg-digit .seg-f { left: 0; top: 6%; }
+        .seg-digit .seg-b { right: 0; top: 6%; }
+        .seg-digit .seg-e { left: 0; top: 52%; }
+        .seg-digit .seg-c { right: 0; top: 52%; }
+
         /* ── Ticker bar ── */
         .broadcast-ticker {
             flex-shrink: 0;
@@ -8847,6 +8918,41 @@
         return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${tenths}`;
     }
 
+    // 7-segment digit maps: which segments are on for each digit
+    const SEG_MAP = {
+        '0': 'abcdef', '1': 'bc', '2': 'abdeg', '3': 'abcdg',
+        '4': 'bcfg',   '5': 'acdfg', '6': 'acdefg', '7': 'abc',
+        '8': 'abcdefg','9': 'abcdfg'
+    };
+
+    function renderSegDigit(ch) {
+        const segs = SEG_MAP[ch] || '';
+        return `<div class="seg-digit">${
+            'abcdefg'.split('').map(s => `<div class="seg seg-${s}${segs.includes(s) ? ' on' : ''}"></div>`).join('')
+        }</div>`;
+    }
+
+    function renderSegClock(timeStr) {
+        // timeStr = "MM:SS.T"
+        let html = '';
+        for (const ch of timeStr) {
+            if (ch === ':') {
+                html += '<div class="seg-colon"><div class="seg-colon-dot"></div><div class="seg-colon-dot"></div></div>';
+            } else if (ch === '.') {
+                html += '<div class="seg-dot"><div class="seg-dot-circle"></div></div>';
+            } else {
+                html += renderSegDigit(ch);
+            }
+        }
+        return html;
+    }
+
+    function updateSegClock(ms) {
+        const el = document.getElementById('holeTimerDisplay');
+        if (!el) return;
+        el.innerHTML = renderSegClock(formatTimerDisplay(ms));
+    }
+
     function openHoleTimer() {
         const teamAName = S.config.teamA.name;
         const teamBName = S.config.teamB.name;
@@ -8862,7 +8968,7 @@
                         <button id="htTeamB" class="btn" style="flex:1;max-width:160px;background:${teamBColor};color:#fff;border:3px solid transparent;font-weight:700;" onclick="selectHoleTimerTeam('B')">${teamBName}</button>
                     </div>
                 </div>
-                <div id="holeTimerDisplay" style="font-family:'Courier New',monospace;font-size:clamp(48px,12vw,72px);font-weight:bold;color:var(--masters-yellow);letter-spacing:2px;margin:20px 0;">00:00.0</div>
+                <div id="holeTimerDisplay" class="seg-clock">${renderSegClock('00:00.0')}</div>
                 <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;">
                     <button id="htStartStop" class="btn btn-primary" style="min-width:100px;font-size:1rem;" onclick="startStopHoleTimer()">Start</button>
                     <button class="btn btn-outline" style="min-width:80px;" onclick="resetHoleTimer()">Reset</button>
@@ -8878,8 +8984,7 @@
         if (holeTimerSelectedTeam) selectHoleTimerTeam(holeTimerSelectedTeam);
         // Restore display if timer was running or has elapsed time
         if (holeTimerElapsed > 0 || holeTimerRunning) {
-            const display = document.getElementById('holeTimerDisplay');
-            if (display) display.textContent = formatTimerDisplay(holeTimerRunning ? holeTimerElapsed + (Date.now() - holeTimerStartTime) : holeTimerElapsed);
+            updateSegClock(holeTimerRunning ? holeTimerElapsed + (Date.now() - holeTimerStartTime) : holeTimerElapsed);
         }
         if (holeTimerRunning) {
             const btn = document.getElementById('htStartStop');
@@ -8899,10 +9004,8 @@
     }
 
     function updateHoleTimerDisplay() {
-        const display = document.getElementById('holeTimerDisplay');
-        if (!display) return;
         const current = holeTimerElapsed + (Date.now() - holeTimerStartTime);
-        display.textContent = formatTimerDisplay(current);
+        updateSegClock(current);
     }
 
     function startStopHoleTimer() {
@@ -8928,9 +9031,8 @@
         holeTimerRunning = false;
         holeTimerElapsed = 0;
         holeTimerStartTime = 0;
-        const display = document.getElementById('holeTimerDisplay');
+        updateSegClock(0);
         const btn = document.getElementById('htStartStop');
-        if (display) display.textContent = '00:00.0';
         if (btn) { btn.textContent = 'Start'; btn.style.background = ''; }
     }
 
@@ -8993,7 +9095,7 @@
                     <span style="font-size:0.75rem;color:rgba(255,255,255,0.35);width:18px;text-align:right;">${i + 1}.</span>
                     <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${teamColor};flex-shrink:0;"></span>
                     <span style="font-weight:600;">${teamName}</span>
-                    <span style="font-family:'Courier New',monospace;font-size:1.1rem;color:${isLeader ? 'var(--masters-yellow)' : 'rgba(255,255,255,0.7)'};font-weight:bold;">${timeStr}</span>
+                    <span style="font-family:'Courier New',monospace;font-size:1.1rem;color:${isLeader ? 'var(--masters-yellow)' : '#fff'};font-weight:bold;">${timeStr}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">${when}</span>
