@@ -8962,21 +8962,38 @@
         if (logEl) logEl.innerHTML = renderHoleTimerLog();
     }
 
+    function clearAllHoleTimes() {
+        if (!S.holeTimes || S.holeTimes.length === 0) return;
+        if (!confirm('Clear all logged times?')) return;
+        S.holeTimes = [];
+        saveState();
+        const logEl = document.getElementById('holeTimerLog');
+        if (logEl) logEl.innerHTML = renderHoleTimerLog();
+        showToast('All times cleared');
+    }
+
     function renderHoleTimerLog() {
         if (!S.holeTimes || S.holeTimes.length === 0) {
             return '<div style="text-align:center;color:rgba(255,255,255,0.3);font-style:italic;padding:12px;font-size:0.85rem;">No logged times yet</div>';
         }
+        // Sort by fastest time
+        const sorted = [...S.holeTimes].sort((a, b) => a.timeMs - b.timeMs);
+        const leaderId = sorted[0].id;
+
         let html = '';
-        S.holeTimes.forEach(entry => {
+        sorted.forEach((entry, i) => {
             const teamName = entry.team === 'A' ? S.config.teamA.name : S.config.teamB.name;
             const teamColor = entry.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
             const timeStr = formatTimerDisplay(entry.timeMs);
             const when = new Date(entry.loggedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);">
+            const isLeader = entry.id === leaderId;
+            const rowBg = isLeader ? 'background:rgba(255,223,0,0.1);border-left:3px solid var(--masters-yellow);' : '';
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);${rowBg}">
                 <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.35);width:18px;text-align:right;">${i + 1}.</span>
                     <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${teamColor};flex-shrink:0;"></span>
                     <span style="font-weight:600;">${teamName}</span>
-                    <span style="font-family:'Courier New',monospace;font-size:1.1rem;color:var(--masters-yellow);font-weight:bold;">${timeStr}</span>
+                    <span style="font-family:'Courier New',monospace;font-size:1.1rem;color:${isLeader ? 'var(--masters-yellow)' : 'rgba(255,255,255,0.7)'};font-weight:bold;">${timeStr}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">${when}</span>
@@ -8984,6 +9001,7 @@
                 </div>
             </div>`;
         });
+        html += `<div style="text-align:center;padding:8px;"><button onclick="clearAllHoleTimes()" style="background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;">clear all</button></div>`;
         return html;
     }
 
