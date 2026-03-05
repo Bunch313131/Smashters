@@ -2174,7 +2174,6 @@
             justify-content: center;
             padding: 28px 32px;
             background: linear-gradient(170deg, var(--masters-dark) 0%, var(--masters-green) 50%, var(--masters-dark) 100%);
-            transition: opacity 0.5s ease;
             position: relative;
             overflow: hidden;
         }
@@ -2221,9 +2220,15 @@
             opacity: 0.07;
             transform: translate(-0.5px, -0.5px);
         }
-        .broadcast-spotlight > *:not(.broadcast-emboss-wallpaper):not(.broadcast-live-badge) {
+        .broadcast-spotlight-content {
             position: relative;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+            min-height: 0;
+            transition: opacity 0.5s ease;
         }
         .broadcast-live-badge {
             z-index: 2;
@@ -2524,7 +2529,11 @@
         .broadcast-hole-dot.team-a { background: var(--team-a-color); color: #fff; border-color: var(--team-a-color); box-shadow: 0 0 6px rgba(206,17,65,0.3); }
         .broadcast-hole-dot.team-b { background: var(--team-b-color); color: #fff; border-color: var(--team-b-color); box-shadow: 0 0 6px rgba(0,79,158,0.3); }
         .broadcast-hole-dot.halved { background: rgba(255,255,255,0.25); color: #fff; border-color: rgba(255,255,255,0.35); }
-        .broadcast-hole-dot.not-played { opacity: 0.3; }
+        .broadcast-hole-dot.not-played {
+            background: rgba(255,255,255,0.08);
+            border: 2px dashed rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.4);
+        }
 
         .broadcast-spotlight-event {
             margin-top: 16px;
@@ -2890,10 +2899,12 @@
         <div class="broadcast-body">
             <div class="broadcast-scoreboard" id="broadcastScoreboard"></div>
             <div class="broadcast-spotlight" id="broadcastSpotlight">
+                <div class="broadcast-emboss-wallpaper" id="broadcastEmbossWallpaper"></div>
                 <div class="broadcast-live-badge">
                     <div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div>
                     <div class="broadcast-clock" id="broadcastClock"></div>
                 </div>
+                <div class="broadcast-spotlight-content" id="broadcastSpotlightContent"></div>
             </div>
         </div>
         <div class="broadcast-ticker">
@@ -8264,12 +8275,17 @@
     let broadcastTickerEvents = [];
     let broadcastPrevMatches = null;
 
-    function getBroadcastEmbossHtml() {
+    let broadcastEmbossInit = false;
+    function initBroadcastEmboss() {
+        if (broadcastEmbossInit) return;
+        broadcastEmbossInit = true;
+        const el = document.getElementById('broadcastEmbossWallpaper');
+        if (!el) return;
         let stamps = '';
-        for (let i = 0; i < 40; i++) {
+        for (let i = 0; i < 60; i++) {
             stamps += '<div class="broadcast-emboss-stamp"><div class="wp-shadow"><img src="assets/images/smashters-logo-green.png" alt=""></div><div class="wp-light"><img src="assets/images/smashters-logo-green.png" alt=""></div></div>';
         }
-        return '<div class="broadcast-emboss-wallpaper">' + stamps + '</div>';
+        el.innerHTML = stamps;
     }
 
     function updateBroadcastClock() {
@@ -8281,6 +8297,7 @@
     }
 
     function renderBroadcast() {
+        initBroadcastEmboss();
         const scores = getTeamScores();
         const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
 
@@ -8447,12 +8464,9 @@
             broadcastSpotlightIndex = broadcastSpotlightIndex % spotlightPool.length;
             renderBroadcastSpotlight(spotlightPool[broadcastSpotlightIndex]);
         } else {
-            document.getElementById('broadcastSpotlight').innerHTML =
-                getBroadcastEmbossHtml() +
-                '<div class="broadcast-live-badge"><div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div><div class="broadcast-clock" id="broadcastClock"></div></div>' +
+            document.getElementById('broadcastSpotlightContent').innerHTML =
                 '<div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>' +
                 '<div style="color:rgba(255,255,255,0.4);font-size:clamp(14px,2vw,20px);">No matches in progress</div>';
-            updateBroadcastClock();
         }
 
         // Detect score changes for ticker
@@ -8528,13 +8542,8 @@
             highlightsHtml += `</div>`;
         }
 
-        const el = document.getElementById('broadcastSpotlight');
+        const el = document.getElementById('broadcastSpotlightContent');
         el.innerHTML = `
-            ${getBroadcastEmbossHtml()}
-            <div class="broadcast-live-badge">
-                <div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div>
-                <div class="broadcast-clock" id="broadcastClock"></div>
-            </div>
             <div>
                 <div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>
                 <div class="broadcast-spotlight-players">
@@ -8559,8 +8568,6 @@
             </div>
         `;
 
-        // Update clock in the re-rendered badge, then draw chart
-        updateBroadcastClock();
         requestAnimationFrame(() => drawProbChart(match));
     }
 
@@ -8708,12 +8715,12 @@
     function startBroadcastCycle() {
         if (broadcastCycleTimer) clearInterval(broadcastCycleTimer);
         broadcastCycleTimer = setInterval(() => {
-            const spotlight = document.getElementById('broadcastSpotlight');
-            spotlight.style.opacity = '0';
+            const content = document.getElementById('broadcastSpotlightContent');
+            if (content) content.style.opacity = '0';
             setTimeout(() => {
                 broadcastSpotlightIndex++;
                 renderBroadcast();
-                spotlight.style.opacity = '1';
+                if (content) content.style.opacity = '1';
             }, 500);
         }, 12000);
         // Update clock every 30 seconds
