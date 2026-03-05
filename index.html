@@ -9139,6 +9139,12 @@
         localStorage.setItem(VERSION_KEY, APP_VERSION);
         console.log(`Smashters App v${APP_VERSION}`);
 
+        // Migrate: strip "The " from event name
+        if (S.config.eventName && S.config.eventName.startsWith('The ')) {
+            S.config.eventName = S.config.eventName.replace(/^The /, '');
+            saveState();
+        }
+
         // ── TV / Broadcast mode ──
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('tv') === '1') {
