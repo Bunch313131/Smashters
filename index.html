@@ -17,7 +17,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/apple-touch-icon.png">
     <link rel="shortcut icon" href="assets/images/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
-    <title>The Smashters - Dumpster Fire Golf Club</title>
+    <title>Smashters - Dumpster Fire Golf Club</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -126,9 +126,9 @@
         .header-titles { text-align: center; }
 
         .header-titles h1 {
-            font-size: 1.4rem;
+            font-size: 1.8rem;
             color: var(--masters-yellow);
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             line-height: 1.1;
         }
 
@@ -1765,7 +1765,7 @@
             object-fit: cover;
         }
 
-        /* Phase 2: The Smashters (green background) */
+        /* Phase 2: Smashters (green background) */
         .splash-phase2 {
             background: linear-gradient(160deg, var(--masters-dark) 0%, var(--masters-green) 40%, var(--masters-dark) 100%);
         }
@@ -2039,7 +2039,7 @@
            ═══════════════════════════════════════════════════════ */
         @media (max-width: 600px) {
             .desktop-only { display: none !important; }
-            .header-titles h1 { font-size: 1.5rem; }
+            .header-titles h1 { font-size: 1.8rem; }
             .header-titles .subtitle { font-size: 0.7rem; }
             .lb-team-pts { font-size: 2.2rem; }
             .form-row { grid-template-columns: 1fr; }
@@ -2852,8 +2852,8 @@
          MOBILE GATE: Add to Home Screen
          ═══════════════════════════════════════════════════════ -->
     <div class="gate-overlay" id="mobileGate">
-        <img src="assets/images/smashters-logo-green.png" alt="The Smashters" class="gate-logo">
-        <div class="gate-title">The Smashters</div>
+        <img src="assets/images/smashters-logo-green.png" alt="Smashters" class="gate-logo">
+        <div class="gate-title">Smashters</div>
         <div class="gate-subtitle">For the best experience, add this app to your home screen.</div>
         <div class="gate-instructions" id="gateInstructions"></div>
     </div>
@@ -2890,7 +2890,7 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
-         SPLASH SCREEN - Phase 2: The Smashters
+         SPLASH SCREEN - Phase 2: Smashters
          ═══════════════════════════════════════════════════════ -->
     <canvas id="burnCanvas" width="0" height="0"></canvas>
     <div class="splash-overlay splash-phase2" id="splashPhase2">
@@ -2908,7 +2908,7 @@
                 <span></span><span></span><span></span>
             </button>
             <div class="header-titles">
-                <h1>The Smashters</h1>
+                <h1>Smashters</h1>
                 <div class="subtitle">Dumpster Fire Golf Club</div>
             </div>
             <img src="assets/images/dfgc-logo-transparent.png" alt="DFGC" class="header-logo-right">
@@ -2965,7 +2965,7 @@
     <div class="menu-overlay" id="slideMenuOverlay"></div>
     <div class="slide-menu" id="slideMenu">
         <div class="slide-menu-header">
-            <h2>The Smashters</h2>
+            <h2>Smashters</h2>
             <button class="slide-menu-close" id="slideMenuClose">&times;</button>
         </div>
         <button class="slide-menu-item" data-tab="schedule">Schedule</button>
@@ -2984,7 +2984,7 @@
         <div class="broadcast-header">
             <div class="broadcast-header-left">
                 <img src="assets/images/smashters-logo-green.png" alt="" class="broadcast-logo">
-                <div class="broadcast-event-name" id="broadcastEventName">The Smashters</div>
+                <div class="broadcast-event-name" id="broadcastEventName">Smashters</div>
             </div>
             <div class="broadcast-event-year">2026</div>
         </div>
@@ -3012,7 +3012,7 @@
 
     <script>
     /* ═══════════════════════════════════════════════════════════
-       THE SMASHTERS APP
+       SMASHTERS APP
        Dumpster Fire Golf Club - Ryder Cup Style Event Manager
        ═══════════════════════════════════════════════════════════ */
 
@@ -3051,7 +3051,7 @@
 
     const defaultState = () => ({
         config: {
-            eventName: 'The Smashters',
+            eventName: 'Smashters',
             clubName: 'Dumpster Fire Golf Club',
             year: new Date().getFullYear(),
             teamA: { name: 'Team Fire', color: '#CE1141' },
@@ -3939,7 +3939,7 @@
         const allMatches = Object.values(S.matches);
 
         if (allMatches.length === 0 && Object.keys(S.players).length === 0 && Object.keys(S.bonusEvents).length === 0) {
-            el.innerHTML = `<div class="lb-empty"><img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC" class="lb-empty-logo"><h3>Welcome to The Smashters</h3>
+            el.innerHTML = `<div class="lb-empty"><img src="assets/images/Phone Size DFCG No Background.png" alt="DFGC" class="lb-empty-logo"><h3>Welcome to Smashters</h3>
                 <p>Add players in the <strong>Players</strong> tab to get started,<br>then set up matches in the <strong>Matches</strong> tab.</p></div>`;
             return;
         }
@@ -6426,7 +6426,7 @@
     }
 
     function saveSettings() {
-        S.config.eventName = document.getElementById('cfgEventName').value.trim() || 'The Smashters';
+        S.config.eventName = document.getElementById('cfgEventName').value.trim() || 'Smashters';
         S.config.clubName = document.getElementById('cfgClubName').value.trim();
         S.config.courseName = document.getElementById('cfgCourse').value.trim();
         S.config.eventDate = document.getElementById('cfgDate').value;
@@ -7770,7 +7770,7 @@
 
                 setTimeout(() => { videoPhase.classList.add('hidden'); }, 3500);
 
-                // === PHASE 2: The Smashters (5s visible then burn) ===
+                // === PHASE 2: Smashters (5s visible then burn) ===
                 setTimeout(() => {
                     startBurnEffect(phase2);
                 }, 5000);
@@ -8401,7 +8401,7 @@
         const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
 
         // Header
-        document.getElementById('broadcastEventName').textContent = S.config.eventName || 'The Smashters';
+        document.getElementById('broadcastEventName').textContent = S.config.eventName || 'Smashters';
         // Course name removed from header for cleaner look
         updateBroadcastClock();
 
@@ -8908,7 +8908,7 @@
             });
 
         if (items.length === 0) {
-            items.push(`${S.config.eventName || 'The Smashters'} — Live Scores`);
+            items.push(`${S.config.eventName || 'Smashters'} — Live Scores`);
         }
 
         // Duplicate for seamless loop
