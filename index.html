@@ -2176,6 +2176,57 @@
             background: linear-gradient(170deg, var(--masters-dark) 0%, var(--masters-green) 50%, var(--masters-dark) 100%);
             transition: opacity 0.5s ease;
             position: relative;
+            overflow: hidden;
+        }
+        .broadcast-emboss-wallpaper {
+            position: absolute;
+            inset: -100px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 30px;
+            padding: 20px;
+            pointer-events: none;
+            transform: rotate(-15deg);
+            z-index: 0;
+        }
+        .broadcast-emboss-stamp {
+            position: relative;
+            width: 120px;
+            height: 100px;
+        }
+        .broadcast-emboss-stamp .wp-shadow {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .broadcast-emboss-stamp .wp-shadow img {
+            width: 100%;
+            filter: brightness(0);
+            opacity: 0.12;
+            transform: translate(1px, 1px);
+        }
+        .broadcast-emboss-stamp .wp-light {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .broadcast-emboss-stamp .wp-light img {
+            width: 100%;
+            filter: brightness(0) invert(1);
+            opacity: 0.07;
+            transform: translate(-0.5px, -0.5px);
+        }
+        .broadcast-spotlight > *:not(.broadcast-emboss-wallpaper):not(.broadcast-live-badge) {
+            position: relative;
+            z-index: 1;
+        }
+        .broadcast-live-badge {
+            z-index: 2;
         }
 
         /* Portrait: stack vertically */
@@ -8213,6 +8264,14 @@
     let broadcastTickerEvents = [];
     let broadcastPrevMatches = null;
 
+    function getBroadcastEmbossHtml() {
+        let stamps = '';
+        for (let i = 0; i < 40; i++) {
+            stamps += '<div class="broadcast-emboss-stamp"><div class="wp-shadow"><img src="assets/images/smashters-logo-green.png" alt=""></div><div class="wp-light"><img src="assets/images/smashters-logo-green.png" alt=""></div></div>';
+        }
+        return '<div class="broadcast-emboss-wallpaper">' + stamps + '</div>';
+    }
+
     function updateBroadcastClock() {
         const el = document.getElementById('broadcastClock');
         if (el) {
@@ -8389,6 +8448,7 @@
             renderBroadcastSpotlight(spotlightPool[broadcastSpotlightIndex]);
         } else {
             document.getElementById('broadcastSpotlight').innerHTML =
+                getBroadcastEmbossHtml() +
                 '<div class="broadcast-live-badge"><div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div><div class="broadcast-clock" id="broadcastClock"></div></div>' +
                 '<div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>' +
                 '<div style="color:rgba(255,255,255,0.4);font-size:clamp(14px,2vw,20px);">No matches in progress</div>';
@@ -8470,6 +8530,7 @@
 
         const el = document.getElementById('broadcastSpotlight');
         el.innerHTML = `
+            ${getBroadcastEmbossHtml()}
             <div class="broadcast-live-badge">
                 <div class="broadcast-live"><span class="broadcast-live-dot"></span>LIVE</div>
                 <div class="broadcast-clock" id="broadcastClock"></div>
