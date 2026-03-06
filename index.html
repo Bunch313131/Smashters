@@ -778,7 +778,7 @@
         .scoring-header {
             background: var(--masters-green);
             color: var(--masters-white);
-            padding: 10px 12px;
+            padding: 6px 12px;
             text-align: center;
             position: relative;
         }
@@ -807,16 +807,16 @@
         }
 
         .scoring-header .match-status-lg {
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             font-weight: bold;
-            margin: 3px 0;
+            margin: 1px 0;
         }
 
         .scoring-hole-nav {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 8px 12px;
+            padding: 5px 12px;
             background: var(--masters-dark);
             color: var(--masters-white);
             gap: 16px;
@@ -827,7 +827,7 @@
         }
 
         .scoring-hole-nav .hole-num {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
         }
 
@@ -4875,8 +4875,6 @@
                 el.innerHTML = `<div id="scoring-content-viewer"></div>`;
             }
 
-            let html = '<h2 class="section-title">Scoring</h2>';
-
             // Clear invalid activeMatchId if match no longer exists
             if (S.ui.activeMatchId && !S.matches[S.ui.activeMatchId]) {
                 console.warn('Clearing invalid activeMatchId:', S.ui.activeMatchId);
@@ -4902,15 +4900,18 @@
         );
         const hasMultipleSessions = sessionsWithMatches.length > 1;
 
-        // Session filter tabs (only show if multiple sessions have matches)
+        // Title row with session buttons inline
+        let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">';
+        html += '<h2 class="section-title" style="margin:0;">Scoring</h2>';
         if (hasMultipleSessions) {
-            html += `<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">`;
+            html += '<div style="display:flex;gap:4px;">';
             sessionsWithMatches.forEach(session => {
                 html += `<button class="btn ${S.ui.scoringSessionFilter === session.id ? 'btn-primary' : 'btn-outline'}"
-                        onclick="setScoringSessionFilter('${session.id}')" style="flex:1;padding:6px 12px;font-size:0.85rem;">${session.name}</button>`;
+                        onclick="setScoringSessionFilter('${session.id}')" style="padding:4px 10px;font-size:0.7rem;">${session.name}</button>`;
             });
-            html += `</div>`;
+            html += '</div>';
         }
+        html += '</div>';
 
         // Filter matches based on selected session
         const matchesToShow = hasMultipleSessions
@@ -5767,17 +5768,17 @@
             const teamStrokes = getAlternateShotStrokes(match);
             const teamANames = match.teamA.map(id => getPlayerName(id)).join(' / ');
             const teamBNames = match.teamB.map(id => getPlayerName(id)).join(' / ');
-            teamANamesWithStrokes = `${teamANames}${teamStrokes.teamA > 0 ? ` (${teamStrokes.teamA})` : ''}`;
-            teamBNamesWithStrokes = `${teamBNames}${teamStrokes.teamB > 0 ? ` (${teamStrokes.teamB})` : ''}`;
+            teamANamesWithStrokes = `<span style="white-space:nowrap;">${teamANames}${teamStrokes.teamA > 0 ? ` (${teamStrokes.teamA})` : ''}</span>`;
+            teamBNamesWithStrokes = `<span style="white-space:nowrap;">${teamBNames}${teamStrokes.teamB > 0 ? ` (${teamStrokes.teamB})` : ''}</span>`;
         } else {
             // Four Ball or Singles: show individual strokes
             teamANamesWithStrokes = match.teamA.map(id => {
                 const strokes = getMatchPlayStrokes(match, id);
-                return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+                return `<span style="white-space:nowrap;">${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}</span>`;
             }).join(' & ');
             teamBNamesWithStrokes = match.teamB.map(id => {
                 const strokes = getMatchPlayStrokes(match, id);
-                return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+                return `<span style="white-space:nowrap;">${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}</span>`;
             }).join(' & ');
         }
 
@@ -6274,11 +6275,11 @@
                     // Build player names with strokes
                     const teamANamesWithStrokes = match.teamA.map(id => {
                         const strokes = getMatchPlayStrokes(match, id);
-                        return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+                        return `<span style="white-space:nowrap;">${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}</span>`;
                     }).join(' & ');
                     const teamBNamesWithStrokes = match.teamB.map(id => {
                         const strokes = getMatchPlayStrokes(match, id);
-                        return `${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}`;
+                        return `<span style="white-space:nowrap;">${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}</span>`;
                     }).join(' & ');
                     const teeTimeDisplay = match.teeTime || 'TBD';
 
