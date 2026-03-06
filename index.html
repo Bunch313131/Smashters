@@ -44,8 +44,8 @@
             --masters-dark: #00432e;
             --masters-darkest: #002a1c;
             --masters-light-green: #1a8a5c;
-            --masters-yellow: #FFDF00; /* Brighter golden yellow - matches Masters broadcast */
-            --masters-gold: #FFDF00;
+            --masters-yellow: #FBF308; /* Brighter golden yellow - matches Masters broadcast */
+            --masters-gold: #FBF308;
             --masters-cream: #FFFFFF; /* Changed from #F5F1E8 to white for cleaner look */
             --masters-red: #CE1141;
             --masters-white: #FFFFFF;
@@ -2187,7 +2187,7 @@
             justify-content: space-between;
             padding: 8px 28px;
             background: linear-gradient(180deg, var(--masters-darkest) 0%, var(--masters-dark) 100%);
-            border-bottom: 3px solid #FFDF00;
+            border-bottom: 3px solid #FBF308;
             flex-shrink: 0;
         }
         .broadcast-header-left {
@@ -2513,7 +2513,7 @@
         }
         .broadcast-highlight-item .hl-dot.team-a { background: var(--team-a-color); }
         .broadcast-highlight-item .hl-dot.team-b { background: var(--team-b-color); }
-        .broadcast-highlight-item .hl-dot.neutral { background: #FFDF00; }
+        .broadcast-highlight-item .hl-dot.neutral { background: #FBF308; }
 
         /* ── Probability chart — white floating card ── */
         .broadcast-prob-wrap {
@@ -2768,12 +2768,12 @@
         }
         .seg-digit .seg {
             position: absolute;
-            background: rgba(255,223,0,0.06);
+            background: rgba(251,243,8,0.06);
             transition: background 0.15s;
         }
         .seg-digit .seg.on {
             background: var(--masters-yellow);
-            box-shadow: 0 0 4px rgba(255,223,0,0.3);
+            box-shadow: 0 0 4px rgba(251,243,8,0.3);
         }
         .modal .seg-digit .seg { background: rgba(0,0,0,0.06); }
         .modal .seg-digit .seg.on { background: #222; box-shadow: none; }
@@ -9220,7 +9220,7 @@
             const timeStr = formatTimerDisplay(entry.timeMs);
             const when = new Date(entry.loggedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
             const isLeader = entry.id === leaderId;
-            const rowBg = isLeader ? 'background:rgba(255,223,0,0.12);border-left:3px solid var(--masters-gold);' : '';
+            const rowBg = isLeader ? 'background:rgba(251,243,8,0.12);border-left:3px solid var(--masters-gold);' : '';
             html += `<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.08);${rowBg}">
                 <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-size:0.75rem;color:rgba(0,0,0,0.4);width:18px;text-align:right;">${i + 1}.</span>
