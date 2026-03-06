@@ -1852,36 +1852,41 @@
         .lb-board .match-card-container,
         .lb-board .bonus-event-container {
             opacity: 0;
-            transform: translateY(8px);
-            animation: cascadeIn 0.4s ease-out forwards;
+            transform: translateY(12px);
+            animation: cascadeIn 0.6s ease-out forwards;
         }
         .lb-board .match-card-container:nth-child(1),
-        .lb-board .bonus-event-container:nth-child(1) { animation-delay: 0.05s; }
+        .lb-board .bonus-event-container:nth-child(1) { animation-delay: 0.15s; }
         .lb-board .match-card-container:nth-child(2),
-        .lb-board .bonus-event-container:nth-child(2) { animation-delay: 0.1s; }
+        .lb-board .bonus-event-container:nth-child(2) { animation-delay: 0.25s; }
         .lb-board .match-card-container:nth-child(3),
-        .lb-board .bonus-event-container:nth-child(3) { animation-delay: 0.15s; }
+        .lb-board .bonus-event-container:nth-child(3) { animation-delay: 0.35s; }
         .lb-board .match-card-container:nth-child(4),
-        .lb-board .bonus-event-container:nth-child(4) { animation-delay: 0.2s; }
+        .lb-board .bonus-event-container:nth-child(4) { animation-delay: 0.45s; }
         .lb-board .match-card-container:nth-child(5),
-        .lb-board .bonus-event-container:nth-child(5) { animation-delay: 0.25s; }
+        .lb-board .bonus-event-container:nth-child(5) { animation-delay: 0.55s; }
         .lb-board .match-card-container:nth-child(6),
-        .lb-board .bonus-event-container:nth-child(6) { animation-delay: 0.3s; }
+        .lb-board .bonus-event-container:nth-child(6) { animation-delay: 0.65s; }
         .lb-board .match-card-container:nth-child(7),
-        .lb-board .bonus-event-container:nth-child(7) { animation-delay: 0.35s; }
+        .lb-board .bonus-event-container:nth-child(7) { animation-delay: 0.75s; }
         .lb-board .match-card-container:nth-child(8),
-        .lb-board .bonus-event-container:nth-child(8) { animation-delay: 0.4s; }
+        .lb-board .bonus-event-container:nth-child(8) { animation-delay: 0.85s; }
 
         /* #5 - Match clinch gold flash on thru column */
         @keyframes clinchFlash {
-            0% { background-position: 200% center; }
-            100% { background-position: -200% center; }
+            0% { transform: translateX(100%); opacity: 1; }
+            100% { transform: translateX(-100%); opacity: 0; }
         }
         .match-clinched .lb-cell-thru {
-            background: linear-gradient(90deg, #4a4a4a 30%, var(--masters-gold) 50%, #4a4a4a 70%);
-            background-size: 200% 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .match-clinched .lb-cell-thru::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, var(--masters-gold), transparent);
             animation: clinchFlash 1.5s ease-out 1 forwards;
-            background-position: -200% center;
         }
 
         /* #8 - Smoother card expansion - content reveal */
