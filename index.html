@@ -9034,13 +9034,38 @@
     function startBroadcastCycle() {
         if (broadcastCycleTimer) clearInterval(broadcastCycleTimer);
         broadcastCycleTimer = setInterval(() => {
-            const content = document.getElementById('broadcastSpotlightContent');
-            if (content) content.style.opacity = '0';
-            setTimeout(() => {
-                broadcastSpotlightIndex++;
-                renderBroadcast();
-                if (content) content.style.opacity = '1';
-            }, 500);
+            // In TV mode, always pull fresh data from Firebase before re-rendering
+            if (document.body.classList.contains('tv-mode') && LiveSync.eventRef) {
+                LiveSync.eventRef.once('value').then(snap => {
+                    const val = snap.val();
+                    if (val) {
+                        S.config = { ...S.config, ...(val.config || {}) };
+                        S.players = val.players || S.players;
+                        S.matches = val.matches || S.matches;
+                        S.bonusEvents = val.bonusEvents || {};
+                        S.holeTimes = val.holeTimes || S.holeTimes;
+                        Object.values(S.matches).forEach(m => { if (!m.holes) m.holes = {}; });
+                    }
+                    const content = document.getElementById('broadcastSpotlightContent');
+                    if (content) content.style.opacity = '0';
+                    setTimeout(() => {
+                        broadcastSpotlightIndex++;
+                        renderBroadcast();
+                        if (content) content.style.opacity = '1';
+                    }, 500);
+                }).catch(() => {
+                    broadcastSpotlightIndex++;
+                    renderBroadcast();
+                });
+            } else {
+                const content = document.getElementById('broadcastSpotlightContent');
+                if (content) content.style.opacity = '0';
+                setTimeout(() => {
+                    broadcastSpotlightIndex++;
+                    renderBroadcast();
+                    if (content) content.style.opacity = '1';
+                }, 500);
+            }
         }, 12000);
         // Update clock every 30 seconds
         setInterval(updateBroadcastClock, 30000);
