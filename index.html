@@ -3568,7 +3568,8 @@
 
     function formatScore(n) {
         if (n === Math.floor(n)) return n.toString();
-        return Math.floor(n) + '\u00BD';
+        const whole = Math.floor(n);
+        return (whole > 0 ? whole : '') + '\u00BD';
     }
 
     // ─────────────────────────────────────────────────────────
