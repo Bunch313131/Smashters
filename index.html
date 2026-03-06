@@ -4875,7 +4875,7 @@
                 el.innerHTML = `<div id="scoring-content-viewer"></div>`;
             }
 
-            let html = '';
+            let html = '<h2 class="section-title">Scoring</h2>';
 
             // Clear invalid activeMatchId if match no longer exists
             if (S.ui.activeMatchId && !S.matches[S.ui.activeMatchId]) {
@@ -4917,21 +4917,18 @@
             ? allMatches.filter(m => m.sessionId === S.ui.scoringSessionFilter)
             : allMatches;
 
-        // Match selector - slim dropdown
-        html += '<div style="margin-bottom:8px;">';
-        html += '<select class="form-input" onchange="selectScoringMatch(this.value)" style="width:100%;font-size:0.8rem;padding:6px 10px;">';
-        html += '<option value="">-- Choose a match --</option>';
+        // Match selector - compact initial buttons
+        html += '<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">';
         matchesToShow.forEach(m => {
-            const teamANames = m.teamA.map(id => getPlayerName(id)).join(' / ');
-            const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' / ');
-            const status = getMatchPlayStatus(m);
+            const getInitials = (name) => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+            const teamAInits = m.teamA.map(id => getInitials(getPlayerName(id))).join('/');
+            const teamBInits = m.teamB.map(id => getInitials(getPlayerName(id))).join('/');
             const isSelected = S.ui.activeMatchId === m.id;
-            const canEdit = LiveSync.canScore(m.id);
-            const viewLabel = !canEdit && !LiveSync.isAdmin ? '(view) ' : '';
-            const statusText = `${viewLabel}${status.text}${status.holesPlayed > 0 ? ' • Thru ' + status.holesPlayed : ''}`;
-            html += `<option value="${m.id}" ${isSelected ? 'selected' : ''}>${teamANames} vs ${teamBNames} - ${statusText}</option>`;
+            const status = getMatchPlayStatus(m);
+            const thruText = status.holesPlayed > 0 ? ` • ${status.holesPlayed}` : '';
+            const btnClass = isSelected ? 'btn-primary' : 'btn-outline';
+            html += `<button class="btn ${btnClass}" onclick="selectScoringMatch('${m.id}')" style="flex:1;min-width:0;padding:6px 8px;font-size:0.75rem;white-space:nowrap;">${teamAInits} v ${teamBInits}${thruText}</button>`;
         });
-        html += '</select>';
         html += '</div>';
 
             if (S.ui.activeMatchId && S.matches[S.ui.activeMatchId]) {
@@ -5124,7 +5121,7 @@
         }
 
         // Hole result banner
-        let bannerClass = 'hole-pending', bannerText = 'Enter scores';
+        let bannerClass = 'hole-pending', bannerText = '';
         if (holeWinner === 'A') {
             bannerClass = 'team-a-win';
             bannerText = `${S.config.teamA.name} wins hole`;
