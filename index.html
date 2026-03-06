@@ -2267,6 +2267,15 @@
         }
         .broadcast-scoreboard::-webkit-scrollbar { display: none; }
         .broadcast-matches-list { flex-shrink: 0; }
+        .broadcast-session-group {
+            transition: opacity 0.6s ease;
+        }
+        .broadcast-group-hidden {
+            display: none !important;
+        }
+        .broadcast-group-fading {
+            opacity: 0;
+        }
         .broadcast-spotlight {
             flex: 0.9;
             display: flex;
@@ -7175,21 +7184,23 @@
                 });
 
                 // Listen for updates from other devices
+                const isTvMode = document.body.classList.contains('tv-mode');
                 const listener = this.eventRef.on('value', (snap) => {
                     if (this._suppressListener) return;
                     const val = snap.val();
-                    // Apply update if Firebase has data and timestamp is different (with 1s tolerance)
-                    if (val && val.updatedAt) {
-                        const timeDiff = Math.abs((val.updatedAt || 0) - (S._lastSync || 0));
-                        if (timeDiff > 1000) { // More than 1 second difference
-                            console.log('Received update from Firebase', {
-                                firebaseTimestamp: val.updatedAt,
-                                localTimestamp: S._lastSync,
-                                diff: timeDiff
-                            });
-                            this.applyState(val);
-                            renderTab(S.ui.activeTab);
-                        }
+                    if (!val || !val.updatedAt) return;
+                    // TV mode: always accept updates (TV never pushes, so no echo concern)
+                    // Other modes: require >1s timestamp difference to avoid echo
+                    const timeDiff = Math.abs((val.updatedAt || 0) - (S._lastSync || 0));
+                    if (isTvMode || timeDiff > 1000) {
+                        console.log('Received update from Firebase', {
+                            firebaseTimestamp: val.updatedAt,
+                            localTimestamp: S._lastSync,
+                            diff: timeDiff,
+                            tvMode: isTvMode
+                        });
+                        this.applyState(val);
+                        renderTab(S.ui.activeTab);
                     }
                 });
                 this.listeners.push({ ref: this.eventRef, event: 'value', callback: listener });
@@ -8493,6 +8504,9 @@
     let broadcastCycleTimer = null;
     let broadcastTickerEvents = [];
     let broadcastPrevMatches = null;
+    let broadcastSessionCycleTimer = null;
+    let broadcastSessionCycleIndex = 0;
+    let broadcastIsCycling = false;
 
     let broadcastEmbossInit = false;
     function initBroadcastEmboss() {
@@ -8545,6 +8559,7 @@
         // Match list grouped by session, with bonus events and subtotals
         html += `<div class="broadcast-matches-list">`;
         const allMatches = [];
+        let sessionGroupIndex = 0;
         sessions.forEach(session => {
             const matches = getMatchesBySession(session.id);
             const sessionBonuses = Object.values(S.bonusEvents)
@@ -8554,6 +8569,7 @@
             if (matches.length === 0 && sessionBonuses.length === 0) return;
 
             const formatLabel = { fourball: 'Four Ball', foursomes: 'Foursomes', singles: 'Singles', other: 'Other' }[session.format] || 'Match';
+            html += `<div class="broadcast-session-group" data-group-index="${sessionGroupIndex++}">`;
             html += `<div class="broadcast-session-label">${session.name} &mdash; ${formatLabel}</div>`;
             matches.forEach(m => {
                 allMatches.push(m);
@@ -8624,6 +8640,7 @@
                     <span class="sub-label">${S.config.teamB.name}</span>
                 </div>
             </div>`;
+            html += `</div>`; // close broadcast-session-group
         });
 
         // Standalone bonus events (not tied to any session)
@@ -8631,6 +8648,7 @@
             .filter(evt => !evt.sessionId)
             .sort((a, b) => (a.order || 0) - (b.order || 0));
         if (standaloneBonuses.length > 0) {
+            html += `<div class="broadcast-session-group" data-group-index="${sessionGroupIndex++}">`;
             html += `<div class="broadcast-session-label">Bonus Events</div>`;
             standaloneBonuses.forEach(evt => {
                 const ptsA = evt.pointsA || 0;
@@ -8665,6 +8683,7 @@
                     <span class="sub-label">${S.config.teamB.name}</span>
                 </div>
             </div>`;
+            html += `</div>`; // close broadcast-session-group
         }
 
         html += `</div>`;
@@ -8675,6 +8694,9 @@
         </div>`;
 
         document.getElementById('broadcastScoreboard').innerHTML = html;
+
+        // Check if scoreboard content overflows — if so, start session cycling
+        checkBroadcastOverflow();
 
         // Spotlight — pick an active match to feature
         const activeMatches = allMatches.filter(m => !getMatchPlayStatus(m).isComplete && getMatchPlayStatus(m).holesPlayed > 0);
@@ -8929,6 +8951,84 @@
             ctx.textAlign = 'left';
             ctx.fillText(Math.round(data[lastI] * 100) + '%', dotX + 6, dotY + 4);
         });
+    }
+
+    function checkBroadcastOverflow() {
+        const scoreboard = document.getElementById('broadcastScoreboard');
+        if (!scoreboard) return;
+        const groups = scoreboard.querySelectorAll('.broadcast-session-group');
+        if (groups.length <= 1) {
+            // Only one section — no cycling needed
+            stopBroadcastSessionCycle();
+            return;
+        }
+
+        // Show all groups temporarily to measure total height
+        groups.forEach(g => { g.classList.remove('broadcast-group-hidden', 'broadcast-group-fading'); });
+        // Force layout recalc
+        scoreboard.offsetHeight;
+
+        const overflows = scoreboard.scrollHeight > scoreboard.clientHeight + 10;
+
+        if (overflows && !broadcastIsCycling) {
+            // Content overflows — start cycling sessions
+            broadcastIsCycling = true;
+            broadcastSessionCycleIndex = 0;
+            // Hide all groups except the first
+            groups.forEach((g, i) => {
+                if (i !== 0) g.classList.add('broadcast-group-hidden');
+            });
+            startBroadcastSessionCycle(groups.length);
+        } else if (overflows && broadcastIsCycling) {
+            // Already cycling — just maintain current visibility
+            groups.forEach((g, i) => {
+                if (i !== broadcastSessionCycleIndex % groups.length) {
+                    g.classList.add('broadcast-group-hidden');
+                }
+            });
+        } else if (!overflows) {
+            // Fits on screen — stop cycling, show everything
+            stopBroadcastSessionCycle();
+        }
+    }
+
+    function startBroadcastSessionCycle(groupCount) {
+        if (broadcastSessionCycleTimer) clearInterval(broadcastSessionCycleTimer);
+        broadcastSessionCycleTimer = setInterval(() => {
+            const scoreboard = document.getElementById('broadcastScoreboard');
+            if (!scoreboard) return;
+            const groups = scoreboard.querySelectorAll('.broadcast-session-group');
+            if (groups.length === 0) return;
+
+            // Fade out current group
+            const currentIdx = broadcastSessionCycleIndex % groups.length;
+            const currentGroup = groups[currentIdx];
+            currentGroup.classList.add('broadcast-group-fading');
+
+            setTimeout(() => {
+                // Hide current, show next
+                currentGroup.classList.add('broadcast-group-hidden');
+                currentGroup.classList.remove('broadcast-group-fading');
+
+                broadcastSessionCycleIndex++;
+                const nextIdx = broadcastSessionCycleIndex % groups.length;
+                const nextGroup = groups[nextIdx];
+                nextGroup.classList.remove('broadcast-group-hidden');
+                nextGroup.classList.add('broadcast-group-fading');
+
+                // Force reflow then remove fading class to trigger fade-in
+                nextGroup.offsetHeight;
+                nextGroup.classList.remove('broadcast-group-fading');
+            }, 600);
+        }, 8000);
+    }
+
+    function stopBroadcastSessionCycle() {
+        if (broadcastSessionCycleTimer) {
+            clearInterval(broadcastSessionCycleTimer);
+            broadcastSessionCycleTimer = null;
+        }
+        broadcastIsCycling = false;
     }
 
     function startBroadcastCycle() {
@@ -9276,6 +9376,19 @@
             LiveSync.autoStart();
             renderBroadcast();
             startBroadcastCycle();
+
+            // Safety net: periodically re-pull from Firebase to catch missed updates
+            // (bonus events, config changes, etc. that the listener's timeDiff guard may skip)
+            setInterval(() => {
+                if (LiveSync.eventRef) {
+                    LiveSync.eventRef.once('value').then(snap => {
+                        const val = snap.val();
+                        if (val) {
+                            LiveSync.applyState(val);
+                        }
+                    }).catch(() => {});
+                }
+            }, 30000);
             return;
         }
 
