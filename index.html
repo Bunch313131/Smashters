@@ -675,8 +675,8 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             padding: 10px 14px;
-            background: rgba(200, 169, 81, 0.08);
-            border-top: 1px solid rgba(200, 169, 81, 0.2);
+            background: rgba(0, 0, 0, 0.03);
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
             font-size: 0.8rem;
         }
 
@@ -700,14 +700,14 @@
             font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: var(--masters-gold);
+            color: #666;
             font-weight: bold;
         }
 
         .lb-projected-value {
             font-size: 1.1rem;
             font-weight: bold;
-            color: var(--masters-gold);
+            color: #666;
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
         }
 
@@ -7857,11 +7857,15 @@
         // Audio starts immediately — already unlocked by opt-in tap
         SplashAudio.play();
 
-        // === PHASE 1: DFGC Presents (3.75s) ===
+        // Pre-start video 500ms early so it's decoded & in motion when crossfade reveals it
         setTimeout(() => {
-            // Start video and crossfade from phase 1 into video (no black gap)
             videoEl.currentTime = 0;
             videoEl.play().catch(() => {});
+        }, 3250);
+
+        // === PHASE 1: DFGC Presents (3.75s) ===
+        setTimeout(() => {
+            // Crossfade from phase 1 into video (video already playing)
             videoPhase.offsetHeight; // force reflow so browser registers opacity 0
             videoPhase.style.transition = 'opacity 2.5s ease';
             videoPhase.style.opacity = '1';
@@ -7961,15 +7965,17 @@
             const burnPath = buildBurnPath(baseY, progress);
 
             // === 1. Clip the real DOM — show only ABOVE the burn edge ===
-            // polygon: top-left, top-right, trace burn edge right→left, close
+            // polygon: top-left, top-right, right edge down to burn, trace burn left, left edge
             let clipPoints = `0px 0px,${W}px 0px,`;
-            // Trace burn edge from right to left
-            for (let i = burnPath.length - 1; i >= 0; i -= 2) {
+            // Right edge: drop straight down to rightmost burn point's Y
+            clipPoints += `${W}px ${burnPath[burnPath.length - 1].y}px,`;
+            // Trace burn edge from right to left (every point for smooth edge)
+            for (let i = burnPath.length - 1; i >= 0; i--) {
                 const p = burnPath[i];
                 clipPoints += `${p.x}px ${p.y}px,`;
             }
-            // Remove trailing comma
-            clipPoints = clipPoints.slice(0, -1);
+            // Left edge: extend to x=0 at the leftmost burn point's Y
+            clipPoints += `0px ${burnPath[0].y}px`;
             phase2El.style.clipPath = `polygon(${clipPoints})`;
 
             // === 2. Draw charring glow along burn edge ===
