@@ -1849,19 +1849,28 @@
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .lb-board .match-card-container {
+        .lb-board .match-card-container,
+        .lb-board .bonus-event-container {
             opacity: 0;
             transform: translateY(8px);
             animation: cascadeIn 0.4s ease-out forwards;
         }
-        .lb-board .match-card-container:nth-child(1) { animation-delay: 0.05s; }
-        .lb-board .match-card-container:nth-child(2) { animation-delay: 0.1s; }
-        .lb-board .match-card-container:nth-child(3) { animation-delay: 0.15s; }
-        .lb-board .match-card-container:nth-child(4) { animation-delay: 0.2s; }
-        .lb-board .match-card-container:nth-child(5) { animation-delay: 0.25s; }
-        .lb-board .match-card-container:nth-child(6) { animation-delay: 0.3s; }
-        .lb-board .match-card-container:nth-child(7) { animation-delay: 0.35s; }
-        .lb-board .match-card-container:nth-child(8) { animation-delay: 0.4s; }
+        .lb-board .match-card-container:nth-child(1),
+        .lb-board .bonus-event-container:nth-child(1) { animation-delay: 0.05s; }
+        .lb-board .match-card-container:nth-child(2),
+        .lb-board .bonus-event-container:nth-child(2) { animation-delay: 0.1s; }
+        .lb-board .match-card-container:nth-child(3),
+        .lb-board .bonus-event-container:nth-child(3) { animation-delay: 0.15s; }
+        .lb-board .match-card-container:nth-child(4),
+        .lb-board .bonus-event-container:nth-child(4) { animation-delay: 0.2s; }
+        .lb-board .match-card-container:nth-child(5),
+        .lb-board .bonus-event-container:nth-child(5) { animation-delay: 0.25s; }
+        .lb-board .match-card-container:nth-child(6),
+        .lb-board .bonus-event-container:nth-child(6) { animation-delay: 0.3s; }
+        .lb-board .match-card-container:nth-child(7),
+        .lb-board .bonus-event-container:nth-child(7) { animation-delay: 0.35s; }
+        .lb-board .match-card-container:nth-child(8),
+        .lb-board .bonus-event-container:nth-child(8) { animation-delay: 0.4s; }
 
         /* #5 - Match clinch gold flash on thru column */
         @keyframes clinchFlash {
@@ -1871,7 +1880,8 @@
         .match-clinched .lb-cell-thru {
             background: linear-gradient(90deg, #4a4a4a 30%, var(--masters-gold) 50%, #4a4a4a 70%);
             background-size: 200% 100%;
-            animation: clinchFlash 1.5s ease-out 1;
+            animation: clinchFlash 1.5s ease-out 1 forwards;
+            background-position: -200% center;
         }
 
         /* #8 - Smoother card expansion - content reveal */
@@ -4237,7 +4247,17 @@
             for (let h = 1; h <= 18; h++) {
                 const score = match.holes[h]?.[playerId];
                 const winner = getHoleWinner(match, h);
-                let cellClass = (winner === 'A' && match.teamA.includes(playerId)) ? 'won-a' : '';
+                let cellClass = '';
+                if (winner === 'A') {
+                    if (match.type === 'fourball') {
+                        // Only highlight if this player's net score equals the best ball
+                        const net = getMatchNetScore(match, playerId, h, score);
+                        const allNets = match.teamA.map(id => getMatchNetScore(match, id, h, match.holes[h]?.[id])).filter(s => s !== null);
+                        if (net !== null && net <= Math.min(...allNets)) cellClass = 'won-a';
+                    } else {
+                        cellClass = 'won-a';
+                    }
+                }
                 html += `<div class="hole-cell ${cellClass}">${score || '-'}</div>`;
             }
         });
@@ -4261,7 +4281,16 @@
             for (let h = 1; h <= 18; h++) {
                 const score = match.holes[h]?.[playerId];
                 const winner = getHoleWinner(match, h);
-                let cellClass = (winner === 'B' && match.teamB.includes(playerId)) ? 'won-b' : '';
+                let cellClass = '';
+                if (winner === 'B') {
+                    if (match.type === 'fourball') {
+                        const net = getMatchNetScore(match, playerId, h, score);
+                        const allNets = match.teamB.map(id => getMatchNetScore(match, id, h, match.holes[h]?.[id])).filter(s => s !== null);
+                        if (net !== null && net <= Math.min(...allNets)) cellClass = 'won-b';
+                    } else {
+                        cellClass = 'won-b';
+                    }
+                }
                 html += `<div class="hole-cell ${cellClass}">${score || '-'}</div>`;
             }
         });
