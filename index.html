@@ -1830,6 +1830,75 @@
             to { opacity: 1; }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           WOW FACTOR ENHANCEMENTS
+           ═══════════════════════════════════════════════════════ */
+
+        /* #2 - Score change pulse animation */
+        @keyframes scorePulse {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.25); text-shadow: 0 0 12px currentColor; }
+            100% { transform: scale(1); text-shadow: none; }
+        }
+        .score-just-changed {
+            animation: scorePulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* #3 - Staggered cascade entrance for match rows */
+        @keyframes cascadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .lb-board .match-card-container {
+            opacity: 0;
+            transform: translateY(8px);
+            animation: cascadeIn 0.4s ease-out forwards;
+        }
+        .lb-board .match-card-container:nth-child(1) { animation-delay: 0.05s; }
+        .lb-board .match-card-container:nth-child(2) { animation-delay: 0.1s; }
+        .lb-board .match-card-container:nth-child(3) { animation-delay: 0.15s; }
+        .lb-board .match-card-container:nth-child(4) { animation-delay: 0.2s; }
+        .lb-board .match-card-container:nth-child(5) { animation-delay: 0.25s; }
+        .lb-board .match-card-container:nth-child(6) { animation-delay: 0.3s; }
+        .lb-board .match-card-container:nth-child(7) { animation-delay: 0.35s; }
+        .lb-board .match-card-container:nth-child(8) { animation-delay: 0.4s; }
+
+        /* #5 - Match clinch gold flash on thru column */
+        @keyframes clinchFlash {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+        .match-clinched .lb-cell-thru {
+            background: linear-gradient(90deg, #4a4a4a 30%, var(--masters-gold) 50%, #4a4a4a 70%);
+            background-size: 200% 100%;
+            animation: clinchFlash 1.5s ease-out 1;
+        }
+
+        /* #8 - Smoother card expansion - content reveal */
+        .match-card-container.expanded {
+            z-index: 5;
+            position: relative;
+        }
+        .match-card-container.expanded .match-card-details-inner {
+            animation: detailsReveal 0.4s ease-out;
+        }
+        @keyframes detailsReveal {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* #13 - Draft pick slide-in animation */
+        @keyframes draftSlideIn {
+            from { opacity: 0; transform: translateX(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .draft-pick-item {
+            animation: draftSlideIn 0.3s ease-out;
+        }
+        .draft-pick-item:last-child {
+            animation: draftSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
         #burnCanvas {
             position: fixed;
             top: calc(-1 * env(safe-area-inset-top, 0px));
@@ -4242,8 +4311,10 @@
             scoreB = status.text;
         }
 
+        const clinchClass = status.isComplete && status.leader ? 'match-clinched' : '';
+
         return `
-            <div class="match-card-container" onclick="toggleMatchExpand(event, '${match.id}')">
+            <div class="match-card-container ${clinchClass}" onclick="toggleMatchExpand(event, '${match.id}')">
                 <div class="match-card-summary">
                     <div class="lb-match-row">
                         <div class="lb-cell-a ${cellAClass}">
@@ -5383,6 +5454,17 @@
         updateMatchStatus(match);
         saveState();
         renderScoring();
+
+        // Wow factor: pulse the score drum center number
+        const drumEl = document.getElementById(`drum-${playerId}-${holeNum}`);
+        if (drumEl) {
+            const center = drumEl.querySelector('.score-drum-num.center');
+            if (center) {
+                center.classList.remove('score-just-changed');
+                void center.offsetWidth; // force reflow to restart animation
+                center.classList.add('score-just-changed');
+            }
+        }
     }
 
     function clearHoleScores(holeNum) {
