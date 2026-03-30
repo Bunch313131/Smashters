@@ -6254,71 +6254,58 @@
     // ─────────────────────────────────────────────────────────
     function renderSchedule() {
         const el = document.getElementById('schedule-content');
-        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+
+        const schedule = [
+            {
+                day: 'Thursday, May 14th',
+                events: [
+                    { time: 'AM', location: '', event: 'Meet @ the Club' },
+                    { time: 'PM', location: 'Course', event: 'Four Ball (2v2 Best Ball)' }
+                ]
+            },
+            {
+                day: 'Friday, May 15th',
+                events: [
+                    { time: 'AM', location: 'Course', event: 'Four Ball (2v2 Best Ball)' },
+                    { time: 'PM', location: "Andy's", event: 'Beer Olympics / Fastest Hole on #4' }
+                ]
+            },
+            {
+                day: 'Saturday, May 16th',
+                events: [
+                    { time: 'AM', location: "Ian's", event: "Breakfast, IV's, Bloodys, BS, etc" },
+                    { time: 'PM', location: 'Course', event: 'Singles' }
+                ]
+            }
+        ];
 
         let html = `<h2 class="section-title">Tournament Schedule</h2>`;
 
-        // Display schedule by session
-        sessions.forEach(session => {
-            const matches = getMatchesBySession(session.id);
-            const formatLabel = {
-                fourball: 'Four Ball',
-                foursomes: 'Foursomes',
-                singles: 'Singles',
-                other: 'Other'
-            }[session.format] || 'Match';
-
+        schedule.forEach(day => {
             html += `<div class="lb-board" style="margin-bottom:20px;">
-                <div class="lb-section-header">
-                    ${session.name} - ${formatLabel}
-                    ${session.date ? ` - ${formatDate(session.date)}` : ' (Date TBD)'}
-                </div>`;
-
-            if (matches.length === 0) {
-                html += `<div style="padding:20px;text-align:center;color:#999;">No matches scheduled</div>`;
-            } else {
-                html += `<div style="padding:12px;overflow-x:auto;">
+                <div class="lb-section-header">${day.day}</div>
+                <div style="padding:0;overflow-x:auto;">
                     <table style="width:100%;border-collapse:collapse;">
                         <thead>
-                            <tr style="border-bottom:2px solid #ddd;">
-                                <th style="padding:8px;text-align:left;font-weight:600;">Tee Time</th>
-                                <th style="padding:8px;text-align:left;font-weight:600;">Match</th>
+                            <tr style="background:var(--masters-green);">
+                                <th style="padding:8px 12px;text-align:left;font-weight:600;color:var(--masters-yellow);width:60px;">Time</th>
+                                <th style="padding:8px 12px;text-align:left;font-weight:600;color:var(--masters-yellow);width:100px;">Location</th>
+                                <th style="padding:8px 12px;text-align:left;font-weight:600;color:var(--masters-yellow);">Event</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
-                matches.forEach(match => {
-                    // Build player names with strokes
-                    const teamANamesWithStrokes = match.teamA.map(id => {
-                        const strokes = getMatchPlayStrokes(match, id);
-                        return `<span style="white-space:nowrap;">${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}</span>`;
-                    }).join(' & ');
-                    const teamBNamesWithStrokes = match.teamB.map(id => {
-                        const strokes = getMatchPlayStrokes(match, id);
-                        return `<span style="white-space:nowrap;">${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}</span>`;
-                    }).join(' & ');
-                    const teeTimeDisplay = match.teeTime || 'TBD';
+            day.events.forEach((evt, i) => {
+                const borderStyle = i < day.events.length - 1 ? 'border-bottom:1px solid #eee;' : '';
+                html += `<tr style="${borderStyle}">
+                    <td style="padding:10px 12px;font-weight:600;">${evt.time}</td>
+                    <td style="padding:10px 12px;color:#555;">${evt.location || '—'}</td>
+                    <td style="padding:10px 12px;">${evt.event}</td>
+                </tr>`;
+            });
 
-                    html += `<tr style="border-bottom:1px solid #eee;">
-                        <td style="padding:8px;vertical-align:middle;white-space:nowrap;">
-                            <strong>${teeTimeDisplay}</strong>
-                        </td>
-                        <td style="padding:8px;">
-                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                                <span style="font-weight:600;color:${S.config.teamA.color};">${teamANamesWithStrokes}</span>
-                                <span style="color:#999;">vs</span>
-                                <span style="font-weight:600;color:${S.config.teamB.color};">${teamBNamesWithStrokes}</span>
-                            </div>
-                        </td>
-                    </tr>`;
-                });
-
-                html += `</tbody></table></div>`;
-            }
-
-            html += `</div>`;
+            html += `</tbody></table></div></div>`;
         });
-
 
         el.innerHTML = html;
     }
@@ -6751,6 +6738,15 @@
                     <p style="font-size:2rem;font-weight:bold;color:var(--masters-green);letter-spacing:4px;margin:8px 0;">${LiveSync.scorerCode}</p>
                     <p class="text-sm text-muted">Give this code to your designated scorers. They can score all matches.</p>
                 </div>
+                <div style="background:#f0f0f0;border:2px solid #ccc;border-radius:8px;padding:16px;margin-bottom:16px;text-align:center;">
+                    <p style="font-weight:bold;margin-bottom:8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#555;">TV Broadcast Mode</p>
+                    <p class="text-sm text-muted" style="margin-bottom:12px;">Send this link to display the live leaderboard on a TV.</p>
+                    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="shareTVLink('sms')">Text Link</button>
+                        <button class="btn btn-outline btn-sm" onclick="shareTVLink('email')">Email Link</button>
+                        <button class="btn btn-outline btn-sm" onclick="shareTVLink('copy')">Copy Link</button>
+                    </div>
+                </div>
                 <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-danger btn-sm" onclick="LiveSync.stopLive().then(() => renderSettings())">Stop Live Event</button>
                     <button class="btn btn-outline btn-sm" onclick="openAdminResetModal()">Reset Scores</button>
@@ -6762,6 +6758,24 @@
                 <p class="text-sm text-muted mb-16">Go live to share scores in real-time. You'll get a scorer code to share with designated scorers who can score all matches.</p>
                 ${!hasMatches ? '<p style="color:var(--masters-red);font-size:0.85rem;margin-bottom:12px;">Create matches first before going live.</p>' : ''}
                 <button class="btn btn-primary btn-block" onclick="handleGoLive()" ${!hasMatches ? 'disabled style="opacity:0.5;"' : ''}>Go Live</button>`;
+        }
+    }
+
+    function shareTVLink(method) {
+        const tvUrl = window.location.origin + window.location.pathname + '?tv=1';
+        const subject = encodeURIComponent(`${S.config.eventName} - Live TV Leaderboard`);
+        const body = encodeURIComponent(`Open this link on your TV browser to show the live leaderboard:\n\n${tvUrl}`);
+
+        if (method === 'sms') {
+            window.open(`sms:?&body=${body}`, '_blank');
+        } else if (method === 'email') {
+            window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+        } else {
+            navigator.clipboard.writeText(tvUrl).then(() => {
+                showToast('TV link copied!');
+            }).catch(() => {
+                prompt('Copy this TV link:', tvUrl);
+            });
         }
     }
 
@@ -7106,8 +7120,8 @@
                         renderTab(S.ui.activeTab);
                         showToast('Synced from cloud');
                     }
-                    // PRIORITY 2: If local has more players, push to Firebase (admin/scorer only)
-                    else if (localPlayerCount > firebasePlayerCount) {
+                    // PRIORITY 2: If local has more players, push to Firebase (admin only)
+                    else if (localPlayerCount > firebasePlayerCount && this.isAdmin) {
                         // Validate local data before pushing
                         const localValidation = this.validateState(S, 'Local');
                         if (localValidation.valid) {
@@ -7130,9 +7144,9 @@
                             showToast('Local data corrupted - restored from cloud');
                         }
                     }
-                    // PRIORITY 3: Same player count - use timestamp
+                    // PRIORITY 3: Same player count - use timestamp (admin only)
                     // Only push local if it's SIGNIFICANTLY newer (5+ seconds) to avoid race conditions
-                    else if (localTimestamp > firebaseTimestamp + 5000) {
+                    else if (localTimestamp > firebaseTimestamp + 5000 && this.isAdmin) {
                         // Local is significantly newer - validate and push
                         const localValidation = this.validateState(S, 'Local');
                         if (localValidation.valid) {
@@ -7320,12 +7334,14 @@
                 });
             } else if (this.isScorer) {
                 if (this.scorerMatchId === null) {
-                    // All-scorer: sync all matches
+                    // All-scorer: sync each match individually to avoid overwriting concurrent edits
                     this._suppressListener = true;
-                    this.eventRef.update({
-                        matches: S.matches,
-                        updatedAt: firebase.database.ServerValue.TIMESTAMP,
-                    }).then(() => {
+                    const updates = {};
+                    Object.entries(S.matches).forEach(([id, match]) => {
+                        updates['matches/' + id] = match;
+                    });
+                    updates['updatedAt'] = firebase.database.ServerValue.TIMESTAMP;
+                    this.eventRef.update(updates).then(() => {
                         setTimeout(() => { this._suppressListener = false; }, 500);
                     }).catch(e => {
                         this._suppressListener = false;
@@ -9046,12 +9062,7 @@
                 LiveSync.eventRef.once('value').then(snap => {
                     const val = snap.val();
                     if (val) {
-                        S.config = { ...S.config, ...(val.config || {}) };
-                        S.players = val.players || S.players;
-                        S.matches = val.matches || S.matches;
-                        S.bonusEvents = val.bonusEvents || {};
-                        S.holeTimes = val.holeTimes || S.holeTimes;
-                        Object.values(S.matches).forEach(m => { if (!m.holes) m.holes = {}; });
+                        LiveSync.applyState(val);
                     }
                     const content = document.getElementById('broadcastSpotlightContent');
                     if (content) content.style.opacity = '0';
