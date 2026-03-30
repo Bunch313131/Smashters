@@ -6399,6 +6399,24 @@
             </div>
 
             <div class="settings-section">
+                <div class="settings-section-header">TV Broadcast</div>
+                <div class="settings-section-body">
+                    <p class="text-sm text-muted mb-16">Send the TV link to display the live leaderboard on any screen with a browser.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <button class="btn btn-primary" onclick="shareTVLink('sms')">
+                            <span style="font-size:1.2rem;margin-right:8px;">&#128172;</span> Text
+                        </button>
+                        <button class="btn btn-primary" onclick="shareTVLink('email')">
+                            <span style="font-size:1.2rem;margin-right:8px;">&#9993;</span> Email
+                        </button>
+                        <button class="btn btn-outline" onclick="shareTVLink('copy')">
+                            Copy Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <div class="settings-section-header">Event Info</div>
                 <div class="settings-section-body">
                     <div class="form-group"><label>Event Name</label>
@@ -6737,15 +6755,6 @@
                     <p style="font-weight:bold;margin-bottom:8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--masters-green);">Scorer Code</p>
                     <p style="font-size:2rem;font-weight:bold;color:var(--masters-green);letter-spacing:4px;margin:8px 0;">${LiveSync.scorerCode}</p>
                     <p class="text-sm text-muted">Give this code to your designated scorers. They can score all matches.</p>
-                </div>
-                <div style="background:#f0f0f0;border:2px solid #ccc;border-radius:8px;padding:16px;margin-bottom:16px;text-align:center;">
-                    <p style="font-weight:bold;margin-bottom:8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:#555;">TV Broadcast Mode</p>
-                    <p class="text-sm text-muted" style="margin-bottom:12px;">Send this link to display the live leaderboard on a TV.</p>
-                    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-                        <button class="btn btn-primary btn-sm" onclick="shareTVLink('sms')">Text Link</button>
-                        <button class="btn btn-outline btn-sm" onclick="shareTVLink('email')">Email Link</button>
-                        <button class="btn btn-outline btn-sm" onclick="shareTVLink('copy')">Copy Link</button>
-                    </div>
                 </div>
                 <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-danger btn-sm" onclick="LiveSync.stopLive().then(() => renderSettings())">Stop Live Event</button>
