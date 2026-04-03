@@ -3298,6 +3298,311 @@
         }
 
         /* ═══════════════════════════════════════════════════════
+           MATCHUP TV BROADCAST
+           ═══════════════════════════════════════════════════════ */
+        body.tv-matchup-mode .app-container,
+        body.tv-matchup-mode .header,
+        body.tv-matchup-mode .nav-tabs,
+        body.tv-matchup-mode .tab-content,
+        body.tv-matchup-mode .mobile-gate,
+        body.tv-matchup-mode .splash-screen { display: none !important; }
+
+        .matchup-broadcast {
+            position: fixed; inset: 0;
+            display: flex; flex-direction: column;
+            background: var(--masters-darkest);
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow: hidden;
+        }
+        .matchup-bc-header {
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: clamp(8px, 1vw, 16px) clamp(16px, 2vw, 32px);
+            background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 100%);
+            border-bottom: 2px solid var(--masters-yellow);
+        }
+        .matchup-bc-header-left { display: flex; align-items: center; gap: clamp(8px, 1vw, 16px); }
+        .matchup-bc-header-right { display: flex; align-items: center; gap: clamp(10px, 1.2vw, 20px); }
+        .matchup-bc-logo { height: clamp(28px, 3.5vw, 50px); }
+        .matchup-bc-title { font-family: 'Azalea', 'Georgia', serif; font-size: clamp(18px, 2.5vw, 36px); color: #fff; }
+        .matchup-bc-badge {
+            background: var(--masters-yellow); color: var(--masters-darkest);
+            font-weight: 800; font-size: clamp(10px, 1vw, 16px);
+            padding: 3px 10px; border-radius: 4px; letter-spacing: 2px;
+        }
+        .matchup-bc-live {
+            display: flex; align-items: center; gap: 6px;
+            font-size: clamp(11px, 1vw, 16px); color: rgba(255,255,255,0.7);
+            font-weight: 600; letter-spacing: 1px;
+        }
+        .matchup-bc-live-dot {
+            width: 8px; height: 8px; background: #e74c3c; border-radius: 50%;
+            animation: draftLivePulse 1.5s ease-in-out infinite;
+        }
+        .matchup-bc-clock { font-size: clamp(12px, 1.2vw, 18px); color: rgba(255,255,255,0.5); font-weight: 500; }
+        .matchup-bc-dfgc-logo { height: clamp(28px, 3.5vw, 50px); opacity: 0.7; }
+
+        /* Status banner */
+        .matchup-bc-status {
+            flex-shrink: 0;
+            padding: clamp(6px, 0.8vw, 12px) clamp(16px, 2vw, 32px);
+            display: flex; align-items: center; justify-content: center; gap: 16px;
+            font-size: clamp(14px, 1.5vw, 24px); font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase;
+            transition: all 0.5s;
+        }
+        .matchup-bc-status.team-picking {
+            background: linear-gradient(90deg, rgba(var(--picking-team-rgb), 0.15) 0%, rgba(var(--picking-team-rgb), 0.25) 50%, rgba(var(--picking-team-rgb), 0.15) 100%);
+            color: #fff;
+            border-bottom: 2px solid rgba(var(--picking-team-rgb), 0.5);
+        }
+        .matchup-bc-status.idle-status {
+            background: rgba(0,0,0,0.3); color: rgba(255,255,255,0.4);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .matchup-bc-status.complete-status {
+            background: rgba(0,0,0,0.4); color: var(--masters-yellow);
+            border-bottom: 2px solid var(--masters-yellow);
+        }
+        .matchup-bc-session-info {
+            font-size: clamp(11px, 1vw, 16px); color: rgba(255,255,255,0.5);
+            font-weight: 500; letter-spacing: 1px;
+        }
+
+        /* Body: three columns */
+        .matchup-bc-body {
+            flex: 1; display: flex; gap: 0;
+            min-height: 0; overflow: hidden;
+        }
+
+        /* Team panels */
+        .matchup-bc-team-panel {
+            flex: 1; display: flex; flex-direction: column;
+            background: #fff; position: relative; overflow: clip;
+        }
+        .matchup-bc-team-panel::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: url('assets/images/smashters-logo-green.png');
+            background-size: 80px 80px; background-repeat: repeat;
+            opacity: 0.03; pointer-events: none; z-index: 0;
+            transform: rotate(-15deg) scale(1.5);
+        }
+        .matchup-bc-team-header {
+            padding: clamp(8px, 1vw, 14px) clamp(12px, 1.5vw, 20px);
+            font-size: clamp(14px, 1.5vw, 22px); font-weight: 800;
+            text-transform: uppercase; letter-spacing: 2px;
+            color: #fff; position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .matchup-bc-team-header.team-a { background: var(--team-a-color); }
+        .matchup-bc-team-header.team-b { background: var(--team-b-color); }
+        .matchup-bc-team-roster {
+            flex: 1; overflow-y: auto;
+            padding: clamp(6px, 0.8vw, 12px);
+            position: relative; z-index: 1;
+        }
+        .matchup-bc-player-card {
+            padding: clamp(6px, 0.6vw, 10px) clamp(8px, 1vw, 14px);
+            border-radius: 6px; margin-bottom: 4px;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: clamp(12px, 1.2vw, 18px);
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        .matchup-bc-player-card.available {
+            background: rgba(0,0,0,0.03); color: #333;
+        }
+        .matchup-bc-player-card.matched {
+            opacity: 0.4; color: #999; text-decoration: line-through;
+            font-size: clamp(10px, 1vw, 14px);
+        }
+        .matchup-bc-player-card.pending-pick {
+            background: var(--masters-yellow);
+            color: var(--masters-darkest);
+            font-weight: 700;
+            border-left-color: var(--masters-darkest);
+            animation: matchupPendingPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes matchupPendingPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(251,243,8,0.4); }
+            50% { box-shadow: 0 0 8px 2px rgba(251,243,8,0.6); }
+        }
+        .matchup-bc-player-hcp {
+            font-size: clamp(10px, 0.9vw, 14px); color: rgba(0,0,0,0.35);
+            font-weight: 400;
+        }
+        .matchup-bc-player-card.pending-pick .matchup-bc-player-hcp { color: rgba(0,0,0,0.6); }
+
+        /* Center: matches column */
+        .matchup-bc-matches {
+            flex: 1.2; display: flex; flex-direction: column;
+            background: var(--masters-dark);
+            border-left: 1px solid rgba(255,255,255,0.06);
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }
+        .matchup-bc-matches-header {
+            padding: clamp(8px, 1vw, 14px) clamp(12px, 1.5vw, 20px);
+            font-size: clamp(13px, 1.3vw, 20px); font-weight: 700;
+            color: rgba(255,255,255,0.6); text-transform: uppercase;
+            letter-spacing: 2px; text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .matchup-bc-matches-list {
+            flex: 1; overflow-y: auto;
+            padding: clamp(8px, 1vw, 16px);
+            position: relative;
+        }
+        .matchup-bc-matches-watermark {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none; z-index: 0;
+        }
+        .matchup-bc-matches-watermark img {
+            width: clamp(120px, 15vw, 220px);
+            opacity: 0.12;
+        }
+        .matchup-bc-match-card {
+            position: relative; z-index: 1;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px; padding: clamp(8px, 1vw, 14px);
+            margin-bottom: clamp(6px, 0.8vw, 12px);
+        }
+        .matchup-bc-match-card.new-match {
+            animation: matchupCardAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes matchupCardAppear {
+            0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+            60% { opacity: 1; transform: scale(1.03); }
+            100% { transform: scale(1) translateY(0); }
+        }
+        .matchup-bc-match-card.building {
+            border-color: var(--masters-yellow);
+            box-shadow: 0 0 12px rgba(251,243,8,0.15);
+        }
+        .matchup-bc-match-num {
+            font-size: clamp(9px, 0.8vw, 12px); color: rgba(255,255,255,0.35);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .matchup-bc-match-vs {
+            display: flex; align-items: center; gap: clamp(6px, 0.8vw, 12px);
+        }
+        .matchup-bc-match-team {
+            flex: 1; padding: clamp(4px, 0.5vw, 8px);
+            border-radius: 4px;
+        }
+        .matchup-bc-match-team.team-a-bg { background: rgba(var(--team-a-rgb), 0.12); }
+        .matchup-bc-match-team.team-b-bg { background: rgba(var(--team-b-rgb), 0.12); }
+        .matchup-bc-match-team-name {
+            font-size: clamp(11px, 1.1vw, 16px); color: #fff;
+            font-weight: 600;
+        }
+        .matchup-bc-match-team-hcp {
+            font-size: clamp(9px, 0.8vw, 12px); color: rgba(255,255,255,0.4);
+        }
+        .matchup-bc-match-vs-label {
+            font-size: clamp(10px, 1vw, 14px); color: rgba(255,255,255,0.3);
+            font-weight: 700; flex-shrink: 0;
+        }
+        .matchup-bc-match-team.tbd {
+            border: 1px dashed rgba(255,255,255,0.15);
+            padding: clamp(4px, 0.5vw, 8px);
+        }
+        .matchup-bc-match-team.tbd .matchup-bc-match-team-name {
+            color: rgba(255,255,255,0.3); font-style: italic;
+        }
+
+        /* Bottom ticker */
+        .matchup-bc-ticker {
+            flex-shrink: 0;
+            height: clamp(36px, 4vw, 52px);
+            background: var(--masters-darkest);
+            display: flex; align-items: stretch;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            z-index: 10;
+        }
+        .matchup-bc-ticker-label {
+            display: flex; align-items: center;
+            padding: 0 clamp(12px, 1.5vw, 24px);
+            background: linear-gradient(135deg, var(--masters-yellow) 0%, #d4c800 100%);
+            font-weight: 800; font-size: clamp(10px, 1vw, 15px);
+            color: var(--masters-darkest); letter-spacing: 2px;
+            white-space: nowrap;
+        }
+        .matchup-bc-ticker-track {
+            flex: 1; overflow: hidden; display: flex; align-items: center;
+            padding: 0 16px; gap: 24px;
+            font-size: clamp(11px, 1vw, 15px); color: rgba(255,255,255,0.6);
+        }
+
+        /* Matchup celebration overlay */
+        .matchup-bc-celebration {
+            position: fixed; inset: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        .matchup-bc-celebration-text {
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: clamp(36px, 5vw, 70px);
+            color: var(--masters-yellow);
+            text-shadow: 0 0 30px rgba(251,243,8,0.6), 0 0 60px rgba(251,243,8,0.3), 0 4px 8px rgba(0,0,0,0.5);
+            animation: celebrationPop 2s ease-out forwards;
+            text-align: center; letter-spacing: 4px;
+        }
+
+        /* Phone wizard overlay */
+        .matchup-wizard-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.85);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .matchup-wizard-card {
+            background: #fff; border-radius: 16px;
+            width: 100%; max-width: 420px;
+            padding: 24px; text-align: center;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .matchup-wizard-card h2 {
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: 22px; margin-bottom: 4px; color: var(--masters-darkest);
+        }
+        .matchup-wizard-card h3 {
+            font-size: 14px; color: #666; margin-bottom: 16px;
+            font-weight: 500; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .matchup-wizard-card .wiz-label {
+            font-size: 13px; color: #999; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 8px; font-weight: 600;
+        }
+        .matchup-wizard-card .wiz-team-label {
+            font-size: 16px; font-weight: 700; margin-bottom: 12px;
+            padding: 8px; border-radius: 6px; color: #fff;
+        }
+        .matchup-wizard-player-btn {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; padding: 12px 16px;
+            border: 2px solid #e0e0e0; border-radius: 8px;
+            background: #fff; margin-bottom: 8px;
+            font-size: 15px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .matchup-wizard-player-btn:hover { border-color: #999; }
+        .matchup-wizard-player-btn.selected {
+            border-color: var(--masters-yellow);
+            background: rgba(251,243,8,0.1);
+            font-weight: 700;
+        }
+        .matchup-wizard-player-btn .hcp { color: #999; font-size: 13px; }
+        .matchup-wizard-actions {
+            display: flex; gap: 10px; margin-top: 16px;
+        }
+        .matchup-wizard-actions .btn { flex: 1; }
+
+        /* ═══════════════════════════════════════════════════════
            BIRDIE FLAMES 🔥
            ═══════════════════════════════════════════════════════ */
         .flame-container {
@@ -3580,6 +3885,46 @@
         </div>
     </div>
 
+    <!-- TV / Matchup Broadcast Display (hidden by default, shown with ?tv=matchup) -->
+    <div class="matchup-broadcast" id="matchupBroadcast" style="display:none">
+        <div class="matchup-bc-header">
+            <div class="matchup-bc-header-left">
+                <img src="assets/images/smashters-logo-green.png" alt="" class="matchup-bc-logo">
+                <div class="matchup-bc-title" id="matchupBcTitle">Smashters</div>
+                <div class="matchup-bc-badge">MATCHUPS</div>
+            </div>
+            <div class="matchup-bc-header-right">
+                <div class="matchup-bc-live"><span class="matchup-bc-live-dot"></span>LIVE</div>
+                <div class="matchup-bc-clock" id="matchupBcClock"></div>
+                <img src="assets/images/dfgc-logo-transparent.png" alt="" class="matchup-bc-dfgc-logo">
+            </div>
+        </div>
+        <div class="matchup-bc-status idle-status" id="matchupBcStatus">WAITING FOR MATCHUPS TO BEGIN</div>
+        <div class="matchup-bc-body">
+            <div class="matchup-bc-team-panel" id="matchupBcTeamA">
+                <div class="matchup-bc-team-header team-a" id="matchupBcTeamAHeader"></div>
+                <div class="matchup-bc-team-roster" id="matchupBcRosterA"></div>
+            </div>
+            <div class="matchup-bc-matches">
+                <div class="matchup-bc-matches-header" id="matchupBcMatchesHeader">Matches</div>
+                <div class="matchup-bc-matches-list" id="matchupBcMatchesList">
+                    <div class="matchup-bc-matches-watermark"><img src="assets/images/dfgc-logo-transparent.png" alt=""></div>
+                </div>
+            </div>
+            <div class="matchup-bc-team-panel" id="matchupBcTeamB">
+                <div class="matchup-bc-team-header team-b" id="matchupBcTeamBHeader"></div>
+                <div class="matchup-bc-team-roster" id="matchupBcRosterB"></div>
+            </div>
+        </div>
+        <div class="matchup-bc-ticker">
+            <div class="matchup-bc-ticker-label">MATCHUPS</div>
+            <div class="matchup-bc-ticker-track" id="matchupBcTicker"></div>
+        </div>
+    </div>
+
+    <!-- Matchup Wizard Overlay (phone, admin only) -->
+    <div class="matchup-wizard-overlay" id="matchupWizardOverlay" style="display:none"></div>
+
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="modalContainer"></div>
     </div>
@@ -3649,6 +3994,19 @@
             picks: [],
             currentTeam: 'A',
         },
+        matchMaking: {
+            status: 'idle',          // 'idle' | 'active' | 'complete'
+            sessionId: null,
+            format: null,            // 'fourball'|'foursomes'|'singles'
+            firstPick: 'A',
+            currentMatch: 0,         // 0-indexed match being built
+            totalMatches: 0,
+            phase: 'initiate',       // 'initiate' | 'counter'
+            initiatingTeam: 'A',     // which team is initiating this match
+            pendingPlayers: [],      // player IDs selected so far for current phase
+            initiatorPlayers: [],    // locked-in picks from initiate phase (used during counter)
+            completedMatches: [],    // [{teamA: [...ids], teamB: [...ids]}]
+        },
         matches: {},
         bonusEvents: {},
         holeTimes: [],
@@ -3693,6 +4051,7 @@
                     },
                     players: parsed.players || {},
                     draft: { ...base.draft, ...parsed.draft },
+                    matchMaking: { ...base.matchMaking, ...(parsed.matchMaking || {}) },
                     matches,
                     bonusEvents: parsed.bonusEvents || {},
                     holeTimes: parsed.holeTimes || [],
@@ -6225,7 +6584,10 @@
 
         let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <h2 class="section-title" style="margin-bottom:0;">Match Setup</h2>
-            <button class="btn btn-outline btn-sm desktop-only" onclick="ExportManager.generateMatchSchedule(null, 'pdf')">📤 Export Schedule</button>
+            <div style="display:flex;gap:8px;">
+                <button class="btn btn-outline btn-sm desktop-only" onclick="ExportManager.generateMatchSchedule(null, 'pdf')">📤 Export Schedule</button>
+                ${S.ui.settingsUnlocked ? '<button class="btn btn-gold btn-sm" onclick="openMatchupWizard()">Match-Making Wizard</button>' : ''}
+            </div>
         </div>`;
 
         // Loop through sessions dynamically
@@ -7668,6 +8030,7 @@
                                 players: S.players,
                                 matches: S.matches,
                                 draft: S.draft,
+                                matchMaking: S.matchMaking,
                                 bonusEvents: S.bonusEvents,
                                 holeTimes: S.holeTimes,
                                 scorerCode: this.scorerCode,
@@ -7698,6 +8061,7 @@
                                 players: S.players,
                                 matches: S.matches,
                                 draft: S.draft,
+                                matchMaking: S.matchMaking,
                                 bonusEvents: S.bonusEvents,
                                 holeTimes: S.holeTimes,
                                 scorerCode: this.scorerCode,
@@ -7729,6 +8093,8 @@
                         config: S.config,
                         players: S.players,
                         matches: S.matches,
+                        draft: S.draft,
+                        matchMaking: S.matchMaking,
                         bonusEvents: S.bonusEvents,
                         holeTimes: S.holeTimes,
                         scorerCode: this.scorerCode,
@@ -7744,7 +8110,7 @@
                 });
 
                 // Listen for updates from other devices
-                const isTvMode = document.body.classList.contains('tv-mode') || document.body.classList.contains('tv-draft-mode');
+                const isTvMode = document.body.classList.contains('tv-mode') || document.body.classList.contains('tv-draft-mode') || document.body.classList.contains('tv-matchup-mode');
                 const listener = this.eventRef.on('value', (snap) => {
                     if (this._suppressListener) return;
                     const val = snap.val();
@@ -7764,6 +8130,9 @@
                         // Also update draft broadcast if in draft TV mode
                         if (document.body.classList.contains('tv-draft-mode') && typeof renderDraftBroadcast === 'function') {
                             renderDraftBroadcast();
+                        }
+                        if (document.body.classList.contains('tv-matchup-mode') && typeof renderMatchupBroadcast === 'function') {
+                            renderMatchupBroadcast();
                         }
                     }
                 });
@@ -7802,6 +8171,8 @@
                     config: S.config,
                     players: S.players,
                     matches: S.matches,
+                    draft: S.draft,
+                    matchMaking: S.matchMaking,
                     bonusEvents: S.bonusEvents,
                     holeTimes: S.holeTimes,
                     matchCodes: codeToMatch,
@@ -7867,6 +8238,7 @@
                     players: S.players,
                     matches: S.matches,
                     draft: S.draft,
+                    matchMaking: S.matchMaking,
                     bonusEvents: S.bonusEvents,
                     holeTimes: S.holeTimes,
                     updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -7968,6 +8340,7 @@
             S.players = val.players || {};
             S.matches = val.matches || {};
             if (val.draft) S.draft = { ...defaultState().draft, ...val.draft };
+            if (val.matchMaking) S.matchMaking = { ...defaultState().matchMaking, ...val.matchMaking };
             S.bonusEvents = val.bonusEvents || {};
             S.holeTimes = val.holeTimes || [];
 
@@ -9959,6 +10332,587 @@
     }
 
     // ─────────────────────────────────────────────────────────
+    // MATCHUP TV BROADCAST + PHONE WIZARD
+    // ─────────────────────────────────────────────────────────
+    let matchupBcRefreshTimer = null;
+    let matchupBcPrevMatchCount = 0;
+
+    // Compute which team initiates match N using snake pattern
+    function getMatchupInitiator(matchIndex, firstPick) {
+        const first = firstPick || 'A';
+        const second = first === 'A' ? 'B' : 'A';
+        // Snake: ABBAABBA... (pair index determines direction)
+        const pairIndex = Math.floor(matchIndex / 2);
+        const isFirstInPair = (matchIndex % 2 === 0);
+        return (pairIndex % 2 === 0)
+            ? (isFirstInPair ? first : second)
+            : (isFirstInPair ? second : first);
+    }
+
+    // Get players already used in completed matches for a session
+    function getMatchupUsedPlayers(sessionId) {
+        const used = { A: new Set(), B: new Set() };
+        // From matchMaking completed matches
+        (S.matchMaking.completedMatches || []).forEach(cm => {
+            (cm.teamA || []).forEach(id => used.A.add(id));
+            (cm.teamB || []).forEach(id => used.B.add(id));
+        });
+        // Also from already-saved matches in this session
+        getMatchesBySession(sessionId).forEach(m => {
+            m.teamA.forEach(id => used.A.add(id));
+            m.teamB.forEach(id => used.B.add(id));
+        });
+        return used;
+    }
+
+    // ── MATCHUP TV BROADCAST RENDERING ──
+    function renderMatchupBroadcast() {
+        const mm = S.matchMaking;
+        const session = mm.sessionId ? S.config.sessions.find(s => s.id === mm.sessionId) : null;
+        const formatLabel = session ? ({fourball:'Four Ball',foursomes:'Foursomes',singles:'Singles',other:'Other'}[session.format] || 'Match') : '';
+        const playersPerTeam = (session && (session.format === 'fourball' || session.format === 'foursomes')) ? 2 : 1;
+
+        // Title
+        const titleEl = document.getElementById('matchupBcTitle');
+        if (titleEl) titleEl.textContent = S.config.eventName;
+
+        // Team headers
+        const headerA = document.getElementById('matchupBcTeamAHeader');
+        const headerB = document.getElementById('matchupBcTeamBHeader');
+        if (headerA) headerA.textContent = S.config.teamA.name;
+        if (headerB) headerB.textContent = S.config.teamB.name;
+
+        // Matches header
+        const matchesHeader = document.getElementById('matchupBcMatchesHeader');
+        if (matchesHeader) matchesHeader.textContent = session ? `${session.name} — ${formatLabel}` : 'Matches';
+
+        // Status banner
+        const statusEl = document.getElementById('matchupBcStatus');
+        if (statusEl) {
+            if (mm.status === 'idle') {
+                statusEl.className = 'matchup-bc-status idle-status';
+                statusEl.innerHTML = 'WAITING FOR MATCHUPS TO BEGIN';
+            } else if (mm.status === 'complete') {
+                statusEl.className = 'matchup-bc-status complete-status';
+                statusEl.innerHTML = `${formatLabel.toUpperCase()} MATCHUPS COMPLETE`;
+            } else if (mm.status === 'active') {
+                const pickingTeam = mm.phase === 'initiate' ? mm.initiatingTeam : (mm.initiatingTeam === 'A' ? 'B' : 'A');
+                const teamName = pickingTeam === 'A' ? S.config.teamA.name : S.config.teamB.name;
+                const teamColor = pickingTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
+                const phaseLabel = mm.phase === 'initiate' ? 'SELECTING' : 'COUNTERING';
+                statusEl.className = 'matchup-bc-status team-picking';
+                statusEl.style.setProperty('--picking-team-rgb', hexToRgb(teamColor));
+                statusEl.innerHTML = `<span class="matchup-bc-session-info">Match ${mm.currentMatch + 1} of ${mm.totalMatches}</span> <span>${teamName} ${phaseLabel}</span>`;
+            }
+        }
+
+        // Render team rosters
+        if (mm.status !== 'idle' && session) {
+            const used = getMatchupUsedPlayers(mm.sessionId);
+            const pending = new Set(mm.pendingPlayers || []);
+            renderMatchupBcRoster('matchupBcRosterA', 'A', used.A, pending);
+            renderMatchupBcRoster('matchupBcRosterB', 'B', used.B, pending);
+        } else {
+            // Show all players
+            renderMatchupBcRoster('matchupBcRosterA', 'A', new Set(), new Set());
+            renderMatchupBcRoster('matchupBcRosterB', 'B', new Set(), new Set());
+        }
+
+        // Render matches list
+        renderMatchupBcMatches(mm, playersPerTeam);
+
+        // Render ticker
+        renderMatchupBcTicker(mm);
+
+        // Detect new match for animation
+        const newCount = (mm.completedMatches || []).length;
+        if (newCount > matchupBcPrevMatchCount && matchupBcPrevMatchCount > 0) {
+            // New match was just completed — card animation handled via CSS class
+        }
+        matchupBcPrevMatchCount = newCount;
+
+        // Celebration when complete
+        if (mm.status === 'complete' && !document.querySelector('.matchup-bc-celebration')) {
+            matchupBcCelebration();
+        }
+    }
+
+    function hexToRgb(hex) {
+        const r = parseInt(hex.slice(1,3), 16);
+        const g = parseInt(hex.slice(3,5), 16);
+        const b = parseInt(hex.slice(5,7), 16);
+        return `${r},${g},${b}`;
+    }
+
+    function renderMatchupBcRoster(containerId, team, usedIds, pendingIds) {
+        const el = document.getElementById(containerId);
+        if (!el) return;
+        const players = getTeamPlayers(team);
+        el.innerHTML = players.map(p => {
+            const isUsed = usedIds.has(p.id);
+            const isPending = pendingIds.has(p.id);
+            const cls = isPending ? 'pending-pick' : (isUsed ? 'matched' : 'available');
+            return `<div class="matchup-bc-player-card ${cls}">
+                <span>${p.name}</span>
+                <span class="matchup-bc-player-hcp">${p.handicap != null ? p.handicap : '—'}</span>
+            </div>`;
+        }).join('');
+    }
+
+    function renderMatchupBcMatches(mm, playersPerTeam) {
+        const listEl = document.getElementById('matchupBcMatchesList');
+        if (!listEl) return;
+
+        const completed = mm.completedMatches || [];
+        let html = '<div class="matchup-bc-matches-watermark"><img src="assets/images/dfgc-logo-transparent.png" alt=""></div>';
+
+        completed.forEach((cm, i) => {
+            const isNew = (i === completed.length - 1 && completed.length > matchupBcPrevMatchCount);
+            html += `<div class="matchup-bc-match-card${isNew ? ' new-match' : ''}">
+                <div class="matchup-bc-match-num">Match ${i + 1}</div>
+                <div class="matchup-bc-match-vs">
+                    <div class="matchup-bc-match-team team-a-bg" style="--team-a-rgb: ${hexToRgb(S.config.teamA.color)}">
+                        ${cm.teamA.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div><div class="matchup-bc-match-team-hcp">${getPlayerHcp(id) != null ? 'HCP ' + getPlayerHcp(id) : ''}</div>`).join('')}
+                    </div>
+                    <div class="matchup-bc-match-vs-label">vs</div>
+                    <div class="matchup-bc-match-team team-b-bg" style="--team-b-rgb: ${hexToRgb(S.config.teamB.color)}">
+                        ${cm.teamB.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div><div class="matchup-bc-match-team-hcp">${getPlayerHcp(id) != null ? 'HCP ' + getPlayerHcp(id) : ''}</div>`).join('')}
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        // Show current match being built
+        if (mm.status === 'active') {
+            const pending = mm.pendingPlayers || [];
+            const initiator = mm.initiatingTeam;
+            const counter = initiator === 'A' ? 'B' : 'A';
+            const teamAPlayers = mm.phase === 'counter' && initiator === 'A' ? pending : (mm.phase === 'initiate' && initiator === 'A' ? pending : []);
+            const teamBPlayers = mm.phase === 'counter' && initiator === 'B' ? pending : (mm.phase === 'initiate' && initiator === 'B' ? pending : []);
+
+            // If we're in counter phase, the initiating team's players are already locked in
+            let lockedA = [], lockedB = [];
+            if (mm.phase === 'counter') {
+                // The initiator already picked — their players are the ones from initiate phase
+                // We stored them... actually we need them in the state. Let me use pendingPlayers differently:
+                // During initiate: pendingPlayers = initiating team's selections
+                // During counter: pendingPlayers = countering team's selections (initiator's are in initiatorPlayers)
+            }
+
+            html += `<div class="matchup-bc-match-card building">
+                <div class="matchup-bc-match-num">Match ${completed.length + 1} — Building...</div>
+                <div class="matchup-bc-match-vs">
+                    <div class="matchup-bc-match-team ${mm.phase === 'initiate' && initiator === 'A' || mm.phase === 'counter' && counter === 'A' ? '' : 'tbd'}" style="--team-a-rgb: ${hexToRgb(S.config.teamA.color)}">
+                        ${renderMatchupBcBuildingTeam('A', mm, playersPerTeam)}
+                    </div>
+                    <div class="matchup-bc-match-vs-label">vs</div>
+                    <div class="matchup-bc-match-team ${mm.phase === 'initiate' && initiator === 'B' || mm.phase === 'counter' && counter === 'B' ? '' : 'tbd'}" style="--team-b-rgb: ${hexToRgb(S.config.teamB.color)}">
+                        ${renderMatchupBcBuildingTeam('B', mm, playersPerTeam)}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        listEl.innerHTML = html;
+    }
+
+    function renderMatchupBcBuildingTeam(team, mm, playersPerTeam) {
+        const initiator = mm.initiatingTeam;
+        const counter = initiator === 'A' ? 'B' : 'A';
+        const pending = mm.pendingPlayers || [];
+        const initiatorPlayers = mm.initiatorPlayers || [];
+
+        if (mm.phase === 'initiate') {
+            if (team === initiator) {
+                // Show pending selections
+                if (pending.length > 0) {
+                    return pending.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div>`).join('');
+                }
+                return `<div class="matchup-bc-match-team-name" style="color:rgba(255,255,255,0.3);font-style:italic;">Selecting...</div>`;
+            } else {
+                return `<div class="matchup-bc-match-team-name" style="color:rgba(255,255,255,0.3);font-style:italic;">Waiting...</div>`;
+            }
+        } else { // counter phase
+            if (team === initiator) {
+                // Initiator's picks are locked
+                return initiatorPlayers.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div>`).join('');
+            } else {
+                // Counter is picking
+                if (pending.length > 0) {
+                    return pending.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div>`).join('');
+                }
+                return `<div class="matchup-bc-match-team-name" style="color:rgba(255,255,255,0.3);font-style:italic;">Countering...</div>`;
+            }
+        }
+    }
+
+    function renderMatchupBcTicker(mm) {
+        const el = document.getElementById('matchupBcTicker');
+        if (!el) return;
+        const completed = mm.completedMatches || [];
+        if (completed.length === 0) {
+            el.innerHTML = '<span style="color:rgba(255,255,255,0.3);">No matches yet</span>';
+            return;
+        }
+        el.innerHTML = completed.map((cm, i) => {
+            const aNames = cm.teamA.map(id => getPlayerName(id)).join(' & ');
+            const bNames = cm.teamB.map(id => getPlayerName(id)).join(' & ');
+            return `<span>${aNames} vs ${bNames}</span>`;
+        }).join('<span style="color:var(--masters-yellow);margin:0 8px;">•</span>');
+    }
+
+    function matchupBcCelebration() {
+        const overlay = document.createElement('div');
+        overlay.className = 'matchup-bc-celebration';
+        overlay.innerHTML = `<div class="matchup-bc-celebration-text">MATCHUPS SET<br>GAME ON!</div>`;
+        overlay.style.animation = 'celebrationFade 5s forwards';
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.remove(), 5000);
+    }
+
+    function updateMatchupBcClock() {
+        const el = document.getElementById('matchupBcClock');
+        if (el) {
+            el.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    }
+
+    function startMatchupBroadcast() {
+        renderMatchupBroadcast();
+        updateMatchupBcClock();
+
+        // Re-render every 5 seconds to pick up Firebase changes
+        matchupBcRefreshTimer = setInterval(() => {
+            if (LiveSync.eventRef) {
+                LiveSync.eventRef.once('value').then(snap => {
+                    const val = snap.val();
+                    if (val) {
+                        LiveSync.applyState(val);
+                    }
+                    renderMatchupBroadcast();
+                }).catch(() => {
+                    renderMatchupBroadcast();
+                });
+            } else {
+                renderMatchupBroadcast();
+            }
+        }, 5000);
+
+        setInterval(updateMatchupBcClock, 30000);
+    }
+
+    function shareMatchupTVLink(method) {
+        const tvUrl = window.location.origin + window.location.pathname + '?tv=matchup';
+        if (method === 'copy') {
+            navigator.clipboard.writeText(tvUrl).then(() => showToast('TV link copied!')).catch(() => {
+                prompt('Copy this link:', tvUrl);
+            });
+        } else if (method === 'sms') {
+            window.open(`sms:?body=${encodeURIComponent('Watch matchups live: ' + tvUrl)}`);
+        } else if (method === 'email') {
+            window.open(`mailto:?subject=${encodeURIComponent('Smashters Matchup TV')}&body=${encodeURIComponent('Watch matchups live: ' + tvUrl)}`);
+        }
+    }
+
+    // ── PHONE WIZARD ──
+    function openMatchupWizard() {
+        if (!requireAdmin('create matchups')) return;
+
+        const overlay = document.getElementById('matchupWizardOverlay');
+        overlay.style.display = '';
+
+        // If matchMaking is already active, resume
+        if (S.matchMaking.status === 'active') {
+            renderMatchupWizardPick();
+            return;
+        }
+
+        // Show session selection
+        renderMatchupWizardSessionSelect();
+    }
+
+    function closeMatchupWizard() {
+        document.getElementById('matchupWizardOverlay').style.display = 'none';
+    }
+
+    function renderMatchupWizardSessionSelect() {
+        const overlay = document.getElementById('matchupWizardOverlay');
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+
+        overlay.innerHTML = `<div class="matchup-wizard-card">
+            <h2>Match-Making Wizard</h2>
+            <h3>Select a session</h3>
+            ${sessions.map(s => {
+                const fmt = {fourball:'Four Ball',foursomes:'Foursomes',singles:'Singles',other:'Other'}[s.format] || 'Match';
+                const existingMatches = getMatchesBySession(s.id).length;
+                return `<button class="matchup-wizard-player-btn" onclick="matchupWizardSelectSession('${s.id}')">
+                    <span>${s.name} — ${fmt}</span>
+                    <span class="hcp">${existingMatches > 0 ? existingMatches + ' matches' : 'No matches'}</span>
+                </button>`;
+            }).join('')}
+            <div class="matchup-wizard-actions" style="margin-top:20px;">
+                <button class="btn btn-outline" onclick="closeMatchupWizard()">Cancel</button>
+            </div>
+            <div style="margin-top:16px;">
+                <p class="wiz-label">Share TV Link</p>
+                <div style="display:flex;gap:8px;justify-content:center;">
+                    <button class="btn btn-sm btn-outline" onclick="shareMatchupTVLink('copy')">Copy Link</button>
+                    <button class="btn btn-sm btn-outline" onclick="shareMatchupTVLink('sms')">SMS</button>
+                    <button class="btn btn-sm btn-outline" onclick="shareMatchupTVLink('email')">Email</button>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function matchupWizardSelectSession(sessionId) {
+        const session = S.config.sessions.find(s => s.id === sessionId);
+        if (!session) return;
+
+        // Calculate how many matches we can make
+        const teamAPlayers = getTeamPlayers('A');
+        const teamBPlayers = getTeamPlayers('B');
+        const playersPerTeam = (session.format === 'fourball' || session.format === 'foursomes') ? 2 : 1;
+
+        // Exclude players already in matches for this session
+        const existingUsed = { A: new Set(), B: new Set() };
+        getMatchesBySession(sessionId).forEach(m => {
+            m.teamA.forEach(id => existingUsed.A.add(id));
+            m.teamB.forEach(id => existingUsed.B.add(id));
+        });
+        const availA = teamAPlayers.filter(p => !existingUsed.A.has(p.id));
+        const availB = teamBPlayers.filter(p => !existingUsed.B.has(p.id));
+        const totalMatches = Math.min(Math.floor(availA.length / playersPerTeam), Math.floor(availB.length / playersPerTeam));
+
+        if (totalMatches === 0) {
+            showToast('No available players for this session');
+            return;
+        }
+
+        // Show first pick selection
+        renderMatchupWizardFirstPick(sessionId, session, totalMatches);
+    }
+
+    function renderMatchupWizardFirstPick(sessionId, session, totalMatches) {
+        const overlay = document.getElementById('matchupWizardOverlay');
+        const fmt = {fourball:'Four Ball',foursomes:'Foursomes',singles:'Singles',other:'Other'}[session.format] || 'Match';
+
+        overlay.innerHTML = `<div class="matchup-wizard-card">
+            <h2>${session.name}</h2>
+            <h3>${fmt} — ${totalMatches} matches</h3>
+            <p class="wiz-label">Who selects first?</p>
+            <button class="matchup-wizard-player-btn" onclick="matchupWizardStart('${sessionId}', '${session.format}', ${totalMatches}, 'A')" style="justify-content:center;">
+                <span style="color:${S.config.teamA.color};font-weight:700;">${S.config.teamA.name}</span>
+            </button>
+            <button class="matchup-wizard-player-btn" onclick="matchupWizardStart('${sessionId}', '${session.format}', ${totalMatches}, 'B')" style="justify-content:center;">
+                <span style="color:${S.config.teamB.color};font-weight:700;">${S.config.teamB.name}</span>
+            </button>
+            <div class="matchup-wizard-actions" style="margin-top:20px;">
+                <button class="btn btn-outline" onclick="renderMatchupWizardSessionSelect()">Back</button>
+            </div>
+        </div>`;
+    }
+
+    function matchupWizardStart(sessionId, format, totalMatches, firstPick) {
+        S.matchMaking = {
+            status: 'active',
+            sessionId,
+            format,
+            firstPick,
+            currentMatch: 0,
+            totalMatches,
+            phase: 'initiate',
+            initiatingTeam: firstPick,
+            pendingPlayers: [],
+            initiatorPlayers: [],
+            completedMatches: [],
+        };
+        saveState();
+        renderMatchupWizardPick();
+    }
+
+    function renderMatchupWizardPick() {
+        const mm = S.matchMaking;
+        const overlay = document.getElementById('matchupWizardOverlay');
+        const session = S.config.sessions.find(s => s.id === mm.sessionId);
+        if (!session) return;
+
+        const playersPerTeam = (mm.format === 'fourball' || mm.format === 'foursomes') ? 2 : 1;
+        const isInitiate = mm.phase === 'initiate';
+        const pickingTeam = isInitiate ? mm.initiatingTeam : (mm.initiatingTeam === 'A' ? 'B' : 'A');
+        const teamName = pickingTeam === 'A' ? S.config.teamA.name : S.config.teamB.name;
+        const teamColor = pickingTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
+        const phaseLabel = isInitiate ? 'Select players' : 'Counter with players';
+
+        // Get available players for the picking team
+        const used = getMatchupUsedPlayers(mm.sessionId);
+        const allTeamPlayers = getTeamPlayers(pickingTeam);
+        const available = allTeamPlayers.filter(p => !used[pickingTeam].has(p.id));
+        const selected = new Set(mm.pendingPlayers || []);
+
+        overlay.innerHTML = `<div class="matchup-wizard-card">
+            <h2>Match ${mm.currentMatch + 1} of ${mm.totalMatches}</h2>
+            <h3>${isInitiate ? 'Select' : 'Counter'} — Pick ${playersPerTeam} player${playersPerTeam > 1 ? 's' : ''}</h3>
+            ${!isInitiate ? `<div style="margin-bottom:12px;padding:8px;background:rgba(0,0,0,0.05);border-radius:8px;">
+                <div class="wiz-label">${mm.initiatingTeam === 'A' ? S.config.teamA.name : S.config.teamB.name} selected:</div>
+                ${(mm.initiatorPlayers || []).map(id => `<div style="font-weight:600;">${getPlayerName(id)} (${getPlayerHcp(id) || '—'})</div>`).join('')}
+            </div>` : ''}
+            <div class="wiz-team-label" style="background:${teamColor};">${teamName} — ${phaseLabel}</div>
+            ${available.map(p => `<button class="matchup-wizard-player-btn ${selected.has(p.id) ? 'selected' : ''}"
+                onclick="matchupWizardTogglePlayer('${p.id}', ${playersPerTeam})">
+                <span>${p.name}</span>
+                <span class="hcp">${p.handicap != null ? 'HCP ' + p.handicap : '—'}</span>
+            </button>`).join('')}
+            <div class="matchup-wizard-actions">
+                <button class="btn btn-outline" onclick="matchupWizardBack()">Back</button>
+                <button class="btn btn-primary" id="matchupWizardConfirmBtn"
+                    onclick="matchupWizardConfirm()"
+                    ${selected.size !== playersPerTeam ? 'disabled style="opacity:0.4;"' : ''}>
+                    ${isInitiate ? 'Confirm Selection' : 'Lock In Match'}
+                </button>
+            </div>
+        </div>`;
+    }
+
+    function matchupWizardTogglePlayer(playerId, maxPicks) {
+        const pending = S.matchMaking.pendingPlayers || [];
+        const idx = pending.indexOf(playerId);
+        if (idx >= 0) {
+            pending.splice(idx, 1);
+        } else if (pending.length < maxPicks) {
+            pending.push(playerId);
+        }
+        S.matchMaking.pendingPlayers = pending;
+        renderMatchupWizardPick();
+    }
+
+    function matchupWizardConfirm() {
+        const mm = S.matchMaking;
+        const playersPerTeam = (mm.format === 'fourball' || mm.format === 'foursomes') ? 2 : 1;
+
+        if ((mm.pendingPlayers || []).length !== playersPerTeam) return;
+
+        if (mm.phase === 'initiate') {
+            // Save initiator's picks, move to counter phase
+            mm.initiatorPlayers = [...mm.pendingPlayers];
+            mm.phase = 'counter';
+            mm.pendingPlayers = [];
+            saveState();
+            renderMatchupWizardPick();
+        } else {
+            // Counter confirmed — create the match
+            const initiator = mm.initiatingTeam;
+            const counterTeam = initiator === 'A' ? 'B' : 'A';
+            const teamA = initiator === 'A' ? mm.initiatorPlayers : mm.pendingPlayers;
+            const teamB = initiator === 'B' ? mm.initiatorPlayers : mm.pendingPlayers;
+
+            // Add to completed matches
+            mm.completedMatches.push({ teamA: [...teamA], teamB: [...teamB] });
+
+            // Create actual match in S.matches
+            const match = {
+                id: genId(),
+                sessionId: mm.sessionId,
+                type: mm.format,
+                order: getMatchesBySession(mm.sessionId).length + 1,
+                teamA: [...teamA],
+                teamB: [...teamB],
+                holes: {},
+                status: 'pending',
+                teeTime: '',
+            };
+            S.matches[match.id] = match;
+
+            // Move to next match
+            mm.currentMatch++;
+            if (mm.currentMatch >= mm.totalMatches) {
+                mm.status = 'complete';
+                mm.phase = 'initiate';
+                mm.pendingPlayers = [];
+                mm.initiatorPlayers = [];
+                saveState();
+                renderMatchupWizardComplete();
+            } else {
+                mm.phase = 'initiate';
+                mm.initiatingTeam = getMatchupInitiator(mm.currentMatch, mm.firstPick);
+                mm.pendingPlayers = [];
+                mm.initiatorPlayers = [];
+                saveState();
+                renderMatchupWizardPick();
+            }
+        }
+    }
+
+    function matchupWizardBack() {
+        const mm = S.matchMaking;
+        if (mm.phase === 'counter') {
+            // Go back to initiate phase
+            mm.phase = 'initiate';
+            mm.pendingPlayers = [...(mm.initiatorPlayers || [])];
+            mm.initiatorPlayers = [];
+            saveState();
+            renderMatchupWizardPick();
+        } else if (mm.currentMatch > 0) {
+            // Undo last completed match
+            const lastMatch = mm.completedMatches.pop();
+            // Remove from S.matches too
+            const sessionMatches = getMatchesBySession(mm.sessionId);
+            if (sessionMatches.length > 0) {
+                const last = sessionMatches[sessionMatches.length - 1];
+                delete S.matches[last.id];
+            }
+            mm.currentMatch--;
+            mm.initiatingTeam = getMatchupInitiator(mm.currentMatch, mm.firstPick);
+            mm.phase = 'initiate';
+            mm.pendingPlayers = [];
+            mm.initiatorPlayers = [];
+            saveState();
+            renderMatchupWizardPick();
+        } else {
+            // Back to session select — reset matchMaking
+            S.matchMaking = defaultState().matchMaking;
+            saveState();
+            renderMatchupWizardSessionSelect();
+        }
+    }
+
+    function renderMatchupWizardComplete() {
+        const overlay = document.getElementById('matchupWizardOverlay');
+        const mm = S.matchMaking;
+        const session = S.config.sessions.find(s => s.id === mm.sessionId);
+        const fmt = session ? ({fourball:'Four Ball',foursomes:'Foursomes',singles:'Singles',other:'Other'}[session.format] || 'Match') : '';
+
+        overlay.innerHTML = `<div class="matchup-wizard-card">
+            <h2 style="color:var(--masters-green);">Matchups Complete!</h2>
+            <h3>${session ? session.name : ''} — ${fmt}</h3>
+            ${(mm.completedMatches || []).map((cm, i) => `<div style="padding:8px;margin-bottom:8px;background:rgba(0,0,0,0.04);border-radius:8px;text-align:left;">
+                <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Match ${i+1}</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="color:${S.config.teamA.color};font-weight:600;">${cm.teamA.map(id => getPlayerName(id)).join(' & ')}</span>
+                    <span style="color:#999;">vs</span>
+                    <span style="color:${S.config.teamB.color};font-weight:600;">${cm.teamB.map(id => getPlayerName(id)).join(' & ')}</span>
+                </div>
+            </div>`).join('')}
+            <div class="matchup-wizard-actions" style="margin-top:20px;">
+                <button class="btn btn-primary" onclick="matchupWizardFinish()">Done</button>
+                <button class="btn btn-outline" onclick="matchupWizardStartAnother()">Next Session</button>
+            </div>
+        </div>`;
+    }
+
+    function matchupWizardFinish() {
+        S.matchMaking = defaultState().matchMaking;
+        saveState();
+        closeMatchupWizard();
+        renderMatches();
+    }
+
+    function matchupWizardStartAnother() {
+        S.matchMaking = defaultState().matchMaking;
+        saveState();
+        renderMatchupWizardSessionSelect();
+    }
+
+    // ─────────────────────────────────────────────────────────
     // HOLE TIMER
     // ─────────────────────────────────────────────────────────
     let holeTimerInterval = null;
@@ -10224,6 +11178,21 @@
                 startDraftBroadcast();
             }).catch(() => {
                 startDraftBroadcast(); // Render with whatever we have
+            });
+            return;
+        }
+
+        // ── TV / Matchup Broadcast mode ──
+        if (urlParams.get('tv') === 'matchup') {
+            document.body.classList.add('tv-matchup-mode');
+            document.getElementById('matchupBroadcast').style.display = '';
+            hideSplash();
+            LiveSync.autoStart().then(() => {
+                document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+                document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+                startMatchupBroadcast();
+            }).catch(() => {
+                startMatchupBroadcast();
             });
             return;
         }
