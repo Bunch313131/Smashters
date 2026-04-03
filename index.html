@@ -7588,6 +7588,7 @@
                                 config: S.config,
                                 players: S.players,
                                 matches: S.matches,
+                                draft: S.draft,
                                 bonusEvents: S.bonusEvents,
                                 holeTimes: S.holeTimes,
                                 scorerCode: this.scorerCode,
@@ -7617,6 +7618,7 @@
                                 config: S.config,
                                 players: S.players,
                                 matches: S.matches,
+                                draft: S.draft,
                                 bonusEvents: S.bonusEvents,
                                 holeTimes: S.holeTimes,
                                 scorerCode: this.scorerCode,
@@ -7663,7 +7665,7 @@
                 });
 
                 // Listen for updates from other devices
-                const isTvMode = document.body.classList.contains('tv-mode');
+                const isTvMode = document.body.classList.contains('tv-mode') || document.body.classList.contains('tv-draft-mode');
                 const listener = this.eventRef.on('value', (snap) => {
                     if (this._suppressListener) return;
                     const val = snap.val();
@@ -7781,6 +7783,7 @@
                     config: S.config,
                     players: S.players,
                     matches: S.matches,
+                    draft: S.draft,
                     bonusEvents: S.bonusEvents,
                     holeTimes: S.holeTimes,
                     updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -7881,6 +7884,7 @@
             }
             S.players = val.players || {};
             S.matches = val.matches || {};
+            if (val.draft) S.draft = { ...defaultState().draft, ...val.draft };
             S.bonusEvents = val.bonusEvents || {};
             S.holeTimes = val.holeTimes || [];
 
