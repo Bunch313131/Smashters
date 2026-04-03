@@ -3710,6 +3710,12 @@
 
     function requireAdmin(operation) {
         if (S.ui.settingsUnlocked) {
+            // Ensure LiveSync admin is set even if already unlocked
+            if (!LiveSync.isAdmin) {
+                LiveSync.isAdmin = true;
+                LiveSync.isViewer = false;
+                LiveSync.isScorer = false;
+            }
             return true;
         }
         const code = prompt(`Admin access required to ${operation}.\nEnter admin code:`);
