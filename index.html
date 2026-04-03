@@ -3151,12 +3151,45 @@
 
         /* New player card appearing on team */
         @keyframes draftCardAppear {
-            0% { opacity: 0; transform: translateX(0) scale(0.5); max-height: 0; padding: 0; margin: 0; }
-            40% { opacity: 0.5; transform: translateX(0) scale(1.08); }
-            100% { opacity: 1; transform: translateX(0) scale(1); max-height: 100px; }
+            0% { opacity: 0; transform: scale(0.7); }
+            50% { opacity: 1; transform: scale(1.06); }
+            100% { opacity: 1; transform: scale(1); }
         }
         .draft-bc-player-card.new-pick {
-            animation: draftCardAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation: draftCardAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Draft complete celebration overlay */
+        .draft-bc-celebration {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .draft-bc-celebration-text {
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: clamp(40px, 6vw, 80px);
+            color: var(--masters-yellow);
+            text-shadow: 0 0 30px rgba(251,243,8,0.6), 0 0 60px rgba(251,243,8,0.3), 0 4px 8px rgba(0,0,0,0.5);
+            animation: celebrationPop 2s ease-out forwards;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+        @keyframes celebrationPop {
+            0% { opacity: 0; transform: scale(0.3); }
+            20% { opacity: 1; transform: scale(1.15); }
+            40% { transform: scale(0.95); }
+            60% { transform: scale(1.05); }
+            80% { transform: scale(1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes celebrationFade {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
         }
 
         /* Round indicator */
@@ -9668,6 +9701,8 @@
     let draftBcPrevPickCount = 0;
     let draftBcTickerItems = [];
     let draftBcRefreshTimer = null;
+    let draftBcPrevComplete = false;
+    let draftBcLastPickTeam = null;
 
     function updateDraftBcClock() {
         const el = document.getElementById('draftBcClock');
@@ -9703,6 +9738,7 @@
         const ct = S.draft.currentTeam;
         const teamAName = S.config.teamA.name;
         const teamBName = S.config.teamB.name;
+        const isNewPick = ds.pickCount > draftBcPrevPickCount && draftBcPrevPickCount > 0;
 
         // Header
         document.getElementById('draftBcTitle').textContent = S.config.eventName;
@@ -9726,57 +9762,26 @@
             banner.style.color = '';
         }
 
+        // Determine which team just got a new pick
+        let newPickTeam = null;
+        if (isNewPick) {
+            const lastPick = S.draft.picks[S.draft.picks.length - 1];
+            if (lastPick) newPickTeam = lastPick.team;
+        }
+
         // Team A header + roster
         const teamACount = (S.draft.captainA ? 1 : 0) + ds.teamAPicks.length;
         document.getElementById('draftBcTeamAHeader').innerHTML =
             `${teamAName}<div class="draft-bc-team-count">${teamACount} player${teamACount !== 1 ? 's' : ''}</div>`;
 
-        let rosterAHtml = '';
-        if (S.draft.captainA && S.players[S.draft.captainA]) {
-            const cap = S.players[S.draft.captainA];
-            rosterAHtml += `<div class="draft-bc-player-card captain">
-                <div class="draft-bc-pick-num captain-badge">C</div>
-                <div class="draft-bc-player-name">${cap.name}</div>
-                <div class="draft-bc-player-hcp">${cap.handicap ? 'HCP ' + cap.handicap : ''}</div>
-            </div>`;
-        }
-        ds.teamAPicks.forEach((pick, i) => {
-            const p = S.players[pick.playerId];
-            if (!p) return;
-            const isNew = (i === ds.teamAPicks.length - 1) && ds.pickCount > draftBcPrevPickCount;
-            rosterAHtml += `<div class="draft-bc-player-card${isNew ? ' new-pick' : ''}">
-                <div class="draft-bc-pick-num">${i + 1}</div>
-                <div class="draft-bc-player-name">${p.name}</div>
-                <div class="draft-bc-player-hcp">${p.handicap ? 'HCP ' + p.handicap : ''}</div>
-            </div>`;
-        });
-        document.getElementById('draftBcRosterA').innerHTML = rosterAHtml;
+        renderDraftBcRoster('draftBcRosterA', S.draft.captainA, ds.teamAPicks, newPickTeam === 'A');
 
         // Team B header + roster
         const teamBCount = (S.draft.captainB ? 1 : 0) + ds.teamBPicks.length;
         document.getElementById('draftBcTeamBHeader').innerHTML =
             `${teamBName}<div class="draft-bc-team-count">${teamBCount} player${teamBCount !== 1 ? 's' : ''}</div>`;
 
-        let rosterBHtml = '';
-        if (S.draft.captainB && S.players[S.draft.captainB]) {
-            const cap = S.players[S.draft.captainB];
-            rosterBHtml += `<div class="draft-bc-player-card captain">
-                <div class="draft-bc-pick-num captain-badge">C</div>
-                <div class="draft-bc-player-name">${cap.name}</div>
-                <div class="draft-bc-player-hcp">${cap.handicap ? 'HCP ' + cap.handicap : ''}</div>
-            </div>`;
-        }
-        ds.teamBPicks.forEach((pick, i) => {
-            const p = S.players[pick.playerId];
-            if (!p) return;
-            const isNew = (i === ds.teamBPicks.length - 1) && ds.pickCount > draftBcPrevPickCount;
-            rosterBHtml += `<div class="draft-bc-player-card${isNew ? ' new-pick' : ''}">
-                <div class="draft-bc-pick-num">${i + 1}</div>
-                <div class="draft-bc-player-name">${p.name}</div>
-                <div class="draft-bc-player-hcp">${p.handicap ? 'HCP ' + p.handicap : ''}</div>
-            </div>`;
-        });
-        document.getElementById('draftBcRosterB').innerHTML = rosterBHtml;
+        renderDraftBcRoster('draftBcRosterB', S.draft.captainB, ds.teamBPicks, newPickTeam === 'B');
 
         // Available players
         document.getElementById('draftBcAvailCount').textContent =
@@ -9800,21 +9805,99 @@
         });
         document.getElementById('draftBcAvailList').innerHTML = availHtml;
 
-        // Ticker — build from draft picks history
+        // Ticker
         renderDraftBcTicker();
 
-        // Detect new picks for animations
-        if (ds.pickCount > draftBcPrevPickCount && draftBcPrevPickCount > 0) {
-            // A new pick was made — add to ticker
-            const lastPick = S.draft.picks[S.draft.picks.length - 1];
-            if (lastPick && S.players[lastPick.playerId]) {
-                const teamName = lastPick.team === 'A' ? teamAName : teamBName;
-                const playerName = S.players[lastPick.playerId].name;
-                draftBcTickerItems.unshift(`Pick #${ds.pickCount}: ${teamName} selects ${playerName}`);
-                if (draftBcTickerItems.length > 20) draftBcTickerItems.pop();
-            }
+        // Fire effect on new pick
+        if (isNewPick) {
+            draftBcFireBurst(3);
         }
+
+        // Draft complete celebration
+        if (isComplete && !draftBcPrevComplete) {
+            draftBcCelebration();
+        }
+
+        draftBcPrevComplete = isComplete;
         draftBcPrevPickCount = ds.pickCount;
+    }
+
+    function renderDraftBcRoster(containerId, captainId, picks, hasNewPick) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        // Build new card list — only animate the last card if this team got the new pick
+        let html = '';
+        if (captainId && S.players[captainId]) {
+            const cap = S.players[captainId];
+            html += `<div class="draft-bc-player-card captain">
+                <div class="draft-bc-pick-num captain-badge">C</div>
+                <div class="draft-bc-player-name">${cap.name}</div>
+                <div class="draft-bc-player-hcp">${cap.handicap ? 'HCP ' + cap.handicap : ''}</div>
+            </div>`;
+        }
+        picks.forEach((pick, i) => {
+            const p = S.players[pick.playerId];
+            if (!p) return;
+            const isLast = i === picks.length - 1;
+            const shouldAnimate = isLast && hasNewPick;
+            html += `<div class="draft-bc-player-card${shouldAnimate ? ' new-pick' : ''}">
+                <div class="draft-bc-pick-num">${i + 1}</div>
+                <div class="draft-bc-player-name">${p.name}</div>
+                <div class="draft-bc-player-hcp">${p.handicap ? 'HCP ' + p.handicap : ''}</div>
+            </div>`;
+        });
+        container.innerHTML = html;
+
+        // Scroll to bottom to show new pick
+        if (hasNewPick) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    function draftBcFireBurst(count) {
+        let container = document.getElementById('flameContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'flameContainer';
+            container.className = 'flame-container';
+            document.body.appendChild(container);
+        }
+        const totalFlames = count * 5;
+        for (let i = 0; i < totalFlames; i++) {
+            setTimeout(() => {
+                const flame = document.createElement('div');
+                flame.className = 'flame';
+                flame.textContent = '🔥';
+                const startX = Math.random() * window.innerWidth;
+                const startY = window.innerHeight * 0.6 + (Math.random() * window.innerHeight * 0.3);
+                flame.style.left = startX + 'px';
+                flame.style.top = startY + 'px';
+                container.appendChild(flame);
+                setTimeout(() => flame.remove(), 2000);
+            }, i * 60);
+        }
+        setTimeout(() => {
+            if (container && container.children.length === 0) container.remove();
+        }, 3000);
+    }
+
+    function draftBcCelebration() {
+        // Big fire burst
+        draftBcFireBurst(12);
+
+        // Celebration text overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'draft-bc-celebration';
+        overlay.style.animation = 'celebrationFade 4s ease-out forwards';
+        overlay.innerHTML = '<div class="draft-bc-celebration-text">TEAMS ARE SET</div>';
+        document.body.appendChild(overlay);
+
+        // Second wave of fire
+        setTimeout(() => draftBcFireBurst(8), 800);
+
+        // Remove overlay after animation
+        setTimeout(() => overlay.remove(), 4500);
     }
 
     function renderDraftBcTicker() {
