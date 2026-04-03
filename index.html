@@ -3300,10 +3300,17 @@
         /* ═══════════════════════════════════════════════════════
            MATCHUP TV BROADCAST
            ═══════════════════════════════════════════════════════ */
-        body.tv-matchup-mode .app-container,
-        body.tv-matchup-mode .header,
-        body.tv-matchup-mode .nav-tabs,
+        body.tv-matchup-mode {
+            background: var(--masters-dark);
+            color: #fff;
+            overflow: hidden;
+        }
+        body.tv-matchup-mode .app-header,
+        body.tv-matchup-mode .bottom-nav,
         body.tv-matchup-mode .tab-content,
+        body.tv-matchup-mode .slide-menu,
+        body.tv-matchup-mode .menu-overlay,
+        body.tv-matchup-mode .app-container,
         body.tv-matchup-mode .mobile-gate,
         body.tv-matchup-mode .splash-screen { display: none !important; }
 
@@ -3464,10 +3471,10 @@
         }
         .matchup-bc-match-card {
             position: relative; z-index: 1;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 8px; padding: clamp(8px, 1vw, 14px);
-            margin-bottom: clamp(6px, 0.8vw, 12px);
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px; padding: clamp(10px, 1.2vw, 18px);
+            margin-bottom: clamp(8px, 1vw, 14px);
         }
         .matchup-bc-match-card.new-match {
             animation: matchupCardAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -3482,29 +3489,35 @@
             box-shadow: 0 0 12px rgba(251,243,8,0.15);
         }
         .matchup-bc-match-num {
-            font-size: clamp(9px, 0.8vw, 12px); color: rgba(255,255,255,0.35);
-            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
-            font-weight: 600;
+            font-size: clamp(10px, 0.9vw, 14px); color: rgba(255,255,255,0.55);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+            font-weight: 700;
         }
         .matchup-bc-match-vs {
             display: flex; align-items: center; gap: clamp(6px, 0.8vw, 12px);
         }
         .matchup-bc-match-team {
-            flex: 1; padding: clamp(4px, 0.5vw, 8px);
-            border-radius: 4px;
+            flex: 1; padding: clamp(6px, 0.7vw, 12px);
+            border-radius: 6px;
         }
-        .matchup-bc-match-team.team-a-bg { background: rgba(var(--team-a-rgb), 0.12); }
-        .matchup-bc-match-team.team-b-bg { background: rgba(var(--team-b-rgb), 0.12); }
+        .matchup-bc-match-team.team-a-bg {
+            background: rgba(var(--team-a-rgb), 0.25);
+            border-left: 3px solid rgba(var(--team-a-rgb), 0.7);
+        }
+        .matchup-bc-match-team.team-b-bg {
+            background: rgba(var(--team-b-rgb), 0.25);
+            border-right: 3px solid rgba(var(--team-b-rgb), 0.7);
+        }
         .matchup-bc-match-team-name {
-            font-size: clamp(11px, 1.1vw, 16px); color: #fff;
-            font-weight: 600;
+            font-size: clamp(12px, 1.3vw, 20px); color: #fff;
+            font-weight: 700;
         }
         .matchup-bc-match-team-hcp {
-            font-size: clamp(9px, 0.8vw, 12px); color: rgba(255,255,255,0.4);
+            font-size: clamp(9px, 0.9vw, 13px); color: rgba(255,255,255,0.6);
         }
         .matchup-bc-match-vs-label {
-            font-size: clamp(10px, 1vw, 14px); color: rgba(255,255,255,0.3);
-            font-weight: 700; flex-shrink: 0;
+            font-size: clamp(12px, 1.2vw, 18px); color: rgba(255,255,255,0.5);
+            font-weight: 800; flex-shrink: 0;
         }
         .matchup-bc-match-team.tbd {
             border: 1px dashed rgba(255,255,255,0.15);
@@ -10336,6 +10349,7 @@
     // ─────────────────────────────────────────────────────────
     let matchupBcRefreshTimer = null;
     let matchupBcPrevMatchCount = 0;
+    let matchupBcCelebrationShown = false;
 
     // Compute which team initiates match N using snake pattern
     function getMatchupInitiator(matchIndex, firstPick) {
@@ -10431,9 +10445,14 @@
         }
         matchupBcPrevMatchCount = newCount;
 
-        // Celebration when complete
-        if (mm.status === 'complete' && !document.querySelector('.matchup-bc-celebration')) {
+        // Celebration when complete (only once)
+        if (mm.status === 'complete' && !matchupBcCelebrationShown) {
+            matchupBcCelebrationShown = true;
             matchupBcCelebration();
+        }
+        // Reset flag if status goes back to non-complete (e.g. new session)
+        if (mm.status !== 'complete') {
+            matchupBcCelebrationShown = false;
         }
     }
 
