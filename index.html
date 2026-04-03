@@ -2857,6 +2857,385 @@
         }
 
         /* ═══════════════════════════════════════════════════════
+           TV / DRAFT BROADCAST MODE
+           ═══════════════════════════════════════════════════════ */
+        body.tv-draft-mode {
+            background: var(--masters-dark);
+            color: #fff;
+            overflow: hidden;
+        }
+        body.tv-draft-mode .app-header,
+        body.tv-draft-mode .bottom-nav,
+        body.tv-draft-mode .tab-content,
+        body.tv-draft-mode .slide-menu,
+        body.tv-draft-mode .menu-overlay { display: none !important; }
+
+        .draft-broadcast {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--masters-dark);
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Draft Broadcast Header */
+        .draft-bc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 24px;
+            background: linear-gradient(180deg, var(--masters-darkest) 0%, var(--masters-dark) 100%);
+            border-bottom: 3px solid var(--masters-yellow);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .draft-bc-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .draft-bc-logo {
+            width: clamp(36px, 4vw, 56px);
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+        .draft-bc-title {
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: clamp(22px, 3vw, 44px);
+            color: var(--masters-yellow);
+            letter-spacing: 2px;
+        }
+        .draft-bc-badge {
+            background: var(--masters-yellow);
+            color: var(--masters-dark);
+            font-weight: 900;
+            font-size: clamp(11px, 1.4vw, 18px);
+            padding: 4px 14px;
+            border-radius: 4px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .draft-bc-header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .draft-bc-live {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: clamp(11px, 1.2vw, 16px);
+            font-weight: bold;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+        .draft-bc-live-dot {
+            width: 8px; height: 8px;
+            background: #ff3b30;
+            border-radius: 50%;
+            animation: livePulse 2s infinite;
+            box-shadow: 0 0 6px #ff3b30;
+        }
+        .draft-bc-clock {
+            font-size: clamp(12px, 1.3vw, 18px);
+            color: rgba(255,255,255,0.7);
+            font-variant-numeric: tabular-nums;
+        }
+        .draft-bc-dfgc-logo {
+            height: clamp(32px, 4vw, 52px);
+            width: auto;
+            margin-left: 8px;
+            opacity: 0.85;
+        }
+
+        /* Draft Broadcast Body */
+        .draft-bc-body {
+            flex: 1;
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* On The Clock Banner */
+        .draft-bc-clock-banner {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 8px 20px;
+            font-size: clamp(13px, 1.5vw, 22px);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: background 0.5s, color 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .draft-bc-clock-banner .clock-icon {
+            font-size: clamp(16px, 1.6vw, 24px);
+        }
+        .draft-bc-clock-banner.team-a-picking {
+            background: var(--team-a-color);
+            color: #fff;
+        }
+        .draft-bc-clock-banner.team-b-picking {
+            background: var(--team-b-color);
+            color: #fff;
+        }
+        .draft-bc-clock-banner.draft-complete-banner {
+            background: var(--masters-dark);
+            color: var(--masters-yellow);
+            border-bottom: 2px solid rgba(251,243,8,0.2);
+        }
+
+        /* Team Panels (left & right) — white background */
+        .draft-bc-team-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+            background: #fff;
+            overflow: clip;
+        }
+        .draft-bc-team-header {
+            padding: clamp(10px, 1.5vw, 18px) clamp(12px, 2vw, 24px);
+            text-align: center;
+            font-weight: 800;
+            font-size: clamp(14px, 1.8vw, 26px);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #fff;
+            position: relative;
+            z-index: 2;
+        }
+        .draft-bc-team-header.team-a { background: var(--team-a-color); }
+        .draft-bc-team-header.team-b { background: var(--team-b-color); }
+        .draft-bc-team-count {
+            font-size: clamp(10px, 1vw, 14px);
+            opacity: 0.8;
+            font-weight: 400;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+        .draft-bc-team-roster {
+            flex: 1;
+            overflow-y: auto;
+            padding: clamp(8px, 1vw, 16px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(4px, 0.5vw, 8px);
+            position: relative;
+            z-index: 1;
+        }
+        .draft-bc-player-card {
+            background: #f8f8f5;
+            border: 1px solid #e8e8e2;
+            border-radius: 8px;
+            padding: clamp(8px, 1vw, 14px) clamp(10px, 1.2vw, 18px);
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 1vw, 14px);
+            transition: all 0.3s;
+        }
+        .draft-bc-player-card.captain {
+            background: #fff;
+            border: 2px solid var(--masters-yellow);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .draft-bc-pick-num {
+            font-size: clamp(10px, 0.9vw, 14px);
+            color: #bbb;
+            font-weight: 700;
+            min-width: clamp(18px, 2vw, 28px);
+            text-align: center;
+        }
+        .draft-bc-pick-num.captain-badge {
+            color: #c8a000;
+            font-size: clamp(11px, 1vw, 15px);
+            font-weight: 900;
+        }
+        .draft-bc-player-name {
+            font-size: clamp(14px, 1.6vw, 24px);
+            font-weight: 700;
+            color: var(--masters-black);
+            flex: 1;
+        }
+        .draft-bc-player-hcp {
+            font-size: clamp(10px, 0.9vw, 14px);
+            color: #999;
+            font-weight: 400;
+        }
+
+        /* Team A player cards get a subtle left accent */
+        #draftBcTeamA .draft-bc-player-card {
+            border-left: 3px solid var(--team-a-color);
+        }
+        #draftBcTeamA .draft-bc-player-card.captain {
+            border-left: 3px solid var(--team-a-color);
+        }
+        #draftBcTeamB .draft-bc-player-card {
+            border-left: 3px solid var(--team-b-color);
+        }
+        #draftBcTeamB .draft-bc-player-card.captain {
+            border-left: 3px solid var(--team-b-color);
+        }
+
+        /* Available Players (center column) — dark green */
+        .draft-bc-available {
+            flex: 0 0 clamp(240px, 26vw, 400px);
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, var(--masters-darkest) 0%, var(--masters-dark) 50%, var(--masters-darkest) 100%);
+            border-left: 1px solid rgba(255,255,255,0.06);
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }
+        .draft-bc-avail-header {
+            padding: clamp(10px, 1.2vw, 16px);
+            text-align: center;
+            background: rgba(0,0,0,0.25);
+            border-bottom: 2px solid var(--masters-yellow);
+        }
+        .draft-bc-avail-title {
+            font-size: clamp(12px, 1.3vw, 20px);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--masters-yellow);
+        }
+        .draft-bc-avail-count {
+            font-size: clamp(10px, 0.9vw, 14px);
+            color: rgba(255,255,255,0.5);
+            margin-top: 2px;
+        }
+        .draft-bc-avail-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: clamp(6px, 0.8vw, 12px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(3px, 0.4vw, 6px);
+        }
+        .draft-bc-avail-player {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            padding: clamp(6px, 0.8vw, 12px) clamp(8px, 1vw, 14px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.4s;
+        }
+        .draft-bc-avail-player.just-picked {
+            animation: draftPickFlash 0.8s ease-out forwards;
+        }
+        .draft-bc-avail-name {
+            font-size: clamp(12px, 1.3vw, 20px);
+            color: rgba(255,255,255,0.85);
+            font-weight: 500;
+        }
+        .draft-bc-avail-hcp {
+            font-size: clamp(10px, 0.9vw, 14px);
+            color: rgba(255,255,255,0.35);
+        }
+
+        /* Pick animation: card flies to team */
+        @keyframes draftPickFlash {
+            0% { background: rgba(255,255,255,0.06); transform: scale(1); }
+            30% { background: var(--masters-yellow); transform: scale(1.05); }
+            100% { opacity: 0; transform: scale(0.8) translateY(-10px); height: 0; padding: 0; margin: 0; border: 0; overflow: hidden; }
+        }
+
+        /* New player card appearing on team */
+        @keyframes draftCardAppear {
+            0% { opacity: 0; transform: translateX(0) scale(0.5); max-height: 0; padding: 0; margin: 0; }
+            40% { opacity: 0.5; transform: translateX(0) scale(1.08); }
+            100% { opacity: 1; transform: translateX(0) scale(1); max-height: 100px; }
+        }
+        .draft-bc-player-card.new-pick {
+            animation: draftCardAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Round indicator */
+        .draft-bc-round {
+            text-align: center;
+            padding: 6px;
+            font-size: clamp(10px, 1vw, 14px);
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        /* Draft Broadcast Ticker */
+        .draft-bc-ticker {
+            flex-shrink: 0;
+            height: clamp(36px, 4vw, 52px);
+            background: var(--masters-darkest);
+            display: flex;
+            align-items: stretch;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            z-index: 10;
+        }
+        .draft-bc-ticker-label {
+            display: flex;
+            align-items: center;
+            padding: 0 clamp(12px, 1.5vw, 24px);
+            background: linear-gradient(135deg, var(--masters-yellow) 0%, #d4c800 100%);
+            color: var(--masters-dark);
+            font-weight: 900;
+            font-size: clamp(10px, 1vw, 14px);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .draft-bc-ticker-track {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            color: rgba(255,255,255,0.8);
+            font-size: clamp(11px, 1.1vw, 16px);
+        }
+        .draft-bc-ticker-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 40px;
+            animation: tickerScroll 35s linear infinite;
+            padding-left: 20px;
+        }
+        .draft-bc-ticker-item {
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .draft-bc-ticker-dot {
+            width: 5px; height: 5px;
+            background: var(--masters-yellow);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Emboss background for team panels — uses repeating background image */
+        .draft-bc-team-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('assets/images/smashters-logo-green.png');
+            background-size: 80px 80px;
+            background-repeat: repeat;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 0;
+            transform: rotate(-15deg) scale(1.5);
+        }
+
+        /* ═══════════════════════════════════════════════════════
            BIRDIE FLAMES 🔥
            ═══════════════════════════════════════════════════════ */
         .flame-container {
@@ -3095,6 +3474,45 @@
         <div class="broadcast-ticker">
             <div class="broadcast-ticker-label">UPDATES</div>
             <div class="broadcast-ticker-track" id="broadcastTicker"></div>
+        </div>
+    </div>
+
+    <!-- TV / Draft Broadcast Display (hidden by default, shown with ?tv=draft) -->
+    <div class="draft-broadcast" id="draftBroadcast" style="display:none">
+        <div class="draft-bc-header">
+            <div class="draft-bc-header-left">
+                <img src="assets/images/smashters-logo-green.png" alt="" class="draft-bc-logo">
+                <div class="draft-bc-title" id="draftBcTitle">Smashters</div>
+                <div class="draft-bc-badge">DRAFT</div>
+            </div>
+            <div class="draft-bc-header-right">
+                <div class="draft-bc-live"><span class="draft-bc-live-dot"></span>LIVE</div>
+                <div class="draft-bc-clock" id="draftBcClock"></div>
+                <img src="assets/images/dfgc-logo-transparent.png" alt="" class="draft-bc-dfgc-logo">
+            </div>
+        </div>
+        <div class="draft-bc-clock-banner" id="draftBcClockBanner"></div>
+        <div class="draft-bc-body">
+            <div class="draft-bc-team-panel" id="draftBcTeamA">
+                <div class="draft-bc-team-header team-a" id="draftBcTeamAHeader"></div>
+                <div class="draft-bc-team-roster" id="draftBcRosterA"></div>
+            </div>
+            <div class="draft-bc-available">
+                <div class="draft-bc-avail-header">
+                    <div class="draft-bc-avail-title">Available</div>
+                    <div class="draft-bc-avail-count" id="draftBcAvailCount"></div>
+                </div>
+                <div class="draft-bc-round" id="draftBcRound"></div>
+                <div class="draft-bc-avail-list" id="draftBcAvailList"></div>
+            </div>
+            <div class="draft-bc-team-panel" id="draftBcTeamB">
+                <div class="draft-bc-team-header team-b" id="draftBcTeamBHeader"></div>
+                <div class="draft-bc-team-roster" id="draftBcRosterB"></div>
+            </div>
+        </div>
+        <div class="draft-bc-ticker">
+            <div class="draft-bc-ticker-label">DRAFT PICKS</div>
+            <div class="draft-bc-ticker-track" id="draftBcTicker"></div>
         </div>
     </div>
 
@@ -6413,6 +6831,19 @@
                             Copy Link
                         </button>
                     </div>
+                    <hr style="border:0;border-top:1px solid #eee;margin:16px 0;">
+                    <p class="text-sm text-muted mb-16"><strong>Draft Broadcast:</strong> Display the live draft on a TV screen.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <button class="btn btn-primary" onclick="shareDraftTVLink('sms')">
+                            <span style="font-size:1.2rem;margin-right:8px;">&#128172;</span> Text
+                        </button>
+                        <button class="btn btn-primary" onclick="shareDraftTVLink('email')">
+                            <span style="font-size:1.2rem;margin-right:8px;">&#9993;</span> Email
+                        </button>
+                        <button class="btn btn-outline" onclick="shareDraftTVLink('copy')">
+                            Copy Link
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -6784,6 +7215,24 @@
                 showToast('TV link copied!');
             }).catch(() => {
                 prompt('Copy this TV link:', tvUrl);
+            });
+        }
+    }
+
+    function shareDraftTVLink(method) {
+        const tvUrl = window.location.origin + window.location.pathname + '?tv=draft';
+        const subject = encodeURIComponent(`${S.config.eventName} - Live Draft Broadcast`);
+        const body = encodeURIComponent(`Open this link on your TV browser to watch the live draft:\n\n${tvUrl}`);
+
+        if (method === 'sms') {
+            window.open(`sms:?&body=${body}`, '_blank');
+        } else if (method === 'email') {
+            window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+        } else {
+            navigator.clipboard.writeText(tvUrl).then(() => {
+                showToast('Draft TV link copied!');
+            }).catch(() => {
+                prompt('Copy this Draft TV link:', tvUrl);
             });
         }
     }
@@ -9191,6 +9640,220 @@
     }
 
     // ─────────────────────────────────────────────────────────
+    // TV / DRAFT BROADCAST MODE
+    // ─────────────────────────────────────────────────────────
+    let draftBcPrevPickCount = 0;
+    let draftBcTickerItems = [];
+    let draftBcRefreshTimer = null;
+
+    function updateDraftBcClock() {
+        const el = document.getElementById('draftBcClock');
+        if (el) {
+            const now = new Date();
+            el.textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+    }
+
+    function getDraftBcState() {
+        const drafted = new Set(S.draft.picks.map(p => p.playerId));
+        if (S.draft.captainA) drafted.add(S.draft.captainA);
+        if (S.draft.captainB) drafted.add(S.draft.captainB);
+
+        const available = Object.values(S.players)
+            .filter(p => !drafted.has(p.id))
+            .sort((a, b) => (a.handicap || 999) - (b.handicap || 999));
+
+        const teamAPicks = S.draft.picks.filter(p => p.team === 'A');
+        const teamBPicks = S.draft.picks.filter(p => p.team === 'B');
+        const pickCount = S.draft.picks.length;
+        const roundNum = pickCount > 0 ? Math.floor((pickCount - 1) / 2) + 1 : 1;
+
+        return { drafted, available, teamAPicks, teamBPicks, pickCount, roundNum };
+    }
+
+    function renderDraftBroadcast() {
+        updateDraftBcClock();
+
+        const ds = getDraftBcState();
+        const isActive = S.draft.status === 'active';
+        const isComplete = S.draft.status === 'complete' || (isActive && ds.available.length === 0);
+        const ct = S.draft.currentTeam;
+        const teamAName = S.config.teamA.name;
+        const teamBName = S.config.teamB.name;
+
+        // Header
+        document.getElementById('draftBcTitle').textContent = S.config.eventName;
+
+        // On-the-clock banner
+        const banner = document.getElementById('draftBcClockBanner');
+        if (S.draft.status === 'pending') {
+            banner.className = 'draft-bc-clock-banner';
+            banner.innerHTML = '<span>DRAFT STARTING SOON</span>';
+            banner.style.background = 'rgba(0,0,0,0.3)';
+            banner.style.color = 'rgba(255,255,255,0.6)';
+        } else if (isComplete) {
+            banner.className = 'draft-bc-clock-banner draft-complete-banner';
+            banner.innerHTML = '<span class="clock-icon">&#9733;</span><span>DRAFT COMPLETE</span><span class="clock-icon">&#9733;</span>';
+            banner.style.background = '';
+            banner.style.color = '';
+        } else {
+            banner.className = 'draft-bc-clock-banner ' + (ct === 'A' ? 'team-a-picking' : 'team-b-picking');
+            banner.innerHTML = `<span class="clock-icon">&#9201;</span><span>ON THE CLOCK: ${ct === 'A' ? teamAName : teamBName}</span>`;
+            banner.style.background = '';
+            banner.style.color = '';
+        }
+
+        // Team A header + roster
+        const teamACount = (S.draft.captainA ? 1 : 0) + ds.teamAPicks.length;
+        document.getElementById('draftBcTeamAHeader').innerHTML =
+            `${teamAName}<div class="draft-bc-team-count">${teamACount} player${teamACount !== 1 ? 's' : ''}</div>`;
+
+        let rosterAHtml = '';
+        if (S.draft.captainA && S.players[S.draft.captainA]) {
+            const cap = S.players[S.draft.captainA];
+            rosterAHtml += `<div class="draft-bc-player-card captain">
+                <div class="draft-bc-pick-num captain-badge">C</div>
+                <div class="draft-bc-player-name">${cap.name}</div>
+                <div class="draft-bc-player-hcp">${cap.handicap ? 'HCP ' + cap.handicap : ''}</div>
+            </div>`;
+        }
+        ds.teamAPicks.forEach((pick, i) => {
+            const p = S.players[pick.playerId];
+            if (!p) return;
+            const isNew = (i === ds.teamAPicks.length - 1) && ds.pickCount > draftBcPrevPickCount;
+            rosterAHtml += `<div class="draft-bc-player-card${isNew ? ' new-pick' : ''}">
+                <div class="draft-bc-pick-num">${i + 1}</div>
+                <div class="draft-bc-player-name">${p.name}</div>
+                <div class="draft-bc-player-hcp">${p.handicap ? 'HCP ' + p.handicap : ''}</div>
+            </div>`;
+        });
+        document.getElementById('draftBcRosterA').innerHTML = rosterAHtml;
+
+        // Team B header + roster
+        const teamBCount = (S.draft.captainB ? 1 : 0) + ds.teamBPicks.length;
+        document.getElementById('draftBcTeamBHeader').innerHTML =
+            `${teamBName}<div class="draft-bc-team-count">${teamBCount} player${teamBCount !== 1 ? 's' : ''}</div>`;
+
+        let rosterBHtml = '';
+        if (S.draft.captainB && S.players[S.draft.captainB]) {
+            const cap = S.players[S.draft.captainB];
+            rosterBHtml += `<div class="draft-bc-player-card captain">
+                <div class="draft-bc-pick-num captain-badge">C</div>
+                <div class="draft-bc-player-name">${cap.name}</div>
+                <div class="draft-bc-player-hcp">${cap.handicap ? 'HCP ' + cap.handicap : ''}</div>
+            </div>`;
+        }
+        ds.teamBPicks.forEach((pick, i) => {
+            const p = S.players[pick.playerId];
+            if (!p) return;
+            const isNew = (i === ds.teamBPicks.length - 1) && ds.pickCount > draftBcPrevPickCount;
+            rosterBHtml += `<div class="draft-bc-player-card${isNew ? ' new-pick' : ''}">
+                <div class="draft-bc-pick-num">${i + 1}</div>
+                <div class="draft-bc-player-name">${p.name}</div>
+                <div class="draft-bc-player-hcp">${p.handicap ? 'HCP ' + p.handicap : ''}</div>
+            </div>`;
+        });
+        document.getElementById('draftBcRosterB').innerHTML = rosterBHtml;
+
+        // Available players
+        document.getElementById('draftBcAvailCount').textContent =
+            `${ds.available.length} player${ds.available.length !== 1 ? 's' : ''} remaining`;
+
+        // Round indicator
+        const roundEl = document.getElementById('draftBcRound');
+        if (isActive && ds.available.length > 0) {
+            roundEl.textContent = `Round ${ds.roundNum}`;
+            roundEl.style.display = '';
+        } else {
+            roundEl.style.display = 'none';
+        }
+
+        let availHtml = '';
+        ds.available.forEach(p => {
+            availHtml += `<div class="draft-bc-avail-player" data-player-id="${p.id}">
+                <div class="draft-bc-avail-name">${p.name}</div>
+                <div class="draft-bc-avail-hcp">${p.handicap ? 'HCP ' + p.handicap : ''}</div>
+            </div>`;
+        });
+        document.getElementById('draftBcAvailList').innerHTML = availHtml;
+
+        // Ticker — build from draft picks history
+        renderDraftBcTicker();
+
+        // Detect new picks for animations
+        if (ds.pickCount > draftBcPrevPickCount && draftBcPrevPickCount > 0) {
+            // A new pick was made — add to ticker
+            const lastPick = S.draft.picks[S.draft.picks.length - 1];
+            if (lastPick && S.players[lastPick.playerId]) {
+                const teamName = lastPick.team === 'A' ? teamAName : teamBName;
+                const playerName = S.players[lastPick.playerId].name;
+                draftBcTickerItems.unshift(`Pick #${ds.pickCount}: ${teamName} selects ${playerName}`);
+                if (draftBcTickerItems.length > 20) draftBcTickerItems.pop();
+            }
+        }
+        draftBcPrevPickCount = ds.pickCount;
+    }
+
+    function renderDraftBcTicker() {
+        const ticker = document.getElementById('draftBcTicker');
+        if (!ticker) return;
+
+        // Build ticker from all draft picks (most recent first for freshness, but display chronologically in scroll)
+        let items = [];
+
+        // Add all picks chronologically
+        S.draft.picks.forEach((pick, i) => {
+            const p = S.players[pick.playerId];
+            if (!p) return;
+            const teamName = pick.team === 'A' ? S.config.teamA.name : S.config.teamB.name;
+            items.push(`Pick #${i + 1}: ${teamName} selects ${p.name}`);
+        });
+
+        // Add captains at the start
+        if (S.draft.captainA && S.players[S.draft.captainA]) {
+            items.unshift(`${S.config.teamA.name} Captain: ${S.players[S.draft.captainA].name}`);
+        }
+        if (S.draft.captainB && S.players[S.draft.captainB]) {
+            items.unshift(`${S.config.teamB.name} Captain: ${S.players[S.draft.captainB].name}`);
+        }
+
+        if (items.length === 0) {
+            items.push('Draft starting soon...');
+        }
+
+        // Duplicate for seamless loop
+        const allItems = [...items, ...items];
+        ticker.innerHTML = `<div class="draft-bc-ticker-content">${
+            allItems.map(t => `<span class="draft-bc-ticker-item"><span class="draft-bc-ticker-dot"></span>${t}</span>`).join('')
+        }</div>`;
+    }
+
+    function startDraftBroadcast() {
+        renderDraftBroadcast();
+        updateDraftBcClock();
+
+        // Re-render every 5 seconds to pick up Firebase changes
+        draftBcRefreshTimer = setInterval(() => {
+            if (LiveSync.eventRef) {
+                LiveSync.eventRef.once('value').then(snap => {
+                    const val = snap.val();
+                    if (val) {
+                        LiveSync.applyState(val);
+                    }
+                    renderDraftBroadcast();
+                }).catch(() => {
+                    renderDraftBroadcast();
+                });
+            } else {
+                renderDraftBroadcast();
+            }
+        }, 5000);
+
+        // Update clock every 30s
+        setInterval(updateDraftBcClock, 30000);
+    }
+
+    // ─────────────────────────────────────────────────────────
     // HOLE TIMER
     // ─────────────────────────────────────────────────────────
     let holeTimerInterval = null;
@@ -9441,6 +10104,18 @@
                     }).catch(() => {});
                 }
             }, 30000);
+            return;
+        }
+
+        // ── TV / Draft Broadcast mode ──
+        if (urlParams.get('tv') === 'draft') {
+            document.body.classList.add('tv-draft-mode');
+            document.getElementById('draftBroadcast').style.display = '';
+            document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+            document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+            hideSplash();
+            LiveSync.autoStart();
+            startDraftBroadcast();
             return;
         }
 
