@@ -6527,7 +6527,7 @@
             <div class="settings-section">
                 <div class="settings-section-header">Draft Setup</div>
                 <div class="settings-section-body">
-                    <p class="mb-16">Snake draft format: Team A picks first, then alternates (A, B, B, A, A, B, ...).</p>
+                    <p class="mb-16">Snake draft format: picks alternate (A, B, B, A, A, B, ...).</p>
                     ${canEdit ? `
                     <div class="form-row">
                         <div class="form-group"><label>${S.config.teamA.name} Captain</label>
@@ -6539,6 +6539,11 @@
                                 ${allPlayers.map(p => `<option value="${p.id}" ${S.draft.captainB === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
                             </select></div>
                     </div>
+                    <div class="form-group"><label>First Pick</label>
+                        <select class="form-input" id="draftFirstPick">
+                            <option value="A">${S.config.teamA.name}</option>
+                            <option value="B">${S.config.teamB.name}</option>
+                        </select></div>
                     <button class="btn btn-primary btn-block mt-16" onclick="startDraft()">Start Draft</button>
                     ` : `
                     <div class="text-center" style="padding:20px;">
@@ -6622,12 +6627,14 @@
         if (!captainA || !captainB) { showToast('Select both captains'); return; }
         if (captainA === captainB) { showToast('Captains must be different players'); return; }
 
+        const firstPick = document.getElementById('draftFirstPick').value || 'A';
         Object.values(S.players).forEach(p => p.team = null);
-        S.draft = { captainA, captainB, status: 'active', picks: [], currentTeam: 'A' };
+        S.draft = { captainA, captainB, status: 'active', picks: [], currentTeam: firstPick, firstPick };
         S.players[captainA].team = 'A';
         S.players[captainB].team = 'B';
         saveState(); renderDraft();
-        showToast('Draft started! ' + S.config.teamA.name + ' picks first');
+        const firstTeamName = firstPick === 'A' ? S.config.teamA.name : S.config.teamB.name;
+        showToast('Draft started! ' + firstTeamName + ' picks first');
     }
 
     function makeDraftPick(playerId) {
@@ -6636,13 +6643,15 @@
         S.draft.picks.push({ team, playerId, order: S.draft.picks.length + 1 });
         S.players[playerId].team = team;
 
-        // Snake draft logic: A, B, B, A, A, B, B, A, A, B...
-        const pickIndex = S.draft.picks.length; // 0-based index of next pick
+        // Snake draft logic respecting firstPick
+        const first = S.draft.firstPick || 'A';
+        const second = first === 'A' ? 'B' : 'A';
+        const pickIndex = S.draft.picks.length;
         const roundNum = Math.floor(pickIndex / 2);
         const isFirstInRound = (pickIndex % 2 === 0);
         S.draft.currentTeam = (roundNum % 2 === 0)
-            ? (isFirstInRound ? 'A' : 'B')  // Even rounds: A, B
-            : (isFirstInRound ? 'B' : 'A'); // Odd rounds: B, A
+            ? (isFirstInRound ? first : second)
+            : (isFirstInRound ? second : first);
 
         saveState(); renderDraft();
         showToast(`${team === 'A' ? S.config.teamA.name : S.config.teamB.name} selects ${S.players[playerId].name}`);
