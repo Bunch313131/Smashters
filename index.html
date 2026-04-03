@@ -3317,16 +3317,17 @@
         .matchup-broadcast {
             position: fixed; inset: 0;
             display: flex; flex-direction: column;
-            background: var(--masters-darkest);
-            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--masters-dark);
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             overflow: hidden;
         }
         .matchup-bc-header {
             flex-shrink: 0;
             display: flex; align-items: center; justify-content: space-between;
-            padding: clamp(8px, 1vw, 16px) clamp(16px, 2vw, 32px);
-            background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 100%);
-            border-bottom: 2px solid var(--masters-yellow);
+            padding: 10px 24px;
+            background: linear-gradient(180deg, var(--masters-darkest) 0%, var(--masters-dark) 100%);
+            border-bottom: 3px solid var(--masters-yellow);
+            z-index: 10;
         }
         .matchup-bc-header-left { display: flex; align-items: center; gap: clamp(8px, 1vw, 16px); }
         .matchup-bc-header-right { display: flex; align-items: center; gap: clamp(10px, 1.2vw, 20px); }
