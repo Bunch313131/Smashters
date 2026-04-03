@@ -7682,6 +7682,10 @@
                         });
                         this.applyState(val);
                         renderTab(S.ui.activeTab);
+                        // Also update draft broadcast if in draft TV mode
+                        if (document.body.classList.contains('tv-draft-mode') && typeof renderDraftBroadcast === 'function') {
+                            renderDraftBroadcast();
+                        }
                     }
                 });
                 this.listeners.push({ ref: this.eventRef, event: 'value', callback: listener });
