@@ -9883,49 +9883,13 @@
         }
     }
 
-    function draftBcFireBurst(count) {
-        let container = document.getElementById('flameContainer');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'flameContainer';
-            container.className = 'flame-container';
-            document.body.appendChild(container);
-        }
-        const totalFlames = count * 5;
-        for (let i = 0; i < totalFlames; i++) {
-            setTimeout(() => {
-                const flame = document.createElement('div');
-                flame.className = 'flame';
-                flame.textContent = '🔥';
-                const startX = Math.random() * window.innerWidth;
-                const startY = window.innerHeight * 0.6 + (Math.random() * window.innerHeight * 0.3);
-                flame.style.left = startX + 'px';
-                flame.style.top = startY + 'px';
-                container.appendChild(flame);
-                setTimeout(() => flame.remove(), 2000);
-            }, i * 60);
-        }
-        setTimeout(() => {
-            if (container && container.children.length === 0) container.remove();
-        }, 3000);
-    }
-
     function draftBcCelebration() {
-        // Big fire burst
-        draftBcFireBurst(12);
-
-        // Celebration text overlay
         const overlay = document.createElement('div');
         overlay.className = 'draft-bc-celebration';
-        overlay.style.animation = 'celebrationFade 4s ease-out forwards';
-        overlay.innerHTML = '<div class="draft-bc-celebration-text">TEAMS ARE SET</div>';
+        overlay.style.animation = 'celebrationFade 5s ease-out forwards';
+        overlay.innerHTML = '<div class="draft-bc-celebration-text">TEAMS ARE SET<br><span style="font-size:0.6em;letter-spacing:6px;">GAME ON!</span></div>';
         document.body.appendChild(overlay);
-
-        // Second wave of fire
-        setTimeout(() => draftBcFireBurst(8), 800);
-
-        // Remove overlay after animation
-        setTimeout(() => overlay.remove(), 4500);
+        setTimeout(() => overlay.remove(), 5500);
     }
 
     function renderDraftBcTicker() {
