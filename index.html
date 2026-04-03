@@ -3118,8 +3118,38 @@
             display: flex;
             flex-direction: column;
             gap: clamp(3px, 0.4vw, 6px);
+            position: relative;
+        }
+        .draft-bc-avail-list::before {
+            content: '';
+            position: sticky;
+            top: 50%;
+            left: 50%;
+            display: block;
+            width: 0;
+            height: 0;
+            margin: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .draft-bc-avail-watermark {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .draft-bc-avail-watermark img {
+            width: 65%;
+            max-width: 280px;
+            opacity: 0.08;
+            filter: brightness(0) invert(1);
         }
         .draft-bc-avail-player {
+            position: relative;
+            z-index: 1;
             background: rgba(255,255,255,0.06);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 6px;
@@ -3536,7 +3566,9 @@
                     <div class="draft-bc-avail-count" id="draftBcAvailCount"></div>
                 </div>
                 <div class="draft-bc-round" id="draftBcRound"></div>
-                <div class="draft-bc-avail-list" id="draftBcAvailList"></div>
+                <div class="draft-bc-avail-list" id="draftBcAvailList">
+                    <div class="draft-bc-avail-watermark"><img src="assets/images/dfgc-logo-transparent.png" alt=""></div>
+                </div>
             </div>
             <div class="draft-bc-team-panel" id="draftBcTeamB">
                 <div class="draft-bc-team-header team-b" id="draftBcTeamBHeader"></div>
@@ -9803,15 +9835,12 @@
                 <div class="draft-bc-avail-hcp">${p.handicap ? 'HCP ' + p.handicap : ''}</div>
             </div>`;
         });
-        document.getElementById('draftBcAvailList').innerHTML = availHtml;
+        // Keep the watermark, replace player cards
+        const availList = document.getElementById('draftBcAvailList');
+        availList.innerHTML = '<div class="draft-bc-avail-watermark"><img src="assets/images/dfgc-logo-transparent.png" alt=""></div>' + availHtml;
 
         // Ticker
         renderDraftBcTicker();
-
-        // Fire effect on new pick
-        if (isNewPick) {
-            draftBcFireBurst(3);
-        }
 
         // Draft complete celebration
         if (isComplete && !draftBcPrevComplete) {
