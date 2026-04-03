@@ -3329,26 +3329,39 @@
             border-bottom: 3px solid var(--masters-yellow);
             z-index: 10;
         }
-        .matchup-bc-header-left { display: flex; align-items: center; gap: clamp(8px, 1vw, 16px); }
-        .matchup-bc-header-right { display: flex; align-items: center; gap: clamp(10px, 1.2vw, 20px); }
-        .matchup-bc-logo { height: clamp(28px, 3.5vw, 50px); }
-        .matchup-bc-title { font-family: 'Azalea', 'Georgia', serif; font-size: clamp(18px, 2.5vw, 36px); color: #fff; }
+        .matchup-bc-header-left { display: flex; align-items: center; gap: 14px; }
+        .matchup-bc-header-right { display: flex; align-items: center; gap: 16px; }
+        .matchup-bc-logo { width: clamp(36px, 4vw, 56px); height: auto; filter: brightness(0) invert(1); }
+        .matchup-bc-title {
+            font-family: 'Azalea', 'Georgia', serif;
+            font-size: clamp(22px, 3vw, 44px);
+            color: var(--masters-yellow);
+            letter-spacing: 2px;
+        }
         .matchup-bc-badge {
-            background: var(--masters-yellow); color: var(--masters-darkest);
-            font-weight: 800; font-size: clamp(10px, 1vw, 16px);
-            padding: 3px 10px; border-radius: 4px; letter-spacing: 2px;
+            background: var(--masters-yellow); color: var(--masters-dark);
+            font-weight: 900; font-size: clamp(11px, 1.4vw, 18px);
+            padding: 4px 14px; border-radius: 4px; letter-spacing: 3px;
+            text-transform: uppercase;
         }
         .matchup-bc-live {
             display: flex; align-items: center; gap: 6px;
-            font-size: clamp(11px, 1vw, 16px); color: rgba(255,255,255,0.7);
-            font-weight: 600; letter-spacing: 1px;
+            font-size: clamp(11px, 1.2vw, 16px); font-weight: bold;
+            color: #fff; letter-spacing: 2px;
         }
         .matchup-bc-live-dot {
-            width: 8px; height: 8px; background: #e74c3c; border-radius: 50%;
-            animation: draftLivePulse 1.5s ease-in-out infinite;
+            width: 8px; height: 8px; background: #ff3b30; border-radius: 50%;
+            animation: livePulse 2s infinite;
+            box-shadow: 0 0 6px #ff3b30;
         }
-        .matchup-bc-clock { font-size: clamp(12px, 1.2vw, 18px); color: rgba(255,255,255,0.5); font-weight: 500; }
-        .matchup-bc-dfgc-logo { height: clamp(28px, 3.5vw, 50px); opacity: 0.7; }
+        .matchup-bc-clock {
+            font-size: clamp(12px, 1.3vw, 18px); color: rgba(255,255,255,0.7);
+            font-variant-numeric: tabular-nums;
+        }
+        .matchup-bc-dfgc-logo {
+            height: clamp(32px, 4vw, 52px); width: auto;
+            margin-left: 8px; opacity: 0.85;
+        }
 
         /* Status banner */
         .matchup-bc-status {
