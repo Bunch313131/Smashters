@@ -9837,6 +9837,8 @@
     }
 
     function startDraftBroadcast() {
+        console.log('[DraftTV] Starting broadcast. Players:', Object.keys(S.players).length, 'Draft status:', S.draft.status, 'Picks:', S.draft.picks.length);
+        console.log('[DraftTV] LiveSync state - eventRef:', !!LiveSync.eventRef, 'isAdmin:', LiveSync.isAdmin, 'isViewer:', LiveSync.isViewer, 'eventCode:', LiveSync.eventCode);
         renderDraftBroadcast();
         updateDraftBcClock();
 
@@ -9846,13 +9848,18 @@
                 LiveSync.eventRef.once('value').then(snap => {
                     const val = snap.val();
                     if (val) {
+                        console.log('[DraftTV] Poll got Firebase data. Draft:', val.draft?.status, 'Picks:', val.draft?.picks?.length || 0, 'Players:', Object.keys(val.players || {}).length);
                         LiveSync.applyState(val);
+                    } else {
+                        console.log('[DraftTV] Poll got NULL from Firebase');
                     }
                     renderDraftBroadcast();
-                }).catch(() => {
+                }).catch((err) => {
+                    console.error('[DraftTV] Poll error:', err);
                     renderDraftBroadcast();
                 });
             } else {
+                console.log('[DraftTV] No eventRef - Firebase not connected');
                 renderDraftBroadcast();
             }
         }, 5000);
@@ -10119,11 +10126,15 @@
         if (urlParams.get('tv') === 'draft') {
             document.body.classList.add('tv-draft-mode');
             document.getElementById('draftBroadcast').style.display = '';
-            document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
-            document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
             hideSplash();
-            LiveSync.autoStart();
-            startDraftBroadcast();
+            // Must await Firebase data before rendering
+            LiveSync.autoStart().then(() => {
+                document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+                document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+                startDraftBroadcast();
+            }).catch(() => {
+                startDraftBroadcast(); // Render with whatever we have
+            });
             return;
         }
 
