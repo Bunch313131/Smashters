@@ -8368,7 +8368,19 @@
             S.players = val.players || {};
             S.matches = val.matches || {};
             if (val.draft) S.draft = { ...defaultState().draft, ...val.draft };
-            if (val.matchMaking) S.matchMaking = { ...defaultState().matchMaking, ...val.matchMaking };
+            if (val.matchMaking) {
+                S.matchMaking = { ...defaultState().matchMaking, ...val.matchMaking };
+                // Firebase may convert arrays to objects — restore them
+                if (S.matchMaking.completedMatches && !Array.isArray(S.matchMaking.completedMatches)) {
+                    S.matchMaking.completedMatches = Object.values(S.matchMaking.completedMatches);
+                }
+                if (S.matchMaking.pendingPlayers && !Array.isArray(S.matchMaking.pendingPlayers)) {
+                    S.matchMaking.pendingPlayers = Object.values(S.matchMaking.pendingPlayers);
+                }
+                if (S.matchMaking.initiatorPlayers && !Array.isArray(S.matchMaking.initiatorPlayers)) {
+                    S.matchMaking.initiatorPlayers = Object.values(S.matchMaking.initiatorPlayers);
+                }
+            }
             S.bonusEvents = val.bonusEvents || {};
             S.holeTimes = val.holeTimes || [];
 
@@ -8389,6 +8401,7 @@
 
             // Re-render broadcast display if in TV mode
             if (document.body.classList.contains('tv-mode')) renderBroadcast();
+            if (document.body.classList.contains('tv-matchup-mode') && typeof renderMatchupBroadcast === 'function') renderMatchupBroadcast();
         },
 
         // Join as viewer (leaderboard only)
@@ -10506,11 +10519,11 @@
                 <div class="matchup-bc-match-num">Match ${i + 1}</div>
                 <div class="matchup-bc-match-vs">
                     <div class="matchup-bc-match-team team-a-bg" style="--team-a-rgb: ${hexToRgb(S.config.teamA.color)}">
-                        ${cm.teamA.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div><div class="matchup-bc-match-team-hcp">${getPlayerHcp(id) != null ? 'HCP ' + getPlayerHcp(id) : ''}</div>`).join('')}
+                        ${cm.teamA.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div><div class="matchup-bc-match-team-hcp">${S.players[id]?.handicap != null ? 'HCP ' + S.players[id].handicap : ''}</div>`).join('')}
                     </div>
                     <div class="matchup-bc-match-vs-label">vs</div>
                     <div class="matchup-bc-match-team team-b-bg" style="--team-b-rgb: ${hexToRgb(S.config.teamB.color)}">
-                        ${cm.teamB.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div><div class="matchup-bc-match-team-hcp">${getPlayerHcp(id) != null ? 'HCP ' + getPlayerHcp(id) : ''}</div>`).join('')}
+                        ${cm.teamB.map(id => `<div class="matchup-bc-match-team-name">${getPlayerName(id)}</div><div class="matchup-bc-match-team-hcp">${S.players[id]?.handicap != null ? 'HCP ' + S.players[id].handicap : ''}</div>`).join('')}
                     </div>
                 </div>
             </div>`;
@@ -10518,29 +10531,17 @@
 
         // Show current match being built
         if (mm.status === 'active') {
-            const pending = mm.pendingPlayers || [];
             const initiator = mm.initiatingTeam;
             const counter = initiator === 'A' ? 'B' : 'A';
-            const teamAPlayers = mm.phase === 'counter' && initiator === 'A' ? pending : (mm.phase === 'initiate' && initiator === 'A' ? pending : []);
-            const teamBPlayers = mm.phase === 'counter' && initiator === 'B' ? pending : (mm.phase === 'initiate' && initiator === 'B' ? pending : []);
-
-            // If we're in counter phase, the initiating team's players are already locked in
-            let lockedA = [], lockedB = [];
-            if (mm.phase === 'counter') {
-                // The initiator already picked — their players are the ones from initiate phase
-                // We stored them... actually we need them in the state. Let me use pendingPlayers differently:
-                // During initiate: pendingPlayers = initiating team's selections
-                // During counter: pendingPlayers = countering team's selections (initiator's are in initiatorPlayers)
-            }
 
             html += `<div class="matchup-bc-match-card building">
                 <div class="matchup-bc-match-num">Match ${completed.length + 1} — Building...</div>
                 <div class="matchup-bc-match-vs">
-                    <div class="matchup-bc-match-team ${mm.phase === 'initiate' && initiator === 'A' || mm.phase === 'counter' && counter === 'A' ? '' : 'tbd'}" style="--team-a-rgb: ${hexToRgb(S.config.teamA.color)}">
+                    <div class="matchup-bc-match-team ${(mm.phase === 'initiate' && initiator === 'A') || (mm.phase === 'counter' && counter === 'A') ? '' : 'tbd'}" style="--team-a-rgb: ${hexToRgb(S.config.teamA.color)}">
                         ${renderMatchupBcBuildingTeam('A', mm, playersPerTeam)}
                     </div>
                     <div class="matchup-bc-match-vs-label">vs</div>
-                    <div class="matchup-bc-match-team ${mm.phase === 'initiate' && initiator === 'B' || mm.phase === 'counter' && counter === 'B' ? '' : 'tbd'}" style="--team-b-rgb: ${hexToRgb(S.config.teamB.color)}">
+                    <div class="matchup-bc-match-team ${(mm.phase === 'initiate' && initiator === 'B') || (mm.phase === 'counter' && counter === 'B') ? '' : 'tbd'}" style="--team-b-rgb: ${hexToRgb(S.config.teamB.color)}">
                         ${renderMatchupBcBuildingTeam('B', mm, playersPerTeam)}
                     </div>
                 </div>
@@ -10671,7 +10672,7 @@
 
     function renderMatchupWizardSessionSelect() {
         const overlay = document.getElementById('matchupWizardOverlay');
-        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        const sessions = [...S.config.sessions].sort((a, b) => a.order - b.order);
 
         overlay.innerHTML = `<div class="matchup-wizard-card">
             <h2>Match-Making Wizard</h2>
@@ -10768,7 +10769,13 @@
         const mm = S.matchMaking;
         const overlay = document.getElementById('matchupWizardOverlay');
         const session = S.config.sessions.find(s => s.id === mm.sessionId);
-        if (!session) return;
+        if (!session) {
+            // Session was deleted — reset and go back to session select
+            S.matchMaking = defaultState().matchMaking;
+            saveState();
+            renderMatchupWizardSessionSelect();
+            return;
+        }
 
         const playersPerTeam = (mm.format === 'fourball' || mm.format === 'foursomes') ? 2 : 1;
         const isInitiate = mm.phase === 'initiate';
@@ -10839,9 +10846,6 @@
             const teamA = initiator === 'A' ? mm.initiatorPlayers : mm.pendingPlayers;
             const teamB = initiator === 'B' ? mm.initiatorPlayers : mm.pendingPlayers;
 
-            // Add to completed matches
-            mm.completedMatches.push({ teamA: [...teamA], teamB: [...teamB] });
-
             // Create actual match in S.matches
             const match = {
                 id: genId(),
@@ -10855,6 +10859,9 @@
                 teeTime: '',
             };
             S.matches[match.id] = match;
+
+            // Track completed match with its ID for safe undo
+            mm.completedMatches.push({ matchId: match.id, teamA: [...teamA], teamB: [...teamB] });
 
             // Move to next match
             mm.currentMatch++;
@@ -10886,13 +10893,10 @@
             saveState();
             renderMatchupWizardPick();
         } else if (mm.currentMatch > 0) {
-            // Undo last completed match
-            const lastMatch = mm.completedMatches.pop();
-            // Remove from S.matches too
-            const sessionMatches = getMatchesBySession(mm.sessionId);
-            if (sessionMatches.length > 0) {
-                const last = sessionMatches[sessionMatches.length - 1];
-                delete S.matches[last.id];
+            // Undo last completed match using tracked ID
+            const lastCompleted = mm.completedMatches.pop();
+            if (lastCompleted && lastCompleted.matchId && S.matches[lastCompleted.matchId]) {
+                delete S.matches[lastCompleted.matchId];
             }
             mm.currentMatch--;
             mm.initiatingTeam = getMatchupInitiator(mm.currentMatch, mm.firstPick);
