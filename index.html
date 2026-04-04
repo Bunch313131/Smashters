@@ -7170,7 +7170,7 @@
 
         schedule.forEach(day => {
             html += `<div class="lb-board" style="margin-bottom:20px;">
-                <div class="lb-section-header">${day.day}</div>
+                <div class="lb-section-header" style="border-left:4px solid var(--masters-red);">${day.day}</div>
                 <div style="padding:0;overflow-x:auto;">
                     <table style="width:100%;border-collapse:collapse;">
                         <thead>
@@ -7185,7 +7185,7 @@
             day.events.forEach((evt, i) => {
                 const borderStyle = i < day.events.length - 1 ? 'border-bottom:1px solid #eee;' : '';
                 html += `<tr style="${borderStyle}">
-                    <td style="padding:10px 12px;font-weight:600;">${evt.time}</td>
+                    <td style="padding:10px 12px;font-weight:700;color:var(--masters-red);">${evt.time}</td>
                     <td style="padding:10px 12px;color:#555;">${evt.location || '—'}</td>
                     <td style="padding:10px 12px;">${evt.event}</td>
                 </tr>`;
