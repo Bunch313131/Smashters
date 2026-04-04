@@ -10174,8 +10174,28 @@
         return { drafted, available, teamAPicks, teamBPicks, pickCount, roundNum };
     }
 
+    function switchDraftToMatchup() {
+        // Stop draft polling
+        if (draftBcRefreshTimer) { clearInterval(draftBcRefreshTimer); draftBcRefreshTimer = null; }
+        // Swap displays
+        document.getElementById('draftBroadcast').style.display = 'none';
+        document.getElementById('matchupBroadcast').style.display = '';
+        document.body.classList.remove('tv-draft-mode');
+        document.body.classList.add('tv-matchup-mode');
+        // Set team colors and start matchup broadcast
+        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        startMatchupBroadcast();
+    }
+
     function renderDraftBroadcast() {
         updateDraftBcClock();
+
+        // Auto-switch to matchup broadcast when wizard starts
+        if (S.matchMaking.status === 'active' || S.matchMaking.status === 'complete') {
+            switchDraftToMatchup();
+            return;
+        }
 
         const ds = getDraftBcState();
         const isActive = S.draft.status === 'active';
