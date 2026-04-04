@@ -9512,6 +9512,12 @@
     }
 
     function renderBroadcast() {
+        // Auto-switch to matchup when wizard launches
+        if (document.body.classList.contains('tv-mode') && S.matchMaking.status === 'active') {
+            switchLeaderboardToMatchup();
+            return;
+        }
+
         initBroadcastEmboss();
         const scores = getTeamScores();
         const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
@@ -10188,6 +10194,41 @@
         startMatchupBroadcast();
     }
 
+    let leaderboardSwitchedToMatchup = false;
+    let matchupReturnTimer = null;
+
+    function switchLeaderboardToMatchup() {
+        if (leaderboardSwitchedToMatchup) return;
+        leaderboardSwitchedToMatchup = true;
+        // Stop leaderboard cycling
+        if (broadcastCycleTimer) { clearInterval(broadcastCycleTimer); broadcastCycleTimer = null; }
+        if (broadcastSessionCycleTimer) { clearInterval(broadcastSessionCycleTimer); broadcastSessionCycleTimer = null; }
+        // Hide leaderboard, show matchup
+        document.getElementById('broadcastDisplay').style.display = 'none';
+        document.getElementById('matchupBroadcast').style.display = '';
+        document.body.classList.remove('tv-mode');
+        document.body.classList.add('tv-matchup-mode');
+        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        matchupBcCelebrationShown = false;
+        startMatchupBroadcast();
+    }
+
+    function switchMatchupBackToLeaderboard() {
+        if (matchupReturnTimer) { clearTimeout(matchupReturnTimer); matchupReturnTimer = null; }
+        // Stop matchup polling
+        if (matchupBcRefreshTimer) { clearInterval(matchupBcRefreshTimer); matchupBcRefreshTimer = null; }
+        // Hide matchup, show leaderboard
+        document.getElementById('matchupBroadcast').style.display = 'none';
+        document.getElementById('broadcastDisplay').style.display = '';
+        document.body.classList.remove('tv-matchup-mode');
+        document.body.classList.add('tv-mode');
+        leaderboardSwitchedToMatchup = false;
+        // Restart leaderboard
+        renderBroadcast();
+        startBroadcastCycle();
+    }
+
     function renderDraftBroadcast() {
         updateDraftBcClock();
 
@@ -10497,10 +10538,20 @@
         if (mm.status === 'complete' && !matchupBcCelebrationShown) {
             matchupBcCelebrationShown = true;
             matchupBcCelebration();
+            // If we came from leaderboard, return after 5 minutes
+            if (leaderboardSwitchedToMatchup && !matchupReturnTimer) {
+                matchupReturnTimer = setTimeout(() => {
+                    // Reset matchMaking so leaderboard doesn't re-trigger the switch
+                    S.matchMaking.status = 'idle';
+                    saveState();
+                    switchMatchupBackToLeaderboard();
+                }, 5 * 60 * 1000);
+            }
         }
         // Reset flag if status goes back to non-complete (e.g. new session)
         if (mm.status !== 'complete') {
             matchupBcCelebrationShown = false;
+            if (matchupReturnTimer) { clearTimeout(matchupReturnTimer); matchupReturnTimer = null; }
         }
     }
 
