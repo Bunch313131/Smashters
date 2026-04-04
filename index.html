@@ -9512,6 +9512,11 @@
     }
 
     function renderBroadcast() {
+        // Auto-switch to draft when draft starts
+        if (document.body.classList.contains('tv-mode') && S.draft.status === 'active') {
+            switchLeaderboardToDraft();
+            return;
+        }
         // Auto-switch to matchup when wizard launches
         if (document.body.classList.contains('tv-mode') && S.matchMaking.status === 'active') {
             switchLeaderboardToMatchup();
@@ -10183,19 +10188,53 @@
     function switchDraftToMatchup() {
         // Stop draft polling
         if (draftBcRefreshTimer) { clearInterval(draftBcRefreshTimer); draftBcRefreshTimer = null; }
+        if (draftReturnTimer) { clearTimeout(draftReturnTimer); draftReturnTimer = null; }
+        // Carry over leaderboard origin so matchup knows to return
+        if (leaderboardSwitchedToDraft) {
+            leaderboardSwitchedToDraft = false;
+            leaderboardSwitchedToMatchup = true;
+        }
         // Swap displays
         document.getElementById('draftBroadcast').style.display = 'none';
         document.getElementById('matchupBroadcast').style.display = '';
         document.body.classList.remove('tv-draft-mode');
         document.body.classList.add('tv-matchup-mode');
-        // Set team colors and start matchup broadcast
         document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
         document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        matchupBcCelebrationShown = false;
         startMatchupBroadcast();
     }
 
     let leaderboardSwitchedToMatchup = false;
+    let leaderboardSwitchedToDraft = false;
     let matchupReturnTimer = null;
+    let draftReturnTimer = null;
+
+    function switchLeaderboardToDraft() {
+        if (leaderboardSwitchedToDraft) return;
+        leaderboardSwitchedToDraft = true;
+        if (broadcastCycleTimer) { clearInterval(broadcastCycleTimer); broadcastCycleTimer = null; }
+        if (broadcastSessionCycleTimer) { clearInterval(broadcastSessionCycleTimer); broadcastSessionCycleTimer = null; }
+        document.getElementById('broadcastDisplay').style.display = 'none';
+        document.getElementById('draftBroadcast').style.display = '';
+        document.body.classList.remove('tv-mode');
+        document.body.classList.add('tv-draft-mode');
+        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
+        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        startDraftBroadcast();
+    }
+
+    function switchDraftBackToLeaderboard() {
+        if (draftReturnTimer) { clearTimeout(draftReturnTimer); draftReturnTimer = null; }
+        if (draftBcRefreshTimer) { clearInterval(draftBcRefreshTimer); draftBcRefreshTimer = null; }
+        document.getElementById('draftBroadcast').style.display = 'none';
+        document.getElementById('broadcastDisplay').style.display = '';
+        document.body.classList.remove('tv-draft-mode');
+        document.body.classList.add('tv-mode');
+        leaderboardSwitchedToDraft = false;
+        renderBroadcast();
+        startBroadcastCycle();
+    }
 
     function switchLeaderboardToMatchup() {
         if (leaderboardSwitchedToMatchup) return;
@@ -10319,6 +10358,12 @@
         // Draft complete celebration
         if (isComplete && !draftBcPrevComplete) {
             draftBcCelebration();
+            // If we came from leaderboard, return after 5 minutes
+            if (leaderboardSwitchedToDraft && !draftReturnTimer) {
+                draftReturnTimer = setTimeout(() => {
+                    switchDraftBackToLeaderboard();
+                }, 5 * 60 * 1000);
+            }
         }
 
         draftBcPrevComplete = isComplete;
