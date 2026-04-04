@@ -7172,11 +7172,12 @@
             html += `<div class="lb-board" style="margin-bottom:20px;max-width:500px;margin-left:auto;margin-right:auto;">
                 <div class="lb-section-header" style="text-align:center;">${day.day}</div>
                 <div style="padding:0;overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;">
+                    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+                        <colgroup><col style="width:33.3%"><col style="width:33.3%"><col style="width:33.3%"></colgroup>
                         <thead>
                             <tr style="background:var(--masters-green);">
-                                <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--masters-yellow);width:60px;">Time</th>
-                                <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--masters-yellow);width:100px;">Location</th>
+                                <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--masters-yellow);">Time</th>
+                                <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--masters-yellow);">Location</th>
                                 <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--masters-yellow);">Event</th>
                             </tr>
                             <tr><td colspan="3" style="padding:0;height:2px;background:var(--masters-red);"></td></tr>
