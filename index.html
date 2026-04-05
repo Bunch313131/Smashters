@@ -10130,7 +10130,34 @@
         broadcastIsCycling = false;
     }
 
+    // --- TV Background Music (Masters Theme) ---
+    let tvBgAudio = null;
+    function startTvBackgroundMusic() {
+        if (tvBgAudio) return; // already playing
+        tvBgAudio = new Audio('assets/audio/masters_theme_1.mp3');
+        tvBgAudio.loop = true;
+        tvBgAudio.volume = 0.15;
+        tvBgAudio.play().catch(() => {
+            // Autoplay blocked — try again on first user interaction
+            const resume = () => {
+                if (tvBgAudio) tvBgAudio.play().catch(() => {});
+                document.removeEventListener('click', resume);
+                document.removeEventListener('keydown', resume);
+            };
+            document.addEventListener('click', resume, { once: true });
+            document.addEventListener('keydown', resume, { once: true });
+        });
+    }
+    function stopTvBackgroundMusic() {
+        if (tvBgAudio) {
+            tvBgAudio.pause();
+            tvBgAudio.src = '';
+            tvBgAudio = null;
+        }
+    }
+
     function startBroadcastCycle() {
+        startTvBackgroundMusic();
         if (broadcastCycleTimer) clearInterval(broadcastCycleTimer);
         broadcastCycleTimer = setInterval(() => {
             // In TV mode, always pull fresh data from Firebase before re-rendering
@@ -10553,6 +10580,7 @@
     }
 
     function startDraftBroadcast() {
+        startTvBackgroundMusic();
         console.log('[DraftTV] Starting broadcast. Players:', Object.keys(S.players).length, 'Draft status:', S.draft.status, 'Picks:', S.draft.picks.length);
         console.log('[DraftTV] LiveSync state - eventRef:', !!LiveSync.eventRef, 'isAdmin:', LiveSync.isAdmin, 'isViewer:', LiveSync.isViewer, 'eventCode:', LiveSync.eventCode);
         renderDraftBroadcast();
@@ -10835,6 +10863,7 @@
     }
 
     function startMatchupBroadcast() {
+        startTvBackgroundMusic();
         renderMatchupBroadcast();
         updateMatchupBcClock();
 
