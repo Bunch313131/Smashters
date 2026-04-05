@@ -4013,6 +4013,14 @@
                 { id: 'session-1', name: 'Day 1', format: 'fourball', order: 1, date: '' },
                 { id: 'session-2', name: 'Day 2', format: 'singles', order: 2, date: '' }
             ],
+            schedule: [
+                { id: 'sch-1', day: 'Thursday, May 14th', time: 'AM', event: 'Meet @ the Club', location: '', order: 1 },
+                { id: 'sch-2', day: 'Thursday, May 14th', time: 'PM', event: 'Four Ball (2v2 Best Ball)', location: 'Course', order: 2 },
+                { id: 'sch-3', day: 'Friday, May 15th', time: 'AM', event: 'Four Ball (2v2 Best Ball)', location: 'Course', order: 3 },
+                { id: 'sch-4', day: 'Friday, May 15th', time: 'PM', event: 'Beer Olympics / Fastest Hole on #4', location: "Andy's", order: 4 },
+                { id: 'sch-5', day: 'Saturday, May 16th', time: 'AM', event: "Breakfast, IV's, Bloodys, BS, etc", location: "Ian's", order: 5 },
+                { id: 'sch-6', day: 'Saturday, May 16th', time: 'PM', event: 'Singles', location: 'Course', order: 6 },
+            ],
         },
         players: {},
         draft: {
@@ -4076,6 +4084,7 @@
                         teamB: { ...base.config.teamB, ...(parsed.config?.teamB || {}) },
                         courseHoles: parsed.config?.courseHoles || base.config.courseHoles,
                         sessions: parsed.config?.sessions || base.config.sessions,
+                        schedule: parsed.config?.schedule || base.config.schedule,
                     },
                     players: parsed.players || {},
                     draft: { ...base.draft, ...parsed.draft },
@@ -7141,46 +7150,53 @@
     // ─────────────────────────────────────────────────────────
     function renderSchedule() {
         const el = document.getElementById('schedule-content');
+        const canEdit = S.ui.settingsUnlocked;
+        const items = [...(S.config.schedule || [])].sort((a, b) => a.order - b.order);
 
-        const schedule = [
-            {
-                day: 'Thursday, May 14th',
-                events: [
-                    { time: 'AM', location: '', event: 'Meet @ the Club' },
-                    { time: 'PM', location: 'Course', event: 'Four Ball (2v2 Best Ball)' }
-                ]
-            },
-            {
-                day: 'Friday, May 15th',
-                events: [
-                    { time: 'AM', location: 'Course', event: 'Four Ball (2v2 Best Ball)' },
-                    { time: 'PM', location: "Andy's", event: 'Beer Olympics / Fastest Hole on #4' }
-                ]
-            },
-            {
-                day: 'Saturday, May 16th',
-                events: [
-                    { time: 'AM', location: "Ian's", event: "Breakfast, IV's, Bloodys, BS, etc" },
-                    { time: 'PM', location: 'Course', event: 'Singles' }
-                ]
+        // Group by day
+        const days = [];
+        const dayMap = {};
+        items.forEach(item => {
+            if (!dayMap[item.day]) {
+                dayMap[item.day] = [];
+                days.push(item.day);
             }
-        ];
+            dayMap[item.day].push(item);
+        });
 
         let html = `<h2 class="section-title" style="text-align:center;">Tournament Schedule</h2>`;
 
-        schedule.forEach(day => {
+        if (canEdit) {
+            html += `<div style="text-align:center;margin-bottom:16px;">
+                <button class="btn btn-gold btn-sm" onclick="openScheduleEventModal()">+ Add Event</button>
+            </div>`;
+        }
+
+        if (days.length === 0) {
+            html += `<div class="empty-state"><h3>No Schedule Yet</h3><p>Add events to build the schedule.</p></div>`;
+        }
+
+        days.forEach(dayName => {
+            const events = dayMap[dayName];
             html += `<div class="lb-board" style="margin-bottom:20px;max-width:440px;margin-left:auto;margin-right:auto;">
-                <div class="lb-section-header" style="text-align:center;">${day.day}</div>
+                <div class="lb-section-header" style="text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <span>${dayName}</span>
+                    ${canEdit ? `<button style="background:none;border:none;color:var(--masters-yellow);cursor:pointer;font-size:0.75rem;opacity:0.7;" onclick="renameScheduleDay('${dayName.replace(/'/g, "\\'")}')">edit</button>` : ''}
+                </div>
                 <div style="border-top:2px solid var(--masters-red);">`;
 
-            day.events.forEach((evt, i) => {
-                const borderStyle = i < day.events.length - 1 ? 'border-bottom:1px solid #eee;' : '';
+            events.forEach((evt, i) => {
+                const borderStyle = i < events.length - 1 ? 'border-bottom:1px solid #eee;' : '';
                 html += `<div style="display:flex;align-items:center;padding:12px 16px;${borderStyle}">
                     <div style="font-size:1.6rem;font-weight:800;color:rgba(0,0,0,0.1);width:50px;flex-shrink:0;letter-spacing:1px;">${evt.time}</div>
-                    <div style="flex:1;text-align:center;padding-right:50px;">
+                    <div style="flex:1;text-align:center;padding-right:${canEdit ? '0' : '50px'};">
                         <div style="font-weight:700;font-size:0.95rem;margin-bottom:2px;">${evt.event}</div>
                         ${evt.location ? `<div style="color:#777;font-size:0.82rem;">${evt.location}</div>` : ''}
                     </div>
+                    ${canEdit ? `<div style="width:50px;flex-shrink:0;display:flex;gap:4px;justify-content:flex-end;">
+                        <button style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px;" onclick="openScheduleEventModal('${evt.id}')">✏️</button>
+                        <button style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px;" onclick="deleteScheduleEvent('${evt.id}')">🗑️</button>
+                    </div>` : ''}
                 </div>`;
             });
 
@@ -7188,6 +7204,102 @@
         });
 
         el.innerHTML = html;
+    }
+
+    function openScheduleEventModal(editId) {
+        if (!requireAdmin('edit schedule')) return;
+        const existing = editId ? (S.config.schedule || []).find(e => e.id === editId) : null;
+        const days = [...new Set((S.config.schedule || []).map(e => e.day))];
+
+        const body = `
+            <div style="margin-bottom:12px;">
+                <label class="form-label">Day</label>
+                <select id="schedDay" class="form-input" onchange="document.getElementById('schedDayCustom').style.display = this.value === '__new__' ? '' : 'none'">
+                    ${days.map(d => `<option value="${d}" ${existing && existing.day === d ? 'selected' : ''}>${d}</option>`).join('')}
+                    <option value="__new__">+ New Day...</option>
+                </select>
+                <input type="text" id="schedDayCustom" class="form-input" placeholder="e.g. Sunday, May 17th" style="display:none;margin-top:6px;">
+            </div>
+            <div style="margin-bottom:12px;">
+                <label class="form-label">Time</label>
+                <select id="schedTime" class="form-input">
+                    <option value="AM" ${existing && existing.time === 'AM' ? 'selected' : ''}>AM</option>
+                    <option value="PM" ${existing && existing.time === 'PM' ? 'selected' : ''}>PM</option>
+                    <option value="EVE" ${existing && existing.time === 'EVE' ? 'selected' : ''}>EVE</option>
+                    <option value="ALL" ${existing && existing.time === 'ALL' ? 'selected' : ''}>ALL</option>
+                </select>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label class="form-label">Event</label>
+                <input type="text" id="schedEvent" class="form-input" value="${existing ? existing.event.replace(/"/g, '&quot;') : ''}" placeholder="e.g. Four Ball (2v2 Best Ball)">
+            </div>
+            <div style="margin-bottom:12px;">
+                <label class="form-label">Location (optional)</label>
+                <input type="text" id="schedLocation" class="form-input" value="${existing ? (existing.location || '').replace(/"/g, '&quot;') : ''}" placeholder="e.g. Course">
+            </div>
+        `;
+        const footer = `
+            <button class="btn btn-primary" onclick="saveScheduleEvent('${editId || ''}')">${existing ? 'Save' : 'Add Event'}</button>
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        `;
+        openModal(existing ? 'Edit Event' : 'Add Event', body, footer);
+    }
+
+    function saveScheduleEvent(editId) {
+        const daySelect = document.getElementById('schedDay').value;
+        const dayCustom = document.getElementById('schedDayCustom').value.trim();
+        const day = daySelect === '__new__' ? dayCustom : daySelect;
+        const time = document.getElementById('schedTime').value;
+        const event = document.getElementById('schedEvent').value.trim();
+        const location = document.getElementById('schedLocation').value.trim();
+
+        if (!day) { showToast('Enter a day'); return; }
+        if (!event) { showToast('Enter an event name'); return; }
+
+        if (!S.config.schedule) S.config.schedule = [];
+
+        if (editId) {
+            const item = S.config.schedule.find(e => e.id === editId);
+            if (item) {
+                item.day = day;
+                item.time = time;
+                item.event = event;
+                item.location = location;
+            }
+        } else {
+            const maxOrder = S.config.schedule.reduce((max, e) => Math.max(max, e.order || 0), 0);
+            S.config.schedule.push({
+                id: 'sch-' + genId(),
+                day, time, event, location,
+                order: maxOrder + 1,
+            });
+        }
+
+        saveState();
+        closeModal();
+        renderSchedule();
+        showToast(editId ? 'Event updated' : 'Event added');
+    }
+
+    function deleteScheduleEvent(id) {
+        if (!requireAdmin('edit schedule')) return;
+        if (!confirm('Remove this event?')) return;
+        S.config.schedule = (S.config.schedule || []).filter(e => e.id !== id);
+        saveState();
+        renderSchedule();
+        showToast('Event removed');
+    }
+
+    function renameScheduleDay(oldName) {
+        if (!requireAdmin('edit schedule')) return;
+        const newName = prompt('Rename day:', oldName);
+        if (!newName || newName.trim() === oldName) return;
+        (S.config.schedule || []).forEach(e => {
+            if (e.day === oldName) e.day = newName.trim();
+        });
+        saveState();
+        renderSchedule();
+        showToast('Day renamed');
     }
 
     function formatDate(dateStr) {
@@ -8356,6 +8468,7 @@
                     teamA: { ...base.config.teamA, ...(val.config?.teamA || {}) },
                     teamB: { ...base.config.teamB, ...(val.config?.teamB || {}) },
                     courseHoles: val.config?.courseHoles || base.config.courseHoles,
+                    schedule: val.config?.schedule ? (Array.isArray(val.config.schedule) ? val.config.schedule : Object.values(val.config.schedule)) : base.config.schedule,
                 };
             }
             S.players = val.players || {};
