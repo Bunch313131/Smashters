@@ -1,0 +1,204 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   SMASHTERS — DUMPSTER FIRE GOLF CLUB
+   Design tokens: colors + type
+   Masters broadcast palette (green + golden yellow), team reds + blues,
+   Azalea display face for the logo/marquee moments, Trebuchet MS for UI.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@font-face {
+    font-family: 'Azalea';
+    src: url('fonts/Azalea.otf') format('opentype'),
+         url('fonts/Azalea.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    /* ─── MASTERS PALETTE ─────────────────────────────────────────
+       Lifted directly from the app's CSS vars.
+       --masters-green is the workhorse — headers, nav, scoring,
+       section chrome, primary buttons. --masters-yellow is the
+       broadcast-gold accent on dark surfaces (tab-active underline,
+       section-header text, LIVE badge highlights). */
+    --masters-green:      #006747;
+    --masters-dark:       #00432e;   /* darkest surface + headers */
+    --masters-darkest:    #002a1c;   /* deepest gradient stop */
+    --masters-light-green:#1a8a5c;
+    --masters-yellow:     #FBF308;   /* same hex as --masters-gold */
+    --masters-gold:       #FBF308;
+    --masters-cream:      #FFFFFF;   /* body bg (originally #F5F1E8) */
+    --masters-red:        #CE1141;   /* birdie / danger / team-a */
+    --masters-white:      #FFFFFF;
+    --masters-black:      #1a1a1a;
+
+    /* ─── RYDER-CUP TEAM COLORS ────────────────────────────────
+       A = home / "red team", B = "blue team". Used on leaderboard
+       cells, avatars, draft columns, broadcast scoreboards. */
+    --team-a-color:       #CE1141;   /* Ryder red */
+    --team-b-color:       #004F9E;   /* Ryder blue */
+
+    /* ─── SCORING SEMANTICS ────────────────────────────────────
+       Shown against par on the drum picker + score cells. */
+    --birdie-color:       #CE1141;   /* under par — red ring */
+    --eagle-color:        #C8A951;   /* 2+ under — gold double ring */
+    --bogey-color:        #006747;   /* over par — green square */
+
+    /* ─── SEMANTIC ALIASES ─────────────────────────────────────
+       Use these in new work so themeing is swappable. */
+    --bg:                 var(--masters-cream);
+    --surface:            var(--masters-white);
+    --surface-dark:       var(--masters-dark);
+    --surface-darkest:    var(--masters-darkest);
+    --fg:                 var(--masters-black);
+    --fg-muted:           #666;
+    --fg-subtle:          #999;
+    --fg-on-dark:         var(--masters-white);
+    --accent:             var(--masters-green);
+    --accent-on-dark:     var(--masters-yellow);
+    --danger:             var(--masters-red);
+    --border:             #ddd;
+    --border-subtle:      #eee;
+    --border-strong:      #ccc;
+
+    /* ─── SHADOW + RADIUS TOKENS ───────────────────────────────
+       Cards are soft shadows, not hard borders. Everything
+       8/12px rounded — no pills except on avatars + hole dots. */
+    --card-shadow:        0 2px 8px rgba(0,0,0,0.1);
+    --card-shadow-hover:  0 4px 16px rgba(0,0,0,0.15);
+    --card-shadow-big:    0 4px 20px rgba(0,0,0,0.25);
+    --modal-shadow:       0 8px 32px rgba(0,0,0,0.3);
+    --radius:             8px;
+    --radius-lg:          12px;
+    --radius-pill:        999px;
+
+    /* ─── MOTION ───────────────────────────────────────────── */
+    --transition:         all 0.2s ease;
+    --transition-slow:    all 0.3s ease;
+    --ease-cube:          cubic-bezier(0.4, 0.0, 0.2, 1);
+
+    /* ─── TYPE FAMILIES ────────────────────────────────────── */
+    --font-display:       'Azalea', 'Georgia', serif;      /* logo + splash + event name */
+    --font-ui:            'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+    --font-body:          'Georgia', 'Times New Roman', serif;  /* long-form copy, legal, course table */
+    --font-mono:          'Trebuchet MS', ui-monospace, Menlo, monospace; /* share codes */
+
+    /* ─── SEMANTIC TEXT SIZES ──────────────────────────────── */
+    --text-xs:   0.65rem;   /* micro labels — "THRU", match labels */
+    --text-sm:   0.75rem;   /* section headers, bottom-nav */
+    --text-base: 0.9rem;    /* default UI body */
+    --text-md:   1rem;
+    --text-lg:   1.1rem;    /* section titles */
+    --text-xl:   1.6rem;    /* team total pts */
+    --text-2xl:  1.8rem;    /* header h1 */
+    --text-3xl:  2.4rem;    /* splash title */
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BASE + SEMANTIC TYPE STYLES
+   Cased, letter-spaced, uppercase labels are the heartbeat of the UI —
+   Trebuchet MS is the broadcast sans. Azalea is reserved for "name on
+   the trophy" moments. Georgia handles any long-form body prose.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.4;
+}
+
+/* Display / marquee — the Masters-style script */
+.azalea,
+.display,
+.splash-title,
+h1.app-title {
+    font-family: var(--font-display);
+    letter-spacing: 2px;
+    line-height: 1.1;
+}
+
+h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    color: var(--masters-yellow);   /* on dark header */
+    letter-spacing: 2px;
+}
+
+h2, h3 {
+    font-family: var(--font-ui);
+    font-weight: bold;
+}
+
+h2 { font-size: var(--text-lg); }
+h3 { font-size: var(--text-md); }
+
+/* Section header bar — "LEADERBOARD", "DAY 1 — FOURSOMES".
+   Green bar, gold type, all caps, tracked. This is the dominant
+   repeating motif throughout the app. */
+.section-header,
+.eyebrow {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--masters-yellow);
+    background: var(--masters-green);
+    padding: 12px 16px;
+}
+
+/* Green type on white — in-body section titles */
+.section-title {
+    font-family: var(--font-ui);
+    color: var(--masters-green);
+    font-size: var(--text-lg);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Form labels + tiny captions — muted, tracked, uppercase */
+.label,
+label.form-label {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--fg-muted);
+}
+
+/* Legal / opt-in / waiver copy — Georgia, looser leading */
+.body-serif,
+.legal,
+.optin-text {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #2a2a2a;
+}
+
+/* Share code / monospace — for 6-char room codes */
+.code,
+.share-code {
+    font-family: var(--font-mono);
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--masters-green);
+    background: var(--masters-white);
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+/* Scorecard numbers — big, tabular, Trebuchet */
+.score-numeral {
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+p { font-size: var(--text-base); }
+small, .muted { color: var(--fg-muted); font-size: var(--text-sm); }

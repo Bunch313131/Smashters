@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css"><style>
+body { padding: 16px; background: #fff; }
+.row { display: grid; grid-template-columns: 1fr 60px 90px 60px 1fr; align-items: center; padding: 12px 14px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 8px; font-family: 'Trebuchet MS', sans-serif; }
+.team { display: flex; align-items: center; gap: 10px; }
+.team.r { justify-content: flex-end; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 13px; letter-spacing: 0.5px; }
+.a { background: #CE1141; }
+.b { background: #004F9E; }
+.name { font-weight: bold; font-size: 13px; color: #1a1a1a; letter-spacing: 0.3px; }
+.status { font-size: 20px; font-weight: 800; color: #CE1141; text-align: center; font-variant-numeric: tabular-nums; }
+.thru { font-size: 10px; font-weight: bold; letter-spacing: 1px; color: #666; text-align: center; text-transform: uppercase; }
+.thru b { display: block; font-size: 16px; color: #1a1a1a; margin-top: 2px; letter-spacing: 0; }
+.vs { text-align: center; font-size: 11px; color: #888; font-weight: bold; letter-spacing: 1px; }
+</style></head><body>
+<div class="row">
+  <div class="team"><div class="avatar a">JP</div><span class="name">Phil / Nick</span></div>
+  <div class="status">1 UP</div>
+  <div class="vs">VS</div>
+  <div class="thru">THRU<b>14</b></div>
+  <div class="team r"><span class="name">Ryan / Jake</span><div class="avatar b">RJ</div></div>
+</div>
+<div class="row" style="opacity:0.9">
+  <div class="team"><div class="avatar a">DB</div><span class="name">Dan / Bill</span></div>
+  <div class="status" style="color:#888">AS</div>
+  <div class="vs">VS</div>
+  <div class="thru">THRU<b>9</b></div>
+  <div class="team r"><span class="name">Mike / Tom</span><div class="avatar b">MT</div></div>
+</div>
+</body></html>
