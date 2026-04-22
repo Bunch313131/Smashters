@@ -1,0 +1,55 @@
+/* Shared resets for all preview cards */
+@import url('../colors_and_type.css');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    font-family: var(--font-ui);
+    background: var(--masters-white);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+body {
+    padding: 20px;
+    min-height: 100%;
+}
+.card-row {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+.swatch {
+    border-radius: 8px;
+    min-height: 72px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: var(--font-ui);
+    font-size: 11px;
+}
+.swatch-label {
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 10px;
+}
+.swatch-hex {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    opacity: 0.85;
+}
+.swatch-var {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 9px;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+.caption {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 4px;
+}

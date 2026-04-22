@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css"><style>
+body { padding: 0; margin: 0; background: #fff; }
+.stage { padding: 18px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; align-items: center; }
+.cell { border-radius: 12px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; gap: 8px; }
+.cell img { max-width: 100%; max-height: 140px; object-fit: contain; }
+.light { background: #fff; border: 1px solid #eee; }
+.dark { background: linear-gradient(160deg, #00432e 0%, #006747 40%, #00432e 100%); }
+.watermark { background: #fff; position: relative; border: 1px solid #eee; overflow: hidden; }
+.watermark .wm { opacity: 0.18; transform: rotate(-8deg) scale(1.1); }
+.watermark .tag { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Trebuchet MS', sans-serif; font-weight: bold; color: #006747; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }
+.label { font-family: ui-monospace, Menlo, monospace; font-size: 9px; color: #888; letter-spacing: 0.3px; text-align: center; }
+.dark .label { color: rgba(255,255,255,0.7); }
+</style></head><body>
+<div class="stage">
+  <div class="cell light"><img src="../assets/images/DFGC Logo.png" alt="DFGC full crest"><div class="label">Full crest · presents / cover</div></div>
+  <div class="cell dark"><img src="../assets/images/dfgc-logo-transparent.png" alt="DFGC on dark"><div class="label">On Masters gradient</div></div>
+  <div class="cell watermark"><img src="../assets/images/Phone Size DFCG No Background.png" class="wm" alt="DFGC watermark"><div class="tag">Waiting for Matchups</div><div class="label" style="position:relative; z-index:2">Empty-state watermark · 18%</div></div>
+</div>
+</body></html>
