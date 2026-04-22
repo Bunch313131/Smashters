@@ -155,14 +155,6 @@ function EnvelopeCard() {
           boxShadow: 'inset 0 0 0 2px rgba(251, 243, 8, 0.08), inset 0 0 40px rgba(0,0,0,0.35)',
           overflow: 'hidden',
         }}>
-          {/* Watermark crest on back of envelope */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            opacity: 0.16,
-          }}>
-            <img src="assets/Phone Size DFCG No Background.png" style={{ width: 180, filter: 'brightness(1.6)' }}/>
-          </div>
           {/* Envelope pocket shading to sell depth (bottom edge darker) */}
           <div style={{
             position: 'absolute', left: 0, right: 0, bottom: 0, height: '30%',
@@ -221,47 +213,6 @@ function EnvelopeCard() {
           </div>
         </div>
 
-        {/* Wax seal — gold rim + crest, sits at flap seam */}
-        <div style={{
-          position: 'absolute',
-          left: '50%',
-          top: flapH - 4,
-          transform: `translate(-50%, -50%) translateY(${sealLift + sealTumble}px) rotate(${sealRot}deg)`,
-          width: 86, height: 86,
-          opacity: sealFade,
-          zIndex: 10,
-          filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.55))',
-        }}>
-          {/* wax disc — Masters deep green + gold rim */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'radial-gradient(circle at 35% 30%, #aa1436 0%, #8a0d28 55%, #5a0818 100%)',
-            borderRadius: '50%',
-            boxShadow: 'inset -4px -5px 10px rgba(0,0,0,0.55), inset 3px 4px 8px rgba(255,255,255,0.28)',
-          }}/>
-          {/* crimped rim */}
-          <div style={{
-            position: 'absolute', inset: 5,
-            border: '1px dashed rgba(255,220,120,0.35)',
-            borderRadius: '50%',
-          }}/>
-          {/* DFGC monogram on wax */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: "'Azalea', 'Georgia', serif",
-            fontStyle: 'italic',
-            fontWeight: 'bold',
-            fontSize: 22,
-            letterSpacing: 1,
-            color: '#FBF308',
-            textShadow: '0 1px 2px rgba(0,0,0,0.6)',
-          }}>DFGC</div>
-        </div>
-
       </div>
 
       {/* ── Invitation CARD — separate from envelope, same anchor ── */}
@@ -282,11 +233,76 @@ function EnvelopeCard() {
         <InvitationCard />
       </div>
 
+      {/* Wax seal — rendered as sibling above EnvelopeCoverMask (zIndex 5) */}
+      <WaxSeal envW={envW} envH={envH} flapH={flapH} />
+
       {/* Clip mask: hide card where it's still "inside" envelope before rising.
           Implemented by a second envelope body drawn ON TOP of the card
           but only in the lower half of the envelope's position, up until
           card has risen above. */}
       <EnvelopeCoverMask envW={envW} envH={envH} flapH={flapH} />
+    </div>
+  );
+}
+
+// Wax seal rendered outside the envelope shell so it isn't clipped by
+// EnvelopeCoverMask (which lives at zIndex 4). Positioned to match the
+// flap-seam location of the envelope and animates independently.
+function WaxSeal({ envW, envH, flapH }) {
+  const t = useTime();
+  if (t < 1.5) return null;
+
+  const envY     = interpolate([1.6, 2.8, 3.2], [-560, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
+  const envOpaIn = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
+
+  const sealLift   = interpolate([3.4, 3.8], [0, -14], Easing.easeOutQuad)(t);
+  const sealTumble = interpolate([3.8, 4.6], [0, 220], Easing.easeInQuad)(t);
+  const sealRot    = interpolate([3.6, 4.6], [0, 65], Easing.easeInQuad)(t);
+  const sealFade   = interpolate([4.2, 4.8], [1, 0], Easing.easeOutQuad)(t);
+
+  if (sealFade < 0.01 && t > 4.8) return null;
+
+  // Seal center Y from stage center when envelope is at rest (envY=0):
+  //   envelope top from center = -envH/2
+  //   seal sits at top: flapH-4 within envelope, with translate(-50%,-50%) centering it
+  const sealRestY = -envH / 2 + flapH - 4 - 43;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: '50%',
+      top: '50%',
+      width: 86, height: 86,
+      marginLeft: -43,
+      marginTop: sealRestY,
+      opacity: envOpaIn * sealFade,
+      transform: `translateY(${envY + sealLift + sealTumble}px) rotate(${sealRot}deg)`,
+      zIndex: 5,
+      filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.55))',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(circle at 35% 30%, #aa1436 0%, #8a0d28 55%, #5a0818 100%)',
+        borderRadius: '50%',
+        boxShadow: 'inset -4px -5px 10px rgba(0,0,0,0.55), inset 3px 4px 8px rgba(255,255,255,0.28)',
+      }}/>
+      <div style={{
+        position: 'absolute', inset: 5,
+        border: '1px dashed rgba(255,220,120,0.35)',
+        borderRadius: '50%',
+      }}/>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Azalea', 'Georgia', serif",
+        fontStyle: 'italic',
+        fontWeight: 'bold',
+        fontSize: 22,
+        letterSpacing: 1,
+        color: '#FBF308',
+        textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+      }}>DFGC</div>
     </div>
   );
 }
@@ -561,5 +577,5 @@ function InvitationScene() {
 }
 
 Object.assign(window, {
-  InvitationScene, BgWallpaper, OpeningCopy, EnvelopeCard, InvitationCard, EnvelopeCoverMask,
+  InvitationScene, BgWallpaper, OpeningCopy, EnvelopeCard, InvitationCard, WaxSeal, EnvelopeCoverMask,
 });
