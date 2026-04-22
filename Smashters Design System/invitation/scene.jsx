@@ -166,8 +166,8 @@ function EnvelopeCard() {
         <div style={{
           position: 'absolute',
           left: 0, right: 0, top: 0,
-          height: flapH,
-          transformOrigin: 'bottom center',
+          height: flapH + 8,
+          transformOrigin: 'top center',
           transform: `rotateX(${flap}deg)`,
           transformStyle: 'preserve-3d',
           zIndex: (t < 5.5) ? 5 : -1,
@@ -404,7 +404,7 @@ function InvitationCard() {
       ))}
 
       <img
-        src="assets/DFGC Logo.png"
+        src="assets/smashters-logo-green.png"
         style={{
           width: 58,
           height: 58,
