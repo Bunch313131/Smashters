@@ -167,7 +167,7 @@ function EnvelopeCard() {
           position: 'absolute',
           left: 0, right: 0, top: 0,
           height: flapH,
-          transformOrigin: 'top center',
+          transformOrigin: 'bottom center',
           transform: `rotateX(${flap}deg)`,
           transformStyle: 'preserve-3d',
           zIndex: (t < 5.5) ? 5 : -1,
