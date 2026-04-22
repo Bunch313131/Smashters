@@ -86,8 +86,8 @@ function EnvelopeCard() {
   const envRotEx  = interpolate([8.6, 10.5], [0, -18], Easing.easeInOutCubic)(t);
   const envOpaOut = interpolate([8.6, 10.5], [1, 0], Easing.easeInOutQuad)(t);
 
-  // ── Flap open ────────────────────────────────────────────────
-  const flap      = interpolate([3.4, 5.4], [0, -172], Easing.easeInOutCubic)(t);
+  // ── Flap open — scaleY 1→-1 so clip path inverts (tip down→up) ──
+  const flapScale = interpolate([3.4, 5.4], [1, -1], Easing.easeInOutCubic)(t);
 
   // ── Seal lifting off, tumbling, fading ──────────────────────
   const sealLift   = interpolate([3.4, 3.8], [0, -14], Easing.easeOutQuad)(t);
@@ -162,24 +162,24 @@ function EnvelopeCard() {
           }}/>
         </div>
 
-        {/* Envelope FLAP — rotates on top edge */}
+        {/* Envelope FLAP — scaleY 1→-1 pivoting at the seam (bottom center).
+            The clip-path triangle automatically inverts as scaleY goes negative,
+            so the tip goes from pointing down (closed) to pointing up (open).
+            No 3D needed — filter on parent flattens 3D contexts anyway. */}
         <div style={{
           position: 'absolute',
           left: 0, right: 0, top: 0,
-          height: flapH + 8,
-          transformOrigin: 'top center',
-          transform: `rotateX(${flap}deg)`,
-          transformStyle: 'preserve-3d',
+          height: flapH,
+          transformOrigin: 'bottom center',
+          transform: `scaleY(${flapScale})`,
           zIndex: (t < 5.5) ? 5 : -1,
         }}>
-          {/* Front face */}
           <div style={{
             position: 'absolute',
             inset: 0,
             background: 'linear-gradient(180deg, #006747 0%, #00432e 100%)',
             clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
             boxShadow: 'inset 0 -4px 12px rgba(0,0,0,0.4)',
-            backfaceVisibility: 'hidden',
           }}>
             {/* Gold edge highlight */}
             <div style={{
@@ -190,26 +190,6 @@ function EnvelopeCard() {
               mixBlendMode: 'screen',
               opacity: 0.7,
             }}/>
-          </div>
-          {/* Back face (visible when flap is open) */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(180deg, #0a5638 0%, #00432e 100%)',
-            clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-            transform: 'rotateX(180deg)',
-            backfaceVisibility: 'hidden',
-            display: 'flex',
-            justifyContent: 'center',
-            paddingTop: 30,
-          }}>
-            <span style={{
-              fontFamily: "'Azalea', Georgia, serif",
-              fontSize: 34,
-              letterSpacing: 3,
-              color: 'rgba(251, 243, 8, 0.28)',
-              textShadow: '0 1px 4px rgba(0,0,0,0.5)',
-            }}>DFGC</span>
           </div>
         </div>
 
