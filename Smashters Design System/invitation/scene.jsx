@@ -103,9 +103,9 @@ function EnvelopeCard() {
   const focusDim = interpolate([8.6, 10.8], [0, 0.6], Easing.easeInOutQuad)(t);
 
   const envW = 300;
-  const envH = 420;
+  const envH = 460;
   const cardW = 270;
-  const cardH = 390;
+  const cardH = 430;
   const flapH = envH * 0.55;
 
   return (
@@ -344,7 +344,7 @@ function InvitationCard() {
       inset: 0,
       background: 'linear-gradient(180deg, #fdfcf6 0%, #f6f1e3 100%)',
       borderRadius: 6,
-      padding: '14px 20px',
+      padding: '14px 20px 20px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -371,12 +371,41 @@ function InvitationCard() {
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
         fontSize: 7.5,
+        color: '#006747',
+        marginTop: 10,
+        opacity: stagger(1),
+        transform: `translateY(${yLift(1)}px)`,
+        textAlign: 'center',
+        lineHeight: 1.45,
+      }}>
+        The Board of Governors<br/>
+        of the
+      </div>
+
+      <div style={{
+        fontFamily: "'Azalea', Georgia, serif",
+        fontSize: 14,
+        letterSpacing: 1,
+        color: '#00432e',
+        marginTop: 2,
+        opacity: stagger(2),
+        transform: `translateY(${yLift(2)}px)`,
+        textAlign: 'center',
+        lineHeight: 1.05,
+      }}>
+        Dumpster Fire Golf Club
+      </div>
+
+      <div style={{
+        fontFamily: "'Georgia', serif",
+        fontStyle: 'italic',
+        fontSize: 7.5,
         color: '#2a2a2a',
-        marginTop: 6,
+        marginTop: 12,
         opacity: stagger(3),
         transform: `translateY(${yLift(3)}px)`,
         textAlign: 'center',
-        lineHeight: 1.4,
+        lineHeight: 1.45,
       }}>
         respectfully requests<br/>
         the honor of your presence at the
@@ -386,12 +415,12 @@ function InvitationCard() {
         fontFamily: "'Azalea', Georgia, serif",
         fontSize: 14,
         color: '#00432e',
-        marginTop: 4,
+        marginTop: 6,
         opacity: stagger(4),
         transform: `translateY(${yLift(4)}px)`,
         letterSpacing: 1,
         textAlign: 'center',
-        lineHeight: 1.1,
+        lineHeight: 1.15,
       }}>
         Two Thousand and<br/>
         Twenty-Six<br/>
@@ -403,11 +432,11 @@ function InvitationCard() {
         fontStyle: 'italic',
         fontSize: 7.5,
         color: '#2a2a2a',
-        marginTop: 8,
+        marginTop: 12,
         opacity: stagger(5),
         transform: `translateY(${yLift(5)}px)`,
         textAlign: 'center',
-        lineHeight: 1.4,
+        lineHeight: 1.45,
       }}>
         to be held at
       </div>
@@ -428,11 +457,11 @@ function InvitationCard() {
         fontStyle: 'italic',
         fontSize: 7.5,
         color: '#2a2a2a',
-        marginTop: 6,
+        marginTop: 10,
         opacity: stagger(6),
         transform: `translateY(${yLift(6)}px)`,
         textAlign: 'center',
-        lineHeight: 1.4,
+        lineHeight: 1.45,
       }}>
         the fourteenth through the sixteenth<br/>
         of May
@@ -442,7 +471,7 @@ function InvitationCard() {
         width: '42%',
         height: 1,
         background: 'linear-gradient(90deg, transparent, #006747 20%, #FBF308 50%, #006747 80%, transparent)',
-        margin: '7px 0 4px',
+        margin: '10px 0 6px',
         opacity: stagger(7),
       }}/>
 
@@ -454,7 +483,7 @@ function InvitationCard() {
         opacity: stagger(7),
         transform: `translateY(${yLift(7)}px)`,
         textAlign: 'center',
-        lineHeight: 1.4,
+        lineHeight: 1.45,
       }}>
         Andrew Donald, Ian Bolnik, and Brian Bunch
       </div>
@@ -465,17 +494,18 @@ function InvitationCard() {
         letterSpacing: 2.5,
         textTransform: 'uppercase',
         color: '#666',
-        marginTop: 2,
+        marginTop: 3,
         opacity: stagger(7),
       }}>Chairmen</div>
 
       {/* Venmo RSVP — real clickable link */}
       <div style={{
-        marginTop: 12,
+        marginTop: 'auto',
+        paddingTop: 8,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 3,
+        gap: 4,
         opacity: Math.max(stagger(8), 0),
         transform: `translateY(${yLift(8)}px)`,
       }}>
@@ -507,12 +537,6 @@ function InvitationCard() {
         >
           Pay via Venmo
         </a>
-        <div style={{
-          fontFamily: "'Trebuchet MS', sans-serif",
-          fontSize: 6,
-          color: '#aaa',
-          letterSpacing: 1,
-        }}>@BrianBunch1313</div>
       </div>
     </div>
   );
