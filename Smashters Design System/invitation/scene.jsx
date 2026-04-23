@@ -74,11 +74,11 @@ function EnvelopeCard() {
   const envY      = interpolate([1.6, 2.8, 3.2], [-900, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
   const envOpaIn  = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
 
-  // ── Envelope exit: fades + slides away once card has risen ──
-  const envShiftY = interpolate([8.6, 10.5], [0, 320], Easing.easeInOutCubic)(t);
-  const envShiftX = interpolate([8.6, 10.5], [0, -150], Easing.easeInOutCubic)(t);
-  const envRotEx  = interpolate([8.6, 10.5], [0, -18], Easing.easeInOutCubic)(t);
-  const envOpaOut = interpolate([8.6, 10.5], [1, 0], Easing.easeInOutQuad)(t);
+  // ── Envelope exit: fast fade so it's gone before card scales past envelope width ──
+  const envShiftY = interpolate([8.6, 9.2], [0, 320], Easing.easeInCubic)(t);
+  const envShiftX = interpolate([8.6, 9.2], [0, -150], Easing.easeInCubic)(t);
+  const envRotEx  = interpolate([8.6, 9.2], [0, -18], Easing.easeInCubic)(t);
+  const envOpaOut = interpolate([8.6, 9.2], [1, 0], Easing.easeInQuad)(t);
 
   // ── Flap open — scaleY 1→-1 so clip path inverts (tip down→up) ──
   const flapScale = interpolate([3.4, 5.4], [1, -1], Easing.easeInOutCubic)(t);
@@ -92,9 +92,11 @@ function EnvelopeCard() {
   // ── Card: single Y keyframe. Anchored to stage center via left/top 50%. ──
   //  phase A (5.6→8.6): rise out of envelope from y=0 to y=-200  (peek then pop out)
   //  phase B (8.6→11.0): return to y=0 and scale up — center-of-stage big view
-  const cardY     = interpolate([5.6, 8.6, 11.0], [0, -340, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
+  const cardY     = interpolate([5.6, 8.6, 11.5], [0, -340, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
   const cardOpa   = interpolate([3.8, 4.6], [0, 1], Easing.easeOutQuad)(t);
-  const cardScale = interpolate([8.6, 11.0], [1.0, 1.45], Easing.easeInOutCubic)(t);
+  // Card scale starts only after envelope is fully gone (t=9.2) — prevents card edges
+  // from bleeding through the semi-transparent envelope sides during transition
+  const cardScale = interpolate([9.2, 11.5], [1.0, 1.45], Easing.easeInOutCubic)(t);
 
   // Card shadow grows as it rises
   const cardShadow = interpolate([5.6, 8.6], [0.2, 0.55], Easing.easeInOutQuad)(t);
@@ -204,7 +206,7 @@ function EnvelopeCard() {
         transform: `translateY(${envY + cardY}px) scale(${cardScale})`,
         transformOrigin: 'center center',
         opacity: cardOpa,
-        zIndex: (t < 9.2) ? 3 : 5,
+        zIndex: (t < 9.2) ? 3 : 6,
         filter: `drop-shadow(0 18px 40px rgba(0,0,0,${cardShadow}))`,
       }}>
         <InvitationCard />
@@ -293,11 +295,11 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
   if (t < 1.5 || t > 9.2) return null;
 
   const envY      = interpolate([1.6, 2.8, 3.2], [-900, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
-  const envShiftY = interpolate([8.6, 10.5], [0, 320], Easing.easeInOutCubic)(t);
-  const envShiftX = interpolate([8.6, 10.5], [0, -150], Easing.easeInOutCubic)(t);
-  const envRotEx  = interpolate([8.6, 10.5], [0, -18], Easing.easeInOutCubic)(t);
+  const envShiftY = interpolate([8.6, 9.2], [0, 320], Easing.easeInCubic)(t);
+  const envShiftX = interpolate([8.6, 9.2], [0, -150], Easing.easeInCubic)(t);
+  const envRotEx  = interpolate([8.6, 9.2], [0, -18], Easing.easeInCubic)(t);
   const envOpaIn  = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
-  const envOpaOut = interpolate([8.6, 10.5], [1, 0], Easing.easeInOutQuad)(t);
+  const envOpaOut = interpolate([8.6, 9.2], [1, 0], Easing.easeInQuad)(t);
 
   // Cover mask: same V-notch shape as the envelope back, hides card inside pocket.
   const flapPct = `${((flapH / envH) * 100).toFixed(1)}%`;
