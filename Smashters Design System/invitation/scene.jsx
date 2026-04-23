@@ -535,16 +535,47 @@ function InvitationCard() {
   );
 }
 
+// Scroll nudge — fades in at the end, prompts user to scroll for RSVP details
+function ScrollNudge() {
+  const t = useTime();
+  const opacity = interpolate([16.2, 17.0], [0, 1], Easing.easeInOutQuad)(t);
+  if (opacity < 0.01) return null;
+  const bob = Math.sin((t - 16) * 3.5) * 5;
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: 70,
+      left: '50%',
+      transform: `translateX(-50%) translateY(${bob}px)`,
+      opacity,
+      zIndex: 10,
+      textAlign: 'center',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        fontFamily: "'Trebuchet MS', sans-serif",
+        fontSize: 13,
+        letterSpacing: 5,
+        textTransform: 'uppercase',
+        color: 'rgba(251,243,8,0.7)',
+        marginBottom: 6,
+      }}>RSVP Below</div>
+      <div style={{ fontSize: 22, color: 'rgba(251,243,8,0.6)' }}>↓</div>
+    </div>
+  );
+}
+
 function InvitationScene() {
   return (
     <div data-screen-label="01 Invitation — Unboxing Video" style={{ position: 'absolute', inset: 0 }}>
       <BgWallpaper />
       <OpeningCopy />
       <EnvelopeCard />
+      <ScrollNudge />
     </div>
   );
 }
 
 Object.assign(window, {
-  InvitationScene, BgWallpaper, OpeningCopy, EnvelopeCard, InvitationCard, WaxSeal, EnvelopeCoverMask,
+  InvitationScene, BgWallpaper, OpeningCopy, EnvelopeCard, InvitationCard, WaxSeal, EnvelopeCoverMask, ScrollNudge,
 });
