@@ -17,7 +17,7 @@ function BgWallpaper() {
       <div style={{
         position: 'absolute', inset: '-10%',
         backgroundImage: "url('assets/Phone Size DFCG No Background.png')",
-        backgroundSize: '180px',
+        backgroundSize: '100px',
         opacity: 0.06,
         transform: `rotate(-15deg) translateY(${drift}px)`,
       }}/>
@@ -46,20 +46,12 @@ function OpeningCopy() {
       pointerEvents: 'none',
     }}>
       <div style={{
-        fontFamily: "'Trebuchet MS', sans-serif",
-        fontSize: 14,
-        fontWeight: 'bold',
-        letterSpacing: 6,
-        textTransform: 'uppercase',
-        color: 'rgba(251, 243, 8, 0.85)',
-      }}>Board of Governors · Dumpster Fire Golf Club</div>
-      <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 56,
-        letterSpacing: 3,
+        fontSize: 34,
+        letterSpacing: 2,
         color: '#FBF308',
-        marginTop: 10,
         textShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        textAlign: 'center',
       }}>A Delivery Has Arrived</div>
     </div>
   );
@@ -77,12 +69,12 @@ function EnvelopeCard() {
   const t = useTime();
 
   // ── Envelope drop + settle ───────────────────────────────────
-  const envY      = interpolate([1.6, 2.8, 3.2], [-560, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
+  const envY      = interpolate([1.6, 2.8, 3.2], [-900, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
   const envOpaIn  = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
 
   // ── Envelope exit: fades + slides away once card has risen ──
-  const envShiftY = interpolate([8.6, 10.5], [0, 260], Easing.easeInOutCubic)(t);
-  const envShiftX = interpolate([8.6, 10.5], [0, -260], Easing.easeInOutCubic)(t);
+  const envShiftY = interpolate([8.6, 10.5], [0, 320], Easing.easeInOutCubic)(t);
+  const envShiftX = interpolate([8.6, 10.5], [0, -150], Easing.easeInOutCubic)(t);
   const envRotEx  = interpolate([8.6, 10.5], [0, -18], Easing.easeInOutCubic)(t);
   const envOpaOut = interpolate([8.6, 10.5], [1, 0], Easing.easeInOutQuad)(t);
 
@@ -98,9 +90,9 @@ function EnvelopeCard() {
   // ── Card: single Y keyframe. Anchored to stage center via left/top 50%. ──
   //  phase A (5.6→8.6): rise out of envelope from y=0 to y=-200  (peek then pop out)
   //  phase B (8.6→11.0): return to y=0 and scale up — center-of-stage big view
-  const cardY     = interpolate([5.6, 8.6, 11.0], [0, -200, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
+  const cardY     = interpolate([5.6, 8.6, 11.0], [0, -270, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
   const cardOpa   = interpolate([3.8, 4.6], [0, 1], Easing.easeOutQuad)(t);
-  const cardScale = interpolate([8.6, 11.0], [1.0, 2.2], Easing.easeInOutCubic)(t);
+  const cardScale = interpolate([8.6, 11.0], [1.0, 1.9], Easing.easeInOutCubic)(t);
 
   // Card shadow grows as it rises
   const cardShadow = interpolate([5.6, 8.6], [0.2, 0.55], Easing.easeInOutQuad)(t);
@@ -108,8 +100,10 @@ function EnvelopeCard() {
   // Background dim while card is featured
   const focusDim = interpolate([8.6, 10.8], [0, 0.6], Easing.easeInOutQuad)(t);
 
-  const envW = 460;
-  const envH = 330;
+  const envW = 260;
+  const envH = 310;
+  const cardW = 220;
+  const cardH = 340;
   const flapH = envH * 0.55;
 
   return (
@@ -201,10 +195,10 @@ function EnvelopeCard() {
         position: 'absolute',
         left: '50%',
         top: '50%',
-        width: envW - 40,
-        height: envH - 10,
-        marginLeft: -(envW - 40) / 2,
-        marginTop: -(envH - 10) / 2,
+        width: cardW,
+        height: cardH,
+        marginLeft: -cardW / 2,
+        marginTop: -cardH / 2,
         transform: `translateY(${envY + cardY}px) scale(${cardScale})`,
         transformOrigin: 'center center',
         opacity: cardOpa,
@@ -233,7 +227,7 @@ function WaxSeal({ envW, envH, flapH }) {
   const t = useTime();
   if (t < 1.5) return null;
 
-  const envY     = interpolate([1.6, 2.8, 3.2], [-560, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
+  const envY     = interpolate([1.6, 2.8, 3.2], [-900, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
   const envOpaIn = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
 
   const sealLift   = interpolate([3.4, 3.8], [0, -14], Easing.easeOutQuad)(t);
@@ -296,9 +290,9 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
   const t = useTime();
   if (t < 1.5 || t > 9.2) return null;
 
-  const envY      = interpolate([1.6, 2.8, 3.2], [-560, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
-  const envShiftY = interpolate([8.6, 10.5], [0, 260], Easing.easeInOutCubic)(t);
-  const envShiftX = interpolate([8.6, 10.5], [0, -260], Easing.easeInOutCubic)(t);
+  const envY      = interpolate([1.6, 2.8, 3.2], [-900, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
+  const envShiftY = interpolate([8.6, 10.5], [0, 320], Easing.easeInOutCubic)(t);
+  const envShiftX = interpolate([8.6, 10.5], [0, -150], Easing.easeInOutCubic)(t);
   const envRotEx  = interpolate([8.6, 10.5], [0, -18], Easing.easeInOutCubic)(t);
   const envOpaIn  = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
   const envOpaOut = interpolate([8.6, 10.5], [1, 0], Easing.easeInOutQuad)(t);
@@ -348,7 +342,7 @@ function InvitationCard() {
       inset: 0,
       background: 'linear-gradient(180deg, #fdfcf6 0%, #f6f1e3 100%)',
       borderRadius: 6,
-      padding: '14px 18px',
+      padding: '20px 24px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -358,27 +352,14 @@ function InvitationCard() {
       boxShadow:
         'inset 0 0 0 1px rgba(251, 243, 8, 0.45), inset 0 0 0 3px rgba(0, 103, 71, 0.5), inset 0 0 0 4px rgba(251, 243, 8, 0.2)',
     }}>
-      {/* Corner filigree — tiny gold accents */}
-      {['tl','tr','bl','br'].map(corner => (
-        <div key={corner} style={{
-          position: 'absolute',
-          width: 18, height: 18,
-          border: '1.2px solid #006747',
-          borderColor: corner.includes('t') ? '#006747' : 'transparent',
-          ...(corner === 'tl' && { top: 6, left: 6, borderRight: 'none', borderBottom: 'none' }),
-          ...(corner === 'tr' && { top: 6, right: 6, borderLeft: 'none', borderBottom: 'none', borderColor: '#006747 #006747 transparent transparent' }),
-          ...(corner === 'bl' && { bottom: 6, left: 6, borderRight: 'none', borderTop: 'none', borderColor: 'transparent transparent #006747 #006747' }),
-          ...(corner === 'br' && { bottom: 6, right: 6, borderLeft: 'none', borderTop: 'none', borderColor: 'transparent #006747 #006747 transparent' }),
-        }}/>
-      ))}
 
       <img
         src="assets/smashters-logo-green.png"
         style={{
-          width: 58,
-          height: 58,
+          width: 76,
+          height: 76,
           objectFit: 'contain',
-          marginTop: 2,
+          marginTop: 4,
           opacity: stagger(0),
           transform: `translateY(${yLift(0)}px)`,
         }}
@@ -387,9 +368,9 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7.5,
+        fontSize: 11,
         color: '#006747',
-        marginTop: 4,
+        marginTop: 6,
         opacity: stagger(1),
         transform: `translateY(${yLift(1)}px)`,
         textAlign: 'center',
@@ -401,10 +382,10 @@ function InvitationCard() {
 
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 15,
+        fontSize: 22,
         letterSpacing: 1,
         color: '#00432e',
-        marginTop: 2,
+        marginTop: 3,
         opacity: stagger(2),
         transform: `translateY(${yLift(2)}px)`,
         textAlign: 'center',
@@ -416,9 +397,9 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7,
+        fontSize: 10,
         color: '#2a2a2a',
-        marginTop: 6,
+        marginTop: 8,
         opacity: stagger(3),
         transform: `translateY(${yLift(3)}px)`,
         textAlign: 'center',
@@ -430,9 +411,9 @@ function InvitationCard() {
 
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 12,
+        fontSize: 18,
         color: '#00432e',
-        marginTop: 4,
+        marginTop: 6,
         opacity: stagger(4),
         transform: `translateY(${yLift(4)}px)`,
         letterSpacing: 1,
@@ -446,9 +427,9 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7,
+        fontSize: 10,
         color: '#2a2a2a',
-        marginTop: 6,
+        marginTop: 10,
         opacity: stagger(5),
         transform: `translateY(${yLift(5)}px)`,
         textAlign: 'center',
@@ -458,9 +439,9 @@ function InvitationCard() {
       </div>
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 12,
+        fontSize: 18,
         color: '#006747',
-        marginTop: 1,
+        marginTop: 2,
         letterSpacing: 0.5,
         opacity: stagger(5),
         transform: `translateY(${yLift(5)}px)`,
@@ -471,9 +452,9 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7,
+        fontSize: 10,
         color: '#2a2a2a',
-        marginTop: 4,
+        marginTop: 8,
         opacity: stagger(6),
         transform: `translateY(${yLift(6)}px)`,
         textAlign: 'center',
@@ -487,14 +468,14 @@ function InvitationCard() {
         width: '42%',
         height: 1,
         background: 'linear-gradient(90deg, transparent, #006747 20%, #FBF308 50%, #006747 80%, transparent)',
-        margin: '6px 0 3px',
+        margin: '10px 0 5px',
         opacity: stagger(7),
       }}/>
 
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 6.5,
+        fontSize: 10,
         color: '#2a2a2a',
         opacity: stagger(7),
         transform: `translateY(${yLift(7)}px)`,
@@ -506,11 +487,11 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Trebuchet MS', sans-serif",
         fontWeight: 'bold',
-        fontSize: 5.5,
+        fontSize: 8,
         letterSpacing: 2.5,
         textTransform: 'uppercase',
         color: '#666',
-        marginTop: 2,
+        marginTop: 3,
         opacity: stagger(7),
       }}>Chairmen</div>
 
@@ -526,7 +507,7 @@ function InvitationCard() {
       }}>
         <div style={{
           fontFamily: "'Trebuchet MS', sans-serif",
-          fontSize: 6,
+          fontSize: 9,
           letterSpacing: 2,
           textTransform: 'uppercase',
           color: '#888',
@@ -537,12 +518,12 @@ function InvitationCard() {
           rel="noopener noreferrer"
           style={{
             fontFamily: "'Trebuchet MS', sans-serif",
-            fontSize: 6.5,
+            fontSize: 10,
             letterSpacing: 2.5,
             fontWeight: 'bold',
             color: '#006747',
             textDecoration: 'none',
-            padding: '4px 14px',
+            padding: '6px 20px',
             border: '1px solid #006747',
             borderRadius: 2,
             display: 'inline-block',
@@ -554,7 +535,7 @@ function InvitationCard() {
         </a>
         <div style={{
           fontFamily: "'Trebuchet MS', sans-serif",
-          fontSize: 5.5,
+          fontSize: 8,
           color: '#aaa',
           letterSpacing: 1,
         }}>@BrianBunch1313</div>
