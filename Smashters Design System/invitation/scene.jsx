@@ -537,16 +537,17 @@ function InvitationCard() {
           rel="noopener noreferrer"
           style={{
             fontFamily: "'Trebuchet MS', sans-serif",
-            fontSize: 7,
-            letterSpacing: 2,
+            fontSize: 6.5,
+            letterSpacing: 2.5,
             fontWeight: 'bold',
-            color: '#fff',
+            color: '#006747',
             textDecoration: 'none',
-            padding: '5px 16px',
-            background: '#008CFF',
-            borderRadius: 3,
+            padding: '4px 14px',
+            border: '1px solid #006747',
+            borderRadius: 2,
             display: 'inline-block',
-            boxShadow: `0 0 ${rsvpGlow * 18}px rgba(251, 243, 8, ${rsvpGlow * 0.7}), 0 2px 8px rgba(0,140,255,0.5)`,
+            boxShadow: `0 0 ${rsvpGlow * 18}px rgba(251, 243, 8, ${rsvpGlow * 0.85})`,
+            background: `rgba(251, 243, 8, ${rsvpGlow * 0.2})`,
           }}
         >
           Pay via Venmo
