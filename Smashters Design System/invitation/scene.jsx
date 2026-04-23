@@ -377,7 +377,7 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7.5,
+        fontSize: 9,
         color: '#006747',
         marginTop: 10,
         opacity: stagger(1),
@@ -391,7 +391,7 @@ function InvitationCard() {
 
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 14,
+        fontSize: 16,
         letterSpacing: 1,
         color: '#00432e',
         marginTop: 2,
@@ -406,7 +406,7 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7.5,
+        fontSize: 9,
         color: '#2a2a2a',
         marginTop: 12,
         opacity: stagger(3),
@@ -420,7 +420,7 @@ function InvitationCard() {
 
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 14,
+        fontSize: 16,
         color: '#00432e',
         marginTop: 6,
         opacity: stagger(4),
@@ -437,7 +437,7 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7.5,
+        fontSize: 9,
         color: '#2a2a2a',
         marginTop: 12,
         opacity: stagger(5),
@@ -449,7 +449,7 @@ function InvitationCard() {
       </div>
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 14,
+        fontSize: 16,
         color: '#006747',
         marginTop: 2,
         letterSpacing: 0.5,
@@ -462,7 +462,7 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7.5,
+        fontSize: 9,
         color: '#2a2a2a',
         marginTop: 10,
         opacity: stagger(6),
@@ -485,7 +485,7 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 7.5,
+        fontSize: 9,
         color: '#2a2a2a',
         opacity: stagger(7),
         transform: `translateY(${yLift(7)}px)`,
@@ -497,7 +497,7 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Trebuchet MS', sans-serif",
         fontWeight: 'bold',
-        fontSize: 6,
+        fontSize: 7,
         letterSpacing: 2.5,
         textTransform: 'uppercase',
         color: '#666',
@@ -518,7 +518,7 @@ function InvitationCard() {
       }}>
         <div style={{
           fontFamily: "'Trebuchet MS', sans-serif",
-          fontSize: 7,
+          fontSize: 8.5,
           letterSpacing: 2,
           textTransform: 'uppercase',
           color: '#888',
@@ -529,7 +529,7 @@ function InvitationCard() {
           rel="noopener noreferrer"
           style={{
             fontFamily: "'Trebuchet MS', sans-serif",
-            fontSize: 8,
+            fontSize: 10,
             letterSpacing: 2.5,
             fontWeight: 'bold',
             color: '#006747',
