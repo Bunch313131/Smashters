@@ -109,7 +109,7 @@ function EnvelopeCard() {
   const focusDim = interpolate([8.6, 10.8], [0, 0.6], Easing.easeInOutQuad)(t);
 
   const envW = 460;
-  const envH = 290;
+  const envH = 330;
   const flapH = envH * 0.55;
 
   return (
@@ -201,9 +201,9 @@ function EnvelopeCard() {
         left: '50%',
         top: '50%',
         width: envW - 40,
-        height: envH + 20,
+        height: envH - 10,
         marginLeft: -(envW - 40) / 2,
-        marginTop: -(envH + 20) / 2,
+        marginTop: -(envH - 10) / 2,
         transform: `translateY(${envY + cardY}px) scale(${cardScale})`,
         transformOrigin: 'center center',
         opacity: cardOpa,
