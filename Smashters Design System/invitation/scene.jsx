@@ -89,10 +89,14 @@ function EnvelopeCard() {
   const sealRot    = interpolate([3.6, 4.6], [0, 65], Easing.easeInQuad)(t);
   const sealFade   = interpolate([4.2, 4.8], [1, 0], Easing.easeOutQuad)(t);
 
+  // ── Envelope drifts down during card rise — accordion split keeps action on-screen ──
+  // Envelope center moves: 0 → +160 (down) while card rises 0 → -200 (up)
+  const envRiseOffset = interpolate([5.6, 8.6], [0, 160], Easing.easeOutCubic)(t);
+
   // ── Card: single Y keyframe. Anchored to stage center via left/top 50%. ──
-  //  phase A (5.6→8.6): rise out of envelope from y=0 to y=-200  (peek then pop out)
-  //  phase B (8.6→11.0): return to y=0 and scale up — center-of-stage big view
-  const cardY     = interpolate([5.6, 8.6, 11.5], [0, -340, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
+  //  phase A (5.6→8.6): rise out of envelope from y=0 to y=-200 (card top stays ~35px inside stage)
+  //  phase B (8.6→11.5): return to y=0 and scale up — center-of-stage big view
+  const cardY     = interpolate([5.6, 8.6, 11.5], [0, -200, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
   const cardOpa   = interpolate([3.8, 4.6], [0, 1], Easing.easeOutQuad)(t);
   // Card scale starts only after envelope is fully gone (t=9.2) — prevents card edges
   // from bleeding through the semi-transparent envelope sides during transition
@@ -138,7 +142,7 @@ function EnvelopeCard() {
         marginLeft: -envW / 2,
         marginTop: -envH / 2,
         opacity: envOpaIn * envOpaOut,
-        transform: `translate(${envShiftX}px, ${envY + envShiftY}px) rotate(${envRotEx}deg)`,
+        transform: `translate(${envShiftX}px, ${envY + envRiseOffset + envShiftY}px) rotate(${envRotEx}deg)`,
         transformStyle: 'preserve-3d',
         filter: `drop-shadow(0 18px 40px rgba(0,0,0,0.6))`,
         zIndex: 2,
@@ -294,12 +298,13 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
   const t = useTime();
   if (t < 1.5 || t > 9.2) return null;
 
-  const envY      = interpolate([1.6, 2.8, 3.2], [-900, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
-  const envShiftY = interpolate([8.6, 9.2], [0, 320], Easing.easeInCubic)(t);
-  const envShiftX = interpolate([8.6, 9.2], [0, -150], Easing.easeInCubic)(t);
-  const envRotEx  = interpolate([8.6, 9.2], [0, -18], Easing.easeInCubic)(t);
-  const envOpaIn  = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
-  const envOpaOut = interpolate([8.6, 9.2], [1, 0], Easing.easeInQuad)(t);
+  const envY          = interpolate([1.6, 2.8, 3.2], [-900, 30, 0], [Easing.easeOutQuad, Easing.easeOutBack])(t);
+  const envRiseOffset = interpolate([5.6, 8.6], [0, 160], Easing.easeOutCubic)(t);
+  const envShiftY     = interpolate([8.6, 9.2], [0, 320], Easing.easeInCubic)(t);
+  const envShiftX     = interpolate([8.6, 9.2], [0, -150], Easing.easeInCubic)(t);
+  const envRotEx      = interpolate([8.6, 9.2], [0, -18], Easing.easeInCubic)(t);
+  const envOpaIn      = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
+  const envOpaOut     = interpolate([8.6, 9.2], [1, 0], Easing.easeInQuad)(t);
 
   // Cover mask: same V-notch shape as the envelope back, hides card inside pocket.
   const flapPct = `${((flapH / envH) * 100).toFixed(1)}%`;
@@ -313,7 +318,7 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
       marginLeft: -envW / 2,
       marginTop: -envH / 2,
       opacity: envOpaIn * envOpaOut,
-      transform: `translate(${envShiftX}px, ${envY + envShiftY}px) rotate(${envRotEx}deg)`,
+      transform: `translate(${envShiftX}px, ${envY + envRiseOffset + envShiftY}px) rotate(${envRotEx}deg)`,
       zIndex: 4,
       pointerEvents: 'none',
     }}>
