@@ -25,162 +25,20 @@
       font-display: swap;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { height: 100%; }
-    body {
-      min-height: 100%;
+    html, body {
+      height: 100%;
       background: #050505;
       font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      overflow-y: auto;
+      overflow: hidden;
     }
-    #root {
-      width: 100%;
-      height: 100vh;
-    }
-
-    /* ── RSVP Section ───────────────────────────────────── */
-    #rsvp {
-      background: radial-gradient(ellipse at center, #0a5638 0%, #00432e 45%, #001a10 100%);
-      padding: 72px 32px 80px;
-      text-align: center;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    #rsvp .inner { max-width: 520px; width: 100%; }
-    #rsvp .logo {
-      width: 72px; height: 72px;
-      object-fit: contain;
-      margin-bottom: 20px;
-      filter: drop-shadow(0 2px 12px rgba(0,0,0,0.5));
-    }
-    #rsvp .eyebrow {
-      font-size: 11px;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      color: rgba(251, 243, 8, 0.65);
-      margin-bottom: 10px;
-    }
-    #rsvp h1 {
-      font-family: 'Azalea', Georgia, serif;
-      font-size: clamp(36px, 8vw, 56px);
-      color: #FBF308;
-      letter-spacing: 2px;
-      line-height: 1;
-      margin-bottom: 0;
-      text-shadow: 0 4px 24px rgba(251,243,8,0.25);
-    }
-    #rsvp .rule {
-      width: 180px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(251,243,8,0.45) 30%, rgba(251,243,8,0.45) 70%, transparent);
-      margin: 22px auto;
-    }
-    #rsvp .date {
-      font-family: Georgia, serif;
-      font-style: italic;
-      font-size: clamp(15px, 3.5vw, 20px);
-      color: rgba(255,255,255,0.8);
-      margin-bottom: 6px;
-    }
-    #rsvp .venue {
-      font-family: 'Azalea', Georgia, serif;
-      font-size: clamp(22px, 5.5vw, 34px);
-      color: #9dd4ab;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-    #rsvp .venue-sub {
-      font-family: Georgia, serif;
-      font-style: italic;
-      font-size: clamp(12px, 2.5vw, 15px);
-      color: rgba(255,255,255,0.45);
-      margin-bottom: 32px;
-    }
-    #rsvp .fee-box {
-      border: 1px solid rgba(251,243,8,0.2);
-      border-radius: 10px;
-      padding: 20px 32px;
-      margin-bottom: 32px;
-      background: rgba(0,0,0,0.25);
-      display: inline-block;
-    }
-    #rsvp .fee-label {
-      font-size: 10px;
-      letter-spacing: 5px;
-      text-transform: uppercase;
-      color: rgba(251,243,8,0.55);
-      margin-bottom: 4px;
-    }
-    #rsvp .fee-amount {
-      font-size: clamp(32px, 8vw, 44px);
-      font-weight: bold;
-      color: #FBF308;
-    }
-    #rsvp .venmo-btn {
-      display: inline-block;
-      background: #008CFF;
-      color: #fff;
-      text-decoration: none;
-      padding: 15px 40px;
-      border-radius: 50px;
-      font-size: clamp(14px, 3.5vw, 17px);
-      font-weight: bold;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 28px rgba(0,140,255,0.4);
-      transition: opacity 0.15s;
-      margin-bottom: 10px;
-    }
-    #rsvp .venmo-btn:hover { opacity: 0.88; }
-    #rsvp .venmo-handle {
-      font-size: 13px;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 1px;
-      margin-bottom: 52px;
-    }
-    #rsvp .chairmen {
-      padding-top: 28px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      font-size: 11px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.25);
-      line-height: 2;
-    }
+    body { display: flex; align-items: center; justify-content: center; }
+    #root { width: 100%; height: 100%; }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
-  <section id="rsvp">
-    <div class="inner">
-      <img class="logo" src="assets/smashters-logo-green.png" alt="Smashters">
-      <p class="eyebrow">Dumpster Fire Golf Club</p>
-      <h1>Smashters 2026</h1>
-      <div class="rule"></div>
-      <p class="date">May 14 – 16, 2026</p>
-      <p class="venue">El Macero Country Club</p>
-      <p class="venue-sub">El Macero, California</p>
-      <div class="fee-box">
-        <p class="fee-label">Entry Fee</p>
-        <p class="fee-amount">$300</p>
-      </div>
-      <br>
-      <a class="venmo-btn"
-         href="https://venmo.com/u/BrianBunch1313?txn=pay&amount=300&note=Smashters+2026+Entry+Fee"
-         target="_blank" rel="noopener noreferrer">
-        Pay Entry Fee via Venmo
-      </a>
-      <p class="venmo-handle">@BrianBunch1313</p>
-      <div class="chairmen">
-        Andrew Donald &nbsp;·&nbsp; Ian Bolnik &nbsp;·&nbsp; Brian Bunch<br>
-        Chairmen
-      </div>
-    </div>
-  </section>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>

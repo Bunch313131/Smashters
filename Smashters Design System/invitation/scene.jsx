@@ -514,53 +514,50 @@ function InvitationCard() {
         opacity: stagger(7),
       }}>Chairmen</div>
 
+      {/* Venmo RSVP — real clickable link */}
       <div style={{
         marginTop: 'auto',
-        fontFamily: "'Trebuchet MS', sans-serif",
-        fontSize: 6.5,
-        letterSpacing: 3,
-        fontWeight: 'bold',
-        color: '#006747',
-        padding: '3px 12px',
-        border: '1px solid #006747',
-        borderRadius: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 3,
         opacity: Math.max(stagger(8), 0),
         transform: `translateY(${yLift(8)}px)`,
-        boxShadow: `0 0 ${rsvpGlow * 18}px rgba(251, 243, 8, ${rsvpGlow * 0.85})`,
-        background: `rgba(251, 243, 8, ${rsvpGlow * 0.2})`,
       }}>
-        R · S · V · P
+        <div style={{
+          fontFamily: "'Trebuchet MS', sans-serif",
+          fontSize: 6,
+          letterSpacing: 2,
+          textTransform: 'uppercase',
+          color: '#888',
+        }}>Entry Fee · $300</div>
+        <a
+          href="https://venmo.com/u/BrianBunch1313?txn=pay&amount=300&note=Smashters+2026+Entry+Fee"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontFamily: "'Trebuchet MS', sans-serif",
+            fontSize: 7,
+            letterSpacing: 2,
+            fontWeight: 'bold',
+            color: '#fff',
+            textDecoration: 'none',
+            padding: '5px 16px',
+            background: '#008CFF',
+            borderRadius: 3,
+            display: 'inline-block',
+            boxShadow: `0 0 ${rsvpGlow * 18}px rgba(251, 243, 8, ${rsvpGlow * 0.7}), 0 2px 8px rgba(0,140,255,0.5)`,
+          }}
+        >
+          Pay via Venmo
+        </a>
+        <div style={{
+          fontFamily: "'Trebuchet MS', sans-serif",
+          fontSize: 5.5,
+          color: '#aaa',
+          letterSpacing: 1,
+        }}>@BrianBunch1313</div>
       </div>
-    </div>
-  );
-}
-
-// Scroll nudge — fades in at the end, prompts user to scroll for RSVP details
-function ScrollNudge() {
-  const t = useTime();
-  const opacity = interpolate([16.2, 17.0], [0, 1], Easing.easeInOutQuad)(t);
-  if (opacity < 0.01) return null;
-  const bob = Math.sin((t - 16) * 3.5) * 5;
-  return (
-    <div style={{
-      position: 'absolute',
-      bottom: 70,
-      left: '50%',
-      transform: `translateX(-50%) translateY(${bob}px)`,
-      opacity,
-      zIndex: 10,
-      textAlign: 'center',
-      pointerEvents: 'none',
-    }}>
-      <div style={{
-        fontFamily: "'Trebuchet MS', sans-serif",
-        fontSize: 13,
-        letterSpacing: 5,
-        textTransform: 'uppercase',
-        color: 'rgba(251,243,8,0.7)',
-        marginBottom: 6,
-      }}>RSVP Below</div>
-      <div style={{ fontSize: 22, color: 'rgba(251,243,8,0.6)' }}>↓</div>
     </div>
   );
 }
@@ -571,11 +568,10 @@ function InvitationScene() {
       <BgWallpaper />
       <OpeningCopy />
       <EnvelopeCard />
-      <ScrollNudge />
     </div>
   );
 }
 
 Object.assign(window, {
-  InvitationScene, BgWallpaper, OpeningCopy, EnvelopeCard, InvitationCard, WaxSeal, EnvelopeCoverMask, ScrollNudge,
+  InvitationScene, BgWallpaper, OpeningCopy, EnvelopeCard, InvitationCard, WaxSeal, EnvelopeCoverMask,
 });
