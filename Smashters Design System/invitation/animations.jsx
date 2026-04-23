@@ -362,7 +362,7 @@ function Stage({
     const el = stageRef.current;
     const measure = () => {
       const barH = controls ? 44 : 0;
-      const s = Math.min(
+      const s = Math.max(
         el.clientWidth / width,
         (el.clientHeight - barH) / height
       );

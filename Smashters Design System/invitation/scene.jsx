@@ -100,7 +100,7 @@ function EnvelopeCard() {
   const cardOpa   = interpolate([3.8, 4.6], [0, 1], Easing.easeOutQuad)(t);
   // Card scale starts only after envelope is fully gone (t=9.2) — prevents card edges
   // from bleeding through the semi-transparent envelope sides during transition
-  const cardScale = interpolate([9.2, 11.5], [1.0, 1.6], Easing.easeInOutCubic)(t);
+  const cardScale = interpolate([9.2, 11.5], [1.0, 1.55], Easing.easeInOutCubic)(t);
 
   // Card shadow grows as it rises
   const cardShadow = interpolate([5.6, 8.6], [0.2, 0.55], Easing.easeInOutQuad)(t);
