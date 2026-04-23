@@ -35,7 +35,8 @@
       height: 100%;
       /* env(safe-area-inset-*) fills the notch/home-indicator area */
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-      background: #050505;
+      /* Same radial gradient as BgWallpaper so letterbox bars blend seamlessly */
+      background: radial-gradient(ellipse at center, #0a5638 0%, #00432e 45%, #001a10 100%);
       font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;

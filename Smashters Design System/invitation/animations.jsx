@@ -333,9 +333,13 @@ function Stage({
   children,
 }) {
   const [time, setTime] = React.useState(() => {
+    // When controls are hidden, always start fresh — no point resuming a completed animation
+    if (!controls) return 0;
     try {
       const v = parseFloat(localStorage.getItem(persistKey + ':t') || '0');
-      return isFinite(v) ? clamp(v, 0, duration) : 0;
+      // Don't restore a completed position — start over
+      if (!isFinite(v) || v >= duration - 0.1) return 0;
+      return clamp(v, 0, duration);
     } catch { return 0; }
   });
   const [playing, setPlaying] = React.useState(autoplay);
@@ -434,7 +438,7 @@ function Stage({
         position: 'absolute', inset: 0,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center',
-        background: '#0a0a0a',
+        background: 'transparent',
         fontFamily: 'Inter, system-ui, sans-serif',
       }}
     >
