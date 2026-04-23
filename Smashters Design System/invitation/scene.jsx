@@ -15,9 +15,9 @@ function BgWallpaper() {
       overflow: 'hidden',
     }}>
       <div style={{
-        position: 'absolute', inset: '-10%',
+        position: 'absolute', inset: '-25%',
         backgroundImage: "url('assets/Phone Size DFCG No Background.png')",
-        backgroundSize: '100px',
+        backgroundSize: '90px',
         opacity: 0.06,
         transform: `rotate(-15deg) translateY(${drift}px)`,
       }}/>
@@ -92,9 +92,9 @@ function EnvelopeCard() {
   // ── Card: single Y keyframe. Anchored to stage center via left/top 50%. ──
   //  phase A (5.6→8.6): rise out of envelope from y=0 to y=-200  (peek then pop out)
   //  phase B (8.6→11.0): return to y=0 and scale up — center-of-stage big view
-  const cardY     = interpolate([5.6, 8.6, 11.0], [0, -380, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
+  const cardY     = interpolate([5.6, 8.6, 11.0], [0, -340, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
   const cardOpa   = interpolate([3.8, 4.6], [0, 1], Easing.easeOutQuad)(t);
-  const cardScale = interpolate([8.6, 11.0], [1.0, 1.8], Easing.easeInOutCubic)(t);
+  const cardScale = interpolate([8.6, 11.0], [1.0, 1.45], Easing.easeInOutCubic)(t);
 
   // Card shadow grows as it rises
   const cardShadow = interpolate([5.6, 8.6], [0.2, 0.55], Easing.easeInOutQuad)(t);
@@ -102,10 +102,10 @@ function EnvelopeCard() {
   // Background dim while card is featured
   const focusDim = interpolate([8.6, 10.8], [0, 0.6], Easing.easeInOutQuad)(t);
 
-  const envW = 260;
-  const envH = 460;
-  const cardW = 220;
-  const cardH = 440;
+  const envW = 300;
+  const envH = 420;
+  const cardW = 270;
+  const cardH = 390;
   const flapH = envH * 0.55;
 
   return (
@@ -344,7 +344,7 @@ function InvitationCard() {
       inset: 0,
       background: 'linear-gradient(180deg, #fdfcf6 0%, #f6f1e3 100%)',
       borderRadius: 6,
-      padding: '20px 24px',
+      padding: '14px 20px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -358,10 +358,10 @@ function InvitationCard() {
       <img
         src="assets/smashters-logo-green.png"
         style={{
-          width: 76,
-          height: 76,
+          width: 56,
+          height: 56,
           objectFit: 'contain',
-          marginTop: 4,
+          marginTop: 2,
           opacity: stagger(0),
           transform: `translateY(${yLift(0)}px)`,
         }}
@@ -370,9 +370,9 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 10,
+        fontSize: 7.5,
         color: '#2a2a2a',
-        marginTop: 8,
+        marginTop: 6,
         opacity: stagger(3),
         transform: `translateY(${yLift(3)}px)`,
         textAlign: 'center',
@@ -384,25 +384,26 @@ function InvitationCard() {
 
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 18,
+        fontSize: 14,
         color: '#00432e',
-        marginTop: 6,
+        marginTop: 4,
         opacity: stagger(4),
         transform: `translateY(${yLift(4)}px)`,
         letterSpacing: 1,
         textAlign: 'center',
         lineHeight: 1.1,
       }}>
-        Two Thousand and Twenty-Six<br/>
+        Two Thousand and<br/>
+        Twenty-Six<br/>
         Smashters Tournament
       </div>
 
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 10,
+        fontSize: 7.5,
         color: '#2a2a2a',
-        marginTop: 10,
+        marginTop: 8,
         opacity: stagger(5),
         transform: `translateY(${yLift(5)}px)`,
         textAlign: 'center',
@@ -412,7 +413,7 @@ function InvitationCard() {
       </div>
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 18,
+        fontSize: 14,
         color: '#006747',
         marginTop: 2,
         letterSpacing: 0.5,
@@ -425,9 +426,9 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 10,
+        fontSize: 7.5,
         color: '#2a2a2a',
-        marginTop: 8,
+        marginTop: 6,
         opacity: stagger(6),
         transform: `translateY(${yLift(6)}px)`,
         textAlign: 'center',
@@ -441,14 +442,14 @@ function InvitationCard() {
         width: '42%',
         height: 1,
         background: 'linear-gradient(90deg, transparent, #006747 20%, #FBF308 50%, #006747 80%, transparent)',
-        margin: '10px 0 5px',
+        margin: '7px 0 4px',
         opacity: stagger(7),
       }}/>
 
       <div style={{
         fontFamily: "'Georgia', serif",
         fontStyle: 'italic',
-        fontSize: 10,
+        fontSize: 7.5,
         color: '#2a2a2a',
         opacity: stagger(7),
         transform: `translateY(${yLift(7)}px)`,
@@ -460,17 +461,17 @@ function InvitationCard() {
       <div style={{
         fontFamily: "'Trebuchet MS', sans-serif",
         fontWeight: 'bold',
-        fontSize: 8,
+        fontSize: 6,
         letterSpacing: 2.5,
         textTransform: 'uppercase',
         color: '#666',
-        marginTop: 3,
+        marginTop: 2,
         opacity: stagger(7),
       }}>Chairmen</div>
 
       {/* Venmo RSVP — real clickable link */}
       <div style={{
-        marginTop: 'auto',
+        marginTop: 12,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -480,7 +481,7 @@ function InvitationCard() {
       }}>
         <div style={{
           fontFamily: "'Trebuchet MS', sans-serif",
-          fontSize: 9,
+          fontSize: 7,
           letterSpacing: 2,
           textTransform: 'uppercase',
           color: '#888',
@@ -491,12 +492,12 @@ function InvitationCard() {
           rel="noopener noreferrer"
           style={{
             fontFamily: "'Trebuchet MS', sans-serif",
-            fontSize: 10,
+            fontSize: 8,
             letterSpacing: 2.5,
             fontWeight: 'bold',
             color: '#006747',
             textDecoration: 'none',
-            padding: '6px 20px',
+            padding: '5px 16px',
             border: '1px solid #006747',
             borderRadius: 2,
             display: 'inline-block',
@@ -508,7 +509,7 @@ function InvitationCard() {
         </a>
         <div style={{
           fontFamily: "'Trebuchet MS', sans-serif",
-          fontSize: 8,
+          fontSize: 6,
           color: '#aaa',
           letterSpacing: 1,
         }}>@BrianBunch1313</div>
