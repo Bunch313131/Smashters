@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Smashters 2026 — You're Invited</title>
+
+  <!-- PWA / home-screen launch (hides browser chrome when added to home screen) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Smashters 2026">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <!-- iMessage / social preview -->
   <meta property="og:title" content="Smashters 2026 — You're Invited">
@@ -27,6 +33,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       height: 100%;
+      /* env(safe-area-inset-*) fills the notch/home-indicator area */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       background: #050505;
       font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
@@ -36,6 +44,26 @@
     body { display: flex; align-items: center; justify-content: center; }
     #root { width: 100%; height: 100%; }
   </style>
+
+  <script>
+    // Request fullscreen on first tap — hides the browser address bar on Android.
+    // iOS Safari doesn't support requestFullscreen from a browser tab (only from home screen),
+    // but this is a no-op on iOS so it's safe to call.
+    (function () {
+      var done = false;
+      function goFull() {
+        if (done) return;
+        done = true;
+        var el = document.documentElement;
+        var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+        if (fn) fn.call(el).catch(function(){});
+        document.removeEventListener('touchstart', goFull);
+        document.removeEventListener('click', goFull);
+      }
+      document.addEventListener('touchstart', goFull, { once: true, passive: true });
+      document.addEventListener('click',      goFull, { once: true });
+    })();
+  </script>
 </head>
 <body>
   <div id="root"></div>
@@ -50,7 +78,7 @@
   <script type="text/babel">
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(
-      <Stage width={450} height={900} duration={17} background="#050505" autoplay loop={false}>
+      <Stage width={450} height={900} duration={17} background="#050505" autoplay loop={false} controls={false}>
         <InvitationScene />
       </Stage>
     );
