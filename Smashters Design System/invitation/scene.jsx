@@ -99,7 +99,7 @@ function EnvelopeCard() {
   //  phase A (5.6→8.6): rise out of envelope from y=0 to y=-200  (peek then pop out)
   //  phase B (8.6→11.0): return to y=0 and scale up — center-of-stage big view
   const cardY     = interpolate([5.6, 8.6, 11.0], [0, -200, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
-  const cardOpa   = interpolate([5.6, 6.1], [0, 1], Easing.easeOutQuad)(t);
+  const cardOpa   = interpolate([3.8, 4.6], [0, 1], Easing.easeOutQuad)(t);
   const cardScale = interpolate([8.6, 11.0], [1.0, 2.2], Easing.easeInOutCubic)(t);
 
   // Card shadow grows as it rises
