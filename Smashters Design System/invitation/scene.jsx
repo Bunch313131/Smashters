@@ -340,16 +340,10 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
 function InvitationCard() {
   const t = useTime();
 
-  // Content reveals progressively, but starts as soon as card begins rising
-  // so you can see something coming out of the envelope.
-  const stagger = (i) => {
-    const start = 6.4 + i * 0.45;
-    return interpolate([start, start + 0.55], [0, 1], Easing.easeOutQuad)(t);
-  };
-  const yLift = (i) => {
-    const start = 6.4 + i * 0.45;
-    return interpolate([start, start + 0.55], [4, 0], Easing.easeOutQuad)(t);
-  };
+  // Card text is already printed — no stagger. The card's own cardOpa fade
+  // (driven by the parent) handles the reveal as the flap opens.
+  const stagger = (_i) => 1;
+  const yLift   = (_i) => 0;
 
   const rsvpGlow = interpolate([14.0, 15.0, 16.5, 17.0], [0, 1, 1, 0.6], Easing.easeInOutQuad)(t);
 
