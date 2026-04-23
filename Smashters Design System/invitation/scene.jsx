@@ -146,12 +146,13 @@ function EnvelopeCard() {
         zIndex: 2,
       }}>
 
-        {/* Envelope body (back) */}
+        {/* Envelope body (back) — V-notch at top matches the flap triangle */}
         <div style={{
           position: 'absolute',
           inset: 0,
           background: 'linear-gradient(160deg, #0a5e40 0%, #006747 40%, #00432e 100%)',
           borderRadius: 10,
+          clipPath: 'polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%)',
           boxShadow: 'inset 0 0 0 2px rgba(251, 243, 8, 0.08), inset 0 0 40px rgba(0,0,0,0.35)',
           overflow: 'hidden',
         }}>
@@ -302,7 +303,8 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
   const envOpaIn  = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
   const envOpaOut = interpolate([8.6, 10.5], [1, 0], Easing.easeInOutQuad)(t);
 
-  // Cover rectangle: lower portion of envelope (from flapH down to bottom)
+  // Cover mask: same V-notch shape as the envelope back, hides card inside pocket.
+  const flapPct = `${((flapH / envH) * 100).toFixed(1)}%`;
   return (
     <div style={{
       position: 'absolute',
@@ -319,19 +321,12 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
     }}>
       <div style={{
         position: 'absolute',
-        left: 0, right: 0,
-        top: flapH,
-        bottom: 0,
+        inset: 0,
         background: 'linear-gradient(180deg, #006747 0%, #00432e 100%)',
-        borderRadius: '0 0 10px 10px',
+        borderRadius: 10,
+        clipPath: `polygon(0 0, 50% ${flapPct}, 100% 0, 100% 100%, 0 100%)`,
         boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.35)',
-      }}>
-        {/* Subtle pocket rim shadow */}
-        <div style={{
-          position: 'absolute', left: 8, right: 8, top: 0, height: 3,
-          background: 'linear-gradient(180deg, rgba(0,0,0,0.4), transparent)',
-        }}/>
-      </div>
+      }}/>
     </div>
   );
 }
