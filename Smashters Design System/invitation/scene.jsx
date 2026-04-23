@@ -303,8 +303,10 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
   const envOpaIn  = interpolate([1.5, 2.0], [0, 1], Easing.easeOutQuad)(t);
   const envOpaOut = interpolate([8.6, 10.5], [1, 0], Easing.easeInOutQuad)(t);
 
-  // Cover mask: same V-notch shape as the envelope back, hides card inside pocket.
-  const flapPct = `${((flapH / envH) * 100).toFixed(1)}%`;
+  // V-notch tip animates from open (55%) → closed (0%) as card starts rising.
+  // At 0% the mask becomes a full rectangle so the card exits straight out the top.
+  const vTip = interpolate([5.4, 5.6], [55, 0], Easing.easeInOutQuad)(t);
+
   return (
     <div style={{
       position: 'absolute',
@@ -324,7 +326,7 @@ function EnvelopeCoverMask({ envW, envH, flapH }) {
         inset: 0,
         background: 'linear-gradient(180deg, #006747 0%, #00432e 100%)',
         borderRadius: 10,
-        clipPath: `polygon(0 0, 50% ${flapPct}, 100% 0, 100% 100%, 0 100%)`,
+        clipPath: `polygon(0 0, 50% ${vTip.toFixed(1)}%, 100% 0, 100% 100%, 0 100%)`,
         boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.35)',
       }}/>
     </div>
