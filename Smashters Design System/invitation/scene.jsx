@@ -47,11 +47,13 @@ function OpeningCopy() {
     }}>
       <div style={{
         fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 34,
+        fontSize: 30,
         letterSpacing: 2,
         color: '#FBF308',
         textShadow: '0 4px 20px rgba(0,0,0,0.5)',
         textAlign: 'center',
+        width: '100%',
+        padding: '0 30px',
       }}>A Delivery Has Arrived</div>
     </div>
   );
@@ -90,9 +92,9 @@ function EnvelopeCard() {
   // ── Card: single Y keyframe. Anchored to stage center via left/top 50%. ──
   //  phase A (5.6→8.6): rise out of envelope from y=0 to y=-200  (peek then pop out)
   //  phase B (8.6→11.0): return to y=0 and scale up — center-of-stage big view
-  const cardY     = interpolate([5.6, 8.6, 11.0], [0, -270, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
+  const cardY     = interpolate([5.6, 8.6, 11.0], [0, -380, 0], [Easing.easeOutCubic, Easing.easeInOutCubic])(t);
   const cardOpa   = interpolate([3.8, 4.6], [0, 1], Easing.easeOutQuad)(t);
-  const cardScale = interpolate([8.6, 11.0], [1.0, 1.9], Easing.easeInOutCubic)(t);
+  const cardScale = interpolate([8.6, 11.0], [1.0, 1.8], Easing.easeInOutCubic)(t);
 
   // Card shadow grows as it rises
   const cardShadow = interpolate([5.6, 8.6], [0.2, 0.55], Easing.easeInOutQuad)(t);
@@ -101,9 +103,9 @@ function EnvelopeCard() {
   const focusDim = interpolate([8.6, 10.8], [0, 0.6], Easing.easeInOutQuad)(t);
 
   const envW = 260;
-  const envH = 310;
+  const envH = 460;
   const cardW = 220;
-  const cardH = 340;
+  const cardH = 440;
   const flapH = envH * 0.55;
 
   return (
@@ -364,35 +366,6 @@ function InvitationCard() {
           transform: `translateY(${yLift(0)}px)`,
         }}
       />
-
-      <div style={{
-        fontFamily: "'Georgia', serif",
-        fontStyle: 'italic',
-        fontSize: 11,
-        color: '#006747',
-        marginTop: 6,
-        opacity: stagger(1),
-        transform: `translateY(${yLift(1)}px)`,
-        textAlign: 'center',
-        lineHeight: 1.35,
-      }}>
-        The Board of Governors<br/>
-        of the
-      </div>
-
-      <div style={{
-        fontFamily: "'Azalea', Georgia, serif",
-        fontSize: 22,
-        letterSpacing: 1,
-        color: '#00432e',
-        marginTop: 3,
-        opacity: stagger(2),
-        transform: `translateY(${yLift(2)}px)`,
-        textAlign: 'center',
-        lineHeight: 1.05,
-      }}>
-        Dumpster Fire Golf Club
-      </div>
 
       <div style={{
         fontFamily: "'Georgia', serif",
