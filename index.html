@@ -1831,6 +1831,34 @@
         }
 
         /* ═══════════════════════════════════════════════════════
+           LOADING OVERLAY (shown while Firebase initial sync runs)
+           ═══════════════════════════════════════════════════════ */
+        .loading-overlay {
+            position: fixed;
+            top: calc(-1 * env(safe-area-inset-top, 0px));
+            left: 0; right: 0;
+            bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
+            z-index: 998;
+            background: #00432e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease;
+        }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+        .loading-overlay img {
+            width: 40vmin;
+            max-width: 220px;
+            height: auto;
+            animation: loadingSpin 2.4s linear infinite;
+            transform-origin: 50% 50%;
+        }
+        @keyframes loadingSpin {
+            from { transform: rotateY(0deg); }
+            to   { transform: rotateY(360deg); }
+        }
+
+        /* ═══════════════════════════════════════════════════════
            WOW FACTOR ENHANCEMENTS
            ═══════════════════════════════════════════════════════ */
 
@@ -3763,6 +3791,13 @@
     <div class="splash-overlay splash-phase2" id="splashPhase2">
         <img src="assets/images/smashters-logo-green.png" alt="" class="splash-logo">
         <div class="splash-year" id="splashYear"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         LOADING OVERLAY (covers initial render until Firebase syncs)
+         ═══════════════════════════════════════════════════════ -->
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <img src="assets/images/dfgc-logo-transparent.png" alt="Loading...">
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
@@ -11498,13 +11533,26 @@
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
 
-        // Auto-start Firebase sync (always live)
-        LiveSync.autoStart();
+        // Auto-start Firebase sync (always live) — capture promise so we can
+        // gate the first render behind it on the no-splash path (otherwise
+        // the user sees a cached render, then a flash when cloud data applies).
+        const syncPromise = LiveSync.autoStart();
+
+        document.body.classList.add('has-bottom-nav');
+        updateBottomNavActive();
+
+        const finishInit = () => {
+            switchTab(S.ui.activeTab || 'schedule');
+            if (!(isMobile() && !isStandalone())) {
+                checkInstallBanner();
+            }
+        };
 
         // ── Launch flow: gate → opt-in → splash ──
         if (isMobile() && !isStandalone()) {
             hideSplash();
             showMobileGate();
+            finishInit();
         } else if (shouldShowSplash()) {
             hideSplash();
             showOptIn();
@@ -11512,16 +11560,21 @@
                 hideOptIn();
                 showSplash();
             }, { once: true });
+            // Splash covers the UI for ~20s, so any Firebase re-render during
+            // that window is invisible — safe to render immediately.
+            finishInit();
         } else {
+            // No splash to mask the sync. Show a loading spinner and wait for
+            // Firebase (with a 3s timeout fallback) before first render.
             hideSplash();
-        }
-
-        document.body.classList.add('has-bottom-nav');
-        updateBottomNavActive();
-        switchTab(S.ui.activeTab || 'schedule');
-
-        if (!(isMobile() && !isStandalone())) {
-            checkInstallBanner();
+            const loadingEl = document.getElementById('loadingOverlay');
+            loadingEl.classList.remove('hidden');
+            const timeout = new Promise(resolve => setTimeout(resolve, 3000));
+            Promise.race([syncPromise, timeout]).finally(() => {
+                finishInit();
+                // Next frame so the render paints under the overlay before fade
+                requestAnimationFrame(() => loadingEl.classList.add('hidden'));
+            });
         }
     }
 
