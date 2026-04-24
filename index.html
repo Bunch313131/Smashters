@@ -5851,6 +5851,15 @@
             ? allMatches.filter(m => m.sessionId === S.ui.scoringSessionFilter)
             : allMatches;
 
+        // Fallback: auto-select first visible match when none is selected
+        // (happens on a fresh install, or when the saved match was deleted
+        // server-side and cleared by the guard above).
+        if (!S.ui.activeMatchId && matchesToShow.length > 0) {
+            S.ui.activeMatchId = matchesToShow[0].id;
+            S.ui.scoringHole = findNextUnplayedHole(matchesToShow[0]);
+            saveState(true);
+        }
+
         // Match selector - compact initial buttons
         html += '<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">';
         matchesToShow.forEach(m => {
