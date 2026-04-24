@@ -4093,6 +4093,7 @@
                     bonusEvents: parsed.bonusEvents || {},
                     holeTimes: parsed.holeTimes || [],
                     ui: { ...base.ui, ...parsed.ui, settingsUnlocked: false },
+                    _lastSync: parsed._lastSync || 0,
                 };
 
                 console.log(`State loaded: ${Object.keys(loadedState.players).length} players, ${Object.keys(loadedState.matches).length} matches`);
@@ -8208,6 +8209,12 @@
                             renderTab(S.ui.activeTab);
                             showToast('Local data corrupted - restored from cloud');
                         }
+                    } else if (firebaseTimestamp && firebaseTimestamp === localTimestamp) {
+                        // Already in sync — skip re-render to avoid flashing the UI on init
+                        console.log('Already in sync with Firebase — skipping re-render', {
+                            firebaseTimestamp,
+                            localTimestamp
+                        });
                     } else {
                         // Firebase is newer or within 5 seconds - prefer Firebase to avoid conflicts
                         console.log('Pulling from Firebase (cloud is source of truth)...', {
