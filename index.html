@@ -184,6 +184,18 @@
             border-bottom-color: var(--masters-red);
         }
 
+        .tab-btn-tv {
+            color: rgba(255,255,255,0.5);
+            border-left: 1px solid rgba(255,255,255,0.15);
+            margin-left: 4px;
+        }
+        .tab-btn-tv:hover { color: var(--masters-yellow) !important; }
+
+        .slide-menu-tv {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 4px;
+        }
+
         /* Hamburger button - hidden on desktop */
         .hamburger-btn {
             display: none;
@@ -1495,6 +1507,48 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* Score Notification Overlay */
+        .score-notif {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+        .score-notif.show { opacity: 1; }
+        .score-notif-inner {
+            background: rgba(0, 20, 10, 0.93);
+            border: 2px solid var(--masters-yellow);
+            border-radius: 18px;
+            padding: 22px 40px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(251, 243, 8, 0.25), 0 12px 40px rgba(0,0,0,0.6);
+            max-width: 85vw;
+        }
+        .score-notif-icon { font-size: 2.6rem; line-height: 1; margin-bottom: 6px; }
+        .score-notif-text {
+            color: var(--masters-yellow);
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+        .score-notif-sub {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.95rem;
+            margin-top: 6px;
+            letter-spacing: 0.3px;
+        }
+        body.tv-mode .score-notif-inner { padding: 36px 64px; }
+        body.tv-mode .score-notif-icon { font-size: 4rem; }
+        body.tv-mode .score-notif-text { font-size: 3rem; }
+        body.tv-mode .score-notif-sub { font-size: 1.35rem; margin-top: 10px; }
 
         /* Bottom Navigation Bar */
         .bottom-nav { display: none; background: var(--masters-dark); border-top: 2px solid var(--masters-gold); flex-shrink: 0; padding: 0 4px calc(env(safe-area-inset-bottom, 8px)); }
@@ -3824,6 +3878,7 @@
             <button class="tab-btn" data-tab="players">Players</button>
             <button class="tab-btn" data-tab="draft">Draft</button>
             <button class="tab-btn" data-tab="settings">Settings</button>
+            <button class="tab-btn tab-btn-tv" onclick="launchTvDisplay()">📺 TV</button>
         </nav>
     </header>
     <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
@@ -3879,6 +3934,7 @@
         <button class="slide-menu-item" data-tab="draft">Draft</button>
         <button class="slide-menu-item" id="slideMenuTimer">Hole Timer</button>
         <button class="slide-menu-item" data-tab="settings">Settings</button>
+        <button class="slide-menu-item slide-menu-tv" onclick="launchTvDisplay(); closeSlideMenu();">📺 TV Display</button>
     </div>
 
     <!-- TV / Broadcast Display (hidden by default, shown with ?tv=1) -->
@@ -3992,6 +4048,13 @@
         <div class="modal" id="modalContainer"></div>
     </div>
     <div class="toast" id="toast"></div>
+    <div id="scoreNotif" class="score-notif">
+        <div class="score-notif-inner">
+            <div class="score-notif-icon"></div>
+            <div class="score-notif-text"></div>
+            <div class="score-notif-sub"></div>
+        </div>
+    </div>
 
     <script>
     /* ═══════════════════════════════════════════════════════════
@@ -4238,6 +4301,94 @@
         t.textContent = msg;
         t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // SCORE NOTIFICATIONS
+    // ─────────────────────────────────────────────────────────
+    const scoreNotifQueue = [];
+    let scoreNotifShowing = false;
+    const scoreNotifsSentLocal = new Set(); // tracks notifs we've already pushed to Firebase
+
+    function queueScoreNotif(notif) {
+        if (scoreNotifQueue.length >= 3) return;
+        scoreNotifQueue.push(notif);
+        if (!scoreNotifShowing) processScoreNotifQueue();
+    }
+
+    function processScoreNotifQueue() {
+        if (scoreNotifQueue.length === 0) { scoreNotifShowing = false; return; }
+        scoreNotifShowing = true;
+        const notif = scoreNotifQueue.shift();
+        const el = document.getElementById('scoreNotif');
+        if (!el) { setTimeout(processScoreNotifQueue, 100); return; }
+        el.querySelector('.score-notif-icon').textContent = notif.icon || '';
+        el.querySelector('.score-notif-text').textContent = notif.text || '';
+        el.querySelector('.score-notif-sub').textContent = notif.sub || '';
+        el.classList.add('show');
+        setTimeout(() => {
+            el.classList.remove('show');
+            setTimeout(processScoreNotifQueue, 400);
+        }, 3800);
+    }
+
+    function pushScoreNotif(matchId, playerId, holeNum, score) {
+        if (!LiveSync.eventCode || !LiveSync.db) return;
+        const par = getHoleInfo(holeNum).par;
+        const player = S.players[playerId];
+        const firstName = player ? player.name.split(' ')[0] : 'Player';
+
+        let icon, text, type;
+        if (score <= par - 3)      { type = 'albatross';  icon = '🦅🦅'; text = 'ALBATROSS!!'; }
+        else if (score === par - 2) { type = 'eagle';      icon = '🦅';   text = 'EAGLE!'; }
+        else if (score === par - 1) { type = 'birdie';     icon = '🐦';   text = 'BIRDIE!'; }
+        else if (score === par + 2) { type = 'dbl_bogey';  icon = '🗑️';  text = 'Double Bogey'; }
+        else if (score >= par + 3)  { type = 'triple';     icon = '🗑️🔥'; text = 'Triple Bogey+'; }
+        else return;
+
+        const key = `${matchId}-${holeNum}-${playerId}-${type}`;
+        if (scoreNotifsSentLocal.has(key)) return;
+        scoreNotifsSentLocal.add(key);
+
+        const notifRef = LiveSync.db.ref('smashters/' + LiveSync.eventCode + '/notifications');
+        const newRef = notifRef.push();
+        newRef.set({
+            id: newRef.key,
+            type,
+            icon,
+            text,
+            sub: firstName + ' · Hole ' + holeNum,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+        });
+
+        // Prune: keep only the last 30 notifications
+        notifRef.once('value', snap => {
+            const keys = Object.keys(snap.val() || {});
+            if (keys.length > 30) {
+                const pruned = {};
+                keys.slice(0, keys.length - 30).forEach(k => pruned[k] = null);
+                notifRef.update(pruned);
+            }
+        });
+    }
+
+    function pushLeadChangeNotif(matchId, newStatus, prevLeader) {
+        if (!LiveSync.eventCode || !LiveSync.db) return;
+        if (!newStatus.leader || newStatus.leader === prevLeader) return;
+        const teamName = newStatus.leader === 'A' ? S.config.teamA.name : S.config.teamB.name;
+        const key = `${matchId}-lead-${newStatus.leader}-${newStatus.score}`;
+        if (scoreNotifsSentLocal.has(key)) return;
+        scoreNotifsSentLocal.add(key);
+        const notifRef = LiveSync.db.ref('smashters/' + LiveSync.eventCode + '/notifications');
+        const newRef = notifRef.push();
+        newRef.set({
+            id: newRef.key,
+            type: 'lead_change',
+            icon: '⚡',
+            text: 'Lead Change!',
+            sub: teamName + ' leads · ' + newStatus.text,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+        });
     }
 
     function openModal(title, bodyHtml, footerHtml) {
@@ -6387,6 +6538,7 @@
         if (!match.holes[holeNum]) match.holes[holeNum] = {};
         const current = match.holes[holeNum][playerId];
         const par = getHoleInfo(holeNum).par;
+        const prevStatus = getMatchPlayStatus(match);
 
         if (current === undefined || current === null) {
             // First tap: set to par, then adjust from there
@@ -6403,8 +6555,13 @@
             }
         }
 
+        const finalScore = match.holes[holeNum][playerId];
+        pushScoreNotif(S.ui.activeMatchId, playerId, holeNum, finalScore);
+
         // Update match status
         updateMatchStatus(match);
+        const newStatus = getMatchPlayStatus(match);
+        pushLeadChangeNotif(S.ui.activeMatchId, newStatus, prevStatus.leader);
         saveState();
         renderScoring();
     }
@@ -6418,6 +6575,7 @@
         }
         if (!match.holes[holeNum]) match.holes[holeNum] = {};
         const clamped = Math.max(MIN_SCORE, Math.min(MAX_SCORE, newScore));
+        const prevStatusSet = getMatchPlayStatus(match);
         match.holes[holeNum][playerId] = clamped;
 
         const par = getHoleInfo(holeNum).par;
@@ -6425,7 +6583,10 @@
         else if (clamped === par - 1) haptic(20);
         else haptic(10);
 
+        pushScoreNotif(S.ui.activeMatchId, playerId, holeNum, clamped);
         updateMatchStatus(match);
+        const newStatusSet = getMatchPlayStatus(match);
+        pushLeadChangeNotif(S.ui.activeMatchId, newStatusSet, prevStatusSet.leader);
         saveState();
         renderScoring();
 
@@ -8321,6 +8482,7 @@
                     }
                 });
                 this.listeners.push({ ref: this.eventRef, event: 'value', callback: listener });
+                this.startNotifListener();
 
                 return true;
             } catch (e) {
@@ -8391,6 +8553,7 @@
                     isAdmin: true,
                 }));
 
+                this.startNotifListener();
                 this.updateBanner();
                 showToast('Event is LIVE! Code: ' + this.eventCode);
                 renderTab(S.ui.activeTab);
@@ -8597,6 +8760,7 @@
                 this.listeners.push({ ref, event: 'value', callback: listener });
 
                 document.body.classList.add('viewer-mode');
+                this.startNotifListener();
                 this.updateBanner();
                 switchTab('leaderboard');
                 showToast('Connected! Viewing live scores.');
@@ -8679,6 +8843,7 @@
                 }
 
                 document.body.classList.add('scorer-mode');
+                this.startNotifListener();
                 this.updateBanner();
                 switchTab('scoring');
                 return true;
@@ -8782,6 +8947,23 @@
             } catch (e) {
                 console.error('Restore session error:', e);
             }
+        },
+
+        // Listen for score notifications on a separate Firebase path
+        startNotifListener() {
+            if (!this.db || !this.eventCode) return;
+            const notifRef = this.db.ref('smashters/' + this.eventCode + '/notifications');
+            const seenKeys = new Set();
+            const listener = notifRef.on('child_added', (snap) => {
+                const notif = snap.val();
+                if (!notif || !notif.timestamp) return;
+                if (seenKeys.has(snap.key)) return;
+                seenKeys.add(snap.key);
+                // Ignore stale notifications from before this session started
+                if (Date.now() - notif.timestamp > 90000) return;
+                queueScoreNotif(notif);
+            });
+            this.listeners.push({ ref: notifRef, event: 'child_added', callback: listener });
         },
 
         // Update the banner display
@@ -10205,6 +10387,52 @@
             tvBgAudio.src = '';
             tvBgAudio = null;
         }
+    }
+
+    let _tvEscListener = null;
+
+    function launchTvDisplay() {
+        // Fullscreen
+        const el = document.documentElement;
+        const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+        if (fn) fn.call(el).catch(() => {});
+
+        // Activate TV mode
+        document.body.classList.add('tv-mode');
+        document.getElementById('broadcastDisplay').style.display = '';
+
+        renderBroadcast();
+        startBroadcastCycle();
+
+        // Escape to exit
+        if (_tvEscListener) document.removeEventListener('keydown', _tvEscListener);
+        _tvEscListener = (e) => {
+            if (e.key === 'Escape') exitTvDisplay();
+        };
+        document.addEventListener('keydown', _tvEscListener);
+    }
+
+    function exitTvDisplay() {
+        // Remove Escape listener
+        if (_tvEscListener) {
+            document.removeEventListener('keydown', _tvEscListener);
+            _tvEscListener = null;
+        }
+
+        // Exit fullscreen (browser may have already exited via its own Escape handling)
+        try {
+            if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+        } catch(e) {}
+
+        // Stop cycles
+        if (broadcastCycleTimer) { clearInterval(broadcastCycleTimer); broadcastCycleTimer = null; }
+        if (broadcastSessionCycleTimer) { clearInterval(broadcastSessionCycleTimer); broadcastSessionCycleTimer = null; }
+        stopTvBackgroundMusic();
+
+        // Deactivate TV mode
+        document.body.classList.remove('tv-mode');
+        document.getElementById('broadcastDisplay').style.display = 'none';
     }
 
     function startBroadcastCycle() {
