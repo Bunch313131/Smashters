@@ -6019,9 +6019,8 @@
             const teamBInits = m.teamB.map(id => getInitials(getPlayerName(id))).join('/');
             const isSelected = S.ui.activeMatchId === m.id;
             const status = getMatchPlayStatus(m);
-            const thruText = status.holesPlayed > 0 ? ` • ${status.holesPlayed}` : '';
             const btnClass = isSelected ? 'btn-primary' : 'btn-outline';
-            html += `<button class="btn ${btnClass}" onclick="selectScoringMatch('${m.id}')" style="flex:1;min-width:0;padding:6px 8px;font-size:0.75rem;white-space:nowrap;">${teamAInits} v ${teamBInits}${thruText}</button>`;
+            html += `<button class="btn ${btnClass}" onclick="selectScoringMatch('${m.id}')" style="flex:1;min-width:0;padding:6px 8px;font-size:0.75rem;white-space:nowrap;">${teamAInits} v ${teamBInits}</button>`;
         });
         html += '</div>';
 
@@ -6613,6 +6612,9 @@
         updateMatchStatus(match);
         saveState();
         renderScoring();
+        // Force leaderboard to reflect cleared state immediately
+        const lbEl = document.getElementById('leaderboard-content');
+        if (lbEl && lbEl.innerHTML) renderTab('leaderboard');
     }
 
     function updateMatchStatus(match) {
