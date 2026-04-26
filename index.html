@@ -7683,6 +7683,9 @@
                             Copy Link
                         </button>
                     </div>
+                    <hr style="border:0;border-top:1px solid #eee;margin:16px 0;">
+                    <p class="text-sm text-muted mb-16"><strong>iPad Leaderboard App:</strong> Add the live leaderboard as a home screen app on an iPad or phone.</p>
+                    <button class="btn btn-outline" style="width:100%;" onclick="showIpadLeaderboardGuide()">📲 Add Leaderboard to Home Screen</button>
                 </div>
             </div>
 
@@ -8047,6 +8050,29 @@
                 ${!hasMatches ? '<p style="color:var(--masters-red);font-size:0.85rem;margin-bottom:12px;">Create matches first before going live.</p>' : ''}
                 <button class="btn btn-primary btn-block" onclick="handleGoLive()" ${!hasMatches ? 'disabled style="opacity:0.5;"' : ''}>Go Live</button>`;
         }
+    }
+
+    function showIpadLeaderboardGuide() {
+        const base = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
+        const tvUrl = base + 'tv.html';
+        const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(tvUrl)}&size=180x180&margin=6&color=00432e`;
+        openModal(
+            '📲 Add Leaderboard to Home Screen',
+            `<div style="text-align:center;">
+                <img src="${qrSrc}" alt="QR Code" style="width:160px;height:160px;border-radius:12px;border:3px solid var(--masters-green);margin-bottom:16px;">
+                <p style="font-size:0.8rem;color:#888;margin-bottom:16px;">Scan with iPad camera, or follow the steps below</p>
+            </div>
+            <ol style="padding-left:20px;line-height:2;font-size:0.95rem;">
+                <li>Open <strong>Safari</strong> on the iPad</li>
+                <li>Go to <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:0.85rem;">${tvUrl}</code></li>
+                <li>Tap the <strong>Share</strong> button <span style="font-size:1.1rem;">&#x2191;</span></li>
+                <li>Tap <strong>Add to Home Screen</strong></li>
+                <li>Name it <strong>Smashters TV</strong> and tap Add</li>
+            </ol>
+            <p style="margin-top:16px;font-size:0.85rem;color:#888;text-align:center;">The icon will appear on the iPad home screen with a TV label.</p>`,
+            `<button class="btn btn-outline" onclick="navigator.clipboard && navigator.clipboard.writeText('${tvUrl}').then(()=>showToast('URL copied'))">Copy URL</button>
+             <button class="btn btn-primary" onclick="closeModal()">Done</button>`
+        );
     }
 
     function shareTVLink(method) {
