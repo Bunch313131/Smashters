@@ -5069,6 +5069,43 @@
             return { scoringSessions, playerData };
         },
 
+        getDumpsterFireData() {
+            const allPlayers = Object.keys(S.players);
+            const data = allPlayers.map(playerId => {
+                let netRelToPar = 0, holesPlayed = 0, doubleBogeysNet = 0;
+                let worstHoleNet = null;
+
+                Object.values(S.matches)
+                    .filter(m => m.type !== 'foursomes' &&
+                        (m.teamA.includes(playerId) || m.teamB.includes(playerId)))
+                    .forEach(match => {
+                        Object.keys(match.holes || {}).forEach(holeNumStr => {
+                            const holeNum = parseInt(holeNumStr);
+                            const gross = match.holes[holeNum][playerId];
+                            if (gross === undefined || gross === null) return;
+                            const par = getHoleInfo(holeNum).par;
+                            const net = getNetScore(playerId, holeNum, gross);
+                            const netDiff = net - par;
+                            netRelToPar += netDiff;
+                            holesPlayed++;
+                            if (netDiff > 1) doubleBogeysNet++;
+                            if (worstHoleNet === null || netDiff > worstHoleNet.diff)
+                                worstHoleNet = { hole: holeNum, diff: netDiff };
+                        });
+                    });
+
+                return {
+                    playerId,
+                    playerName: getPlayerName(playerId),
+                    team: S.players[playerId]?.team,
+                    netRelToPar, holesPlayed, doubleBogeysNet, worstHoleNet,
+                };
+            }).filter(p => p.holesPlayed > 0);
+
+            data.sort((a, b) => b.netRelToPar - a.netRelToPar);
+            return data;
+        },
+
         getPointLeaders() {
             const allPlayers = Object.keys(S.players);
             const allMatches = Object.values(S.matches);
@@ -5593,6 +5630,8 @@
                 onclick="setIndividualView('daily')">Daily Scores</button>
             <button class="btn ${selectedView === 'stats' ? 'btn-primary' : 'btn-outline'} btn-sm"
                 onclick="setIndividualView('stats')">Stats</button>
+            <button class="btn btn-sm" style="${selectedView === 'dumpsterfire' ? 'background:#8B1a00;color:#FBF308;border-color:#8B1a00;' : 'background:transparent;border:1px solid #c0c0c0;color:#555;'}"
+                onclick="setIndividualView('dumpsterfire')">🗑️🔥 Dumpster Fire</button>
         </div>`;
 
         // Gross/Net and Session filter — only for stats view
@@ -5621,6 +5660,8 @@
             html += renderDailyScoresRelToPar();
         } else if (selectedView === 'stats') {
             html += renderAllStats(selectedType, sessionFilter);
+        } else if (selectedView === 'dumpsterfire') {
+            html += renderDumpsterFire();
         }
 
 
@@ -5861,6 +5902,58 @@
         });
 
         return html + '</tbody></table></div></div>';
+    }
+
+    function renderDumpsterFire() {
+        const data = IndividualStats.getDumpsterFireData();
+        if (data.length === 0) {
+            return `<div class="empty-state"><h3>No Scores Yet</h3><p>The dumpster fire hasn't started yet.</p></div>`;
+        }
+
+        let html = `
+            <div style="background:linear-gradient(135deg,#1c0800,#2d1200);border-radius:12px;padding:16px 16px 12px;margin-bottom:16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                <div style="font-size:2.2rem;margin-bottom:2px;">🗑️🔥</div>
+                <div style="color:#FBF308;font-family:'Azalea','Georgia',serif;font-size:1.5rem;letter-spacing:1px;">Dumpster Fire Rankings</div>
+                <div style="color:rgba(255,255,255,0.5);font-size:0.72rem;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Handicap-Adjusted · Worst to Best</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">`;
+
+        data.forEach((p, i) => {
+            const rank = i + 1;
+            let rankDisplay, borderColor, bgColor;
+            if (rank === 1) {
+                rankDisplay = '🗑️🔥'; borderColor = 'rgba(200,60,0,0.5)'; bgColor = 'rgba(200,60,0,0.12)';
+            } else if (rank === 2) {
+                rankDisplay = '🗑️'; borderColor = 'rgba(160,60,0,0.35)'; bgColor = 'rgba(160,60,0,0.07)';
+            } else if (rank === 3) {
+                rankDisplay = '🗑️'; borderColor = 'rgba(120,60,0,0.25)'; bgColor = 'rgba(120,60,0,0.05)';
+            } else {
+                rankDisplay = `<span style="color:#777;font-size:0.85rem;font-weight:bold;">${rank}</span>`;
+                borderColor = 'rgba(0,0,0,0.08)'; bgColor = 'transparent';
+            }
+
+            const teamColor = p.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const relPar = p.netRelToPar > 0 ? `+${p.netRelToPar}` : p.netRelToPar === 0 ? 'E' : `${p.netRelToPar}`;
+            const scoreColor = p.netRelToPar > 8 ? '#ff3333' : p.netRelToPar > 3 ? '#ff7733' : p.netRelToPar > 0 ? '#ffaa55' : p.netRelToPar === 0 ? '#888' : '#4caf50';
+            const worstStr = p.worstHoleNet && p.worstHoleNet.diff > 0 ? `+${p.worstHoleNet.diff} (H${p.worstHoleNet.hole})` : '—';
+
+            html += `
+                <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:12px;">
+                    <div style="font-size:${rank <= 3 ? '1.5' : '1rem'}rem;min-width:34px;text-align:center;line-height:1;">${rankDisplay}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:bold;color:${teamColor};font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.playerName}</div>
+                        <div style="font-size:0.72rem;color:#999;margin-top:2px;">${p.holesPlayed} holes · ${p.doubleBogeysNet} dbl+ bogey · worst: ${worstStr}</div>
+                    </div>
+                    <div style="text-align:right;min-width:40px;">
+                        <div style="font-size:1.25rem;font-weight:bold;color:${scoreColor};line-height:1;">${relPar}</div>
+                        <div style="font-size:0.65rem;color:#aaa;margin-top:2px;">net</div>
+                    </div>
+                </div>`;
+        });
+
+        html += `</div>
+            <p style="text-align:center;color:#bbb;font-size:0.72rem;margin-top:14px;">Net scores relative to par · handicap strokes applied</p>`;
+        return html;
     }
 
     function renderPointLeaders() {
