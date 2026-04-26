@@ -6601,6 +6601,63 @@
         }
     }
 
+    function confirmClearSessionScores(sessionId) {
+        if (!requireAdmin('clear session scores')) return;
+        const session = S.config.sessions.find(s => s.id === sessionId);
+        if (!session) return;
+        const matchCount = Object.values(S.matches).filter(m => m.sessionId === sessionId).length;
+        openModal(
+            'Clear Scores — ' + session.name,
+            `<p>This will erase all hole scores for <strong>${matchCount} match${matchCount !== 1 ? 'es' : ''}</strong> in <strong>${session.name}</strong>.</p>
+             <p style="margin-top:12px;color:#888;font-size:0.9rem;">Players, handicaps, match pairings, and bonus events are preserved. Only hole-by-hole scores are removed.</p>`,
+            `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+             <button class="btn" style="background:var(--masters-red);color:#fff;" onclick="clearSessionScores('${sessionId}')">Clear ${session.name} Scores</button>`
+        );
+    }
+
+    function confirmClearAllScores() {
+        if (!requireAdmin('clear all scores')) return;
+        const matchCount = Object.keys(S.matches).length;
+        openModal(
+            'Clear All Match Scores',
+            `<p>This will erase all hole scores for all <strong>${matchCount} match${matchCount !== 1 ? 'es' : ''}</strong> across every session.</p>
+             <p style="margin-top:12px;color:#888;font-size:0.9rem;">Players, handicaps, match pairings, and bonus events are preserved. Only hole-by-hole scores are removed.</p>`,
+            `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+             <button class="btn" style="background:var(--masters-red);color:#fff;" onclick="clearAllScores()">Clear All Scores</button>`
+        );
+    }
+
+    function clearSessionScores(sessionId) {
+        closeModal();
+        Object.values(S.matches)
+            .filter(m => m.sessionId === sessionId)
+            .forEach(m => { m.holes = {}; m.status = 'pending'; });
+        scoreNotifsSentLocal.clear();
+        if (LiveSync.db && LiveSync.eventCode) {
+            LiveSync.db.ref('smashters/' + LiveSync.eventCode + '/notifications').remove();
+        }
+        saveState();
+        renderTab('leaderboard');
+        renderTab('scoring');
+        renderSettings();
+        const sessionName = S.config.sessions.find(s => s.id === sessionId)?.name || 'session';
+        showToast(sessionName + ' scores cleared');
+    }
+
+    function clearAllScores() {
+        closeModal();
+        Object.values(S.matches).forEach(m => { m.holes = {}; m.status = 'pending'; });
+        scoreNotifsSentLocal.clear();
+        if (LiveSync.db && LiveSync.eventCode) {
+            LiveSync.db.ref('smashters/' + LiveSync.eventCode + '/notifications').remove();
+        }
+        saveState();
+        renderTab('leaderboard');
+        renderTab('scoring');
+        renderSettings();
+        showToast('All match scores cleared');
+    }
+
     function clearHoleScores(holeNum) {
         const match = S.matches[S.ui.activeMatchId];
         if (!match) return;
@@ -7689,6 +7746,15 @@
                         `).join('')}
                     </div>
                     <button class="btn btn-outline btn-sm" onclick="addSession()" style="margin-top:8px;">+ Add Session</button>
+                    <hr style="border:0;border-top:1px solid #eee;margin:20px 0 14px;">
+                    <p class="text-sm text-muted" style="margin-bottom:10px;"><strong>Reset Scores</strong> — erases hole scores only. Players, pairings, handicaps, and bonus events are kept.</p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        ${S.config.sessions.sort((a, b) => a.order - b.order).map(s =>
+                            `<button class="btn btn-sm" style="background:var(--masters-red);color:#fff;" onclick="confirmClearSessionScores('${s.id}')">Clear ${s.name}</button>`
+                        ).join('')}
+                        ${Object.keys(S.matches).length > 1 ?
+                            `<button class="btn btn-sm" style="background:#555;color:#fff;" onclick="confirmClearAllScores()">Clear All Sessions</button>` : ''}
+                    </div>
                 </div>
             </div>
 
