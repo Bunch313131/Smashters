@@ -4322,7 +4322,7 @@
         const notif = scoreNotifQueue.shift();
         const el = document.getElementById('scoreNotif');
         if (!el) { setTimeout(processScoreNotifQueue, 100); return; }
-        el.querySelector('.score-notif-icon').textContent = notif.icon || '';
+        el.querySelector('.score-notif-icon').innerHTML = notif.icon || '';
         el.querySelector('.score-notif-text').textContent = notif.text || '';
         el.querySelector('.score-notif-sub').textContent = notif.sub || '';
         el.classList.add('show');
@@ -4339,11 +4339,12 @@
         const firstName = player ? player.name.split(' ')[0] : 'Player';
 
         let icon, text, type;
+        const dfIcon = '<img src="assets/images/dumpster-fire.svg" style="width:2.8em;height:2.8em;display:block;margin:0 auto;" alt="🗑️🔥">';
         if (score <= par - 3)      { type = 'albatross';  icon = '🦅🦅'; text = 'ALBATROSS!!'; }
         else if (score === par - 2) { type = 'eagle';      icon = '🦅';   text = 'EAGLE!'; }
         else if (score === par - 1) { type = 'birdie';     icon = '🐦';   text = 'BIRDIE!'; }
-        else if (score === par + 2) { type = 'dbl_bogey';  icon = '🗑️';  text = 'Double Bogey'; }
-        else if (score >= par + 3)  { type = 'triple';     icon = '🗑️🔥'; text = 'Triple Bogey+'; }
+        else if (score === par + 2) { type = 'dbl_bogey';  icon = dfIcon; text = 'Double Bogey'; }
+        else if (score >= par + 3)  { type = 'triple';     icon = dfIcon; text = 'Triple Bogey+'; }
         else return;
 
         const key = `${matchId}-${holeNum}-${playerId}-${type}`;
@@ -5631,7 +5632,7 @@
             <button class="btn ${selectedView === 'stats' ? 'btn-primary' : 'btn-outline'} btn-sm"
                 onclick="setIndividualView('stats')">Stats</button>
             <button class="btn btn-sm" style="${selectedView === 'dumpsterfire' ? 'background:#8B1a00;color:#FBF308;border-color:#8B1a00;' : 'background:transparent;border:1px solid #c0c0c0;color:#555;'}"
-                onclick="setIndividualView('dumpsterfire')">🗑️🔥 Dumpster Fire</button>
+                onclick="setIndividualView('dumpsterfire')"><img src="assets/images/dumpster-fire.svg" style="height:1.1em;vertical-align:middle;margin-right:4px;"> Dumpster Fire</button>
         </div>`;
 
         // Gross/Net and Session filter — only for stats view
@@ -5910,9 +5911,10 @@
             return `<div class="empty-state"><h3>No Scores Yet</h3><p>The dumpster fire hasn't started yet.</p></div>`;
         }
 
+        const dfImg = (size) => `<img src="assets/images/dumpster-fire.svg" style="width:${size};height:${size};display:inline-block;vertical-align:middle;" alt="dumpster fire">`;
         let html = `
             <div style="background:linear-gradient(135deg,#1c0800,#2d1200);border-radius:12px;padding:16px 16px 12px;margin-bottom:16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
-                <div style="font-size:2.2rem;margin-bottom:2px;">🗑️🔥</div>
+                <div style="margin-bottom:6px;">${dfImg('56px')}</div>
                 <div style="color:#FBF308;font-family:'Azalea','Georgia',serif;font-size:1.5rem;letter-spacing:1px;">Dumpster Fire Rankings</div>
                 <div style="color:rgba(255,255,255,0.5);font-size:0.72rem;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Handicap-Adjusted · Worst to Best</div>
             </div>
@@ -5922,11 +5924,11 @@
             const rank = i + 1;
             let rankDisplay, borderColor, bgColor;
             if (rank === 1) {
-                rankDisplay = '🗑️🔥'; borderColor = 'rgba(200,60,0,0.5)'; bgColor = 'rgba(200,60,0,0.12)';
+                rankDisplay = dfImg('36px'); borderColor = 'rgba(200,60,0,0.5)'; bgColor = 'rgba(200,60,0,0.12)';
             } else if (rank === 2) {
-                rankDisplay = '🗑️'; borderColor = 'rgba(160,60,0,0.35)'; bgColor = 'rgba(160,60,0,0.07)';
+                rankDisplay = dfImg('28px'); borderColor = 'rgba(160,60,0,0.35)'; bgColor = 'rgba(160,60,0,0.07)';
             } else if (rank === 3) {
-                rankDisplay = '🗑️'; borderColor = 'rgba(120,60,0,0.25)'; bgColor = 'rgba(120,60,0,0.05)';
+                rankDisplay = dfImg('24px'); borderColor = 'rgba(120,60,0,0.25)'; bgColor = 'rgba(120,60,0,0.05)';
             } else {
                 rankDisplay = `<span style="color:#777;font-size:0.85rem;font-weight:bold;">${rank}</span>`;
                 borderColor = 'rgba(0,0,0,0.08)'; bgColor = 'transparent';

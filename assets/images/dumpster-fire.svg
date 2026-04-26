@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 56">
+  <!-- Flames (back layer) -->
+  <path d="M10 26 C8 17 13 11 10 4 C15 11 12 19 17 14 C14 7 21 4 18 12 C22 6 27 9 23 17 C26 10 33 11 29 19 C32 12 38 12 35 4 C40 12 36 20 38 26" fill="#cc2200" opacity="0.7"/>
+  <!-- Flames (mid layer) -->
+  <path d="M13 26 C11 18 16 13 13 7 C18 13 15 20 20 15 C17 9 23 7 21 14 C25 8 29 12 26 19 C28 13 34 14 31 21 C33 15 38 16 36 24" fill="#ff5500"/>
+  <!-- Flames (front/bright layer) -->
+  <path d="M16 26 C15 19 19 15 17 10 C21 15 19 21 23 17 C21 12 26 11 24 17 C27 12 31 15 28 21 C30 16 34 18 32 24" fill="#ffaa00"/>
+  <!-- Flame tips (yellow) -->
+  <path d="M19 26 C18 21 21 18 20 14 C22 18 22 22 24 19 C23 15 26 15 25 20 C27 16 29 19 28 23" fill="#ffe000"/>
+
+  <!-- Dumpster body -->
+  <rect x="4" y="26" width="40" height="24" rx="2.5" fill="#4a4a4a"/>
+  <!-- Body highlight/shade -->
+  <rect x="4" y="26" width="40" height="5" rx="2.5" fill="#555"/>
+  <!-- Lid -->
+  <rect x="2" y="22" width="44" height="6" rx="2" fill="#616161"/>
+  <!-- Lid highlight -->
+  <rect x="2" y="22" width="44" height="2.5" rx="2" fill="#707070"/>
+  <!-- Center divider -->
+  <rect x="23" y="26" width="2.5" height="24" fill="#3a3a3a"/>
+  <!-- Mid horizontal rib -->
+  <rect x="4" y="36" width="40" height="2" fill="#3a3a3a"/>
+  <!-- Handle left -->
+  <rect x="7" y="19" width="6" height="4" rx="1" fill="#505050"/>
+  <!-- Handle right -->
+  <rect x="35" y="19" width="6" height="4" rx="1" fill="#505050"/>
+  <!-- Wheels -->
+  <circle cx="13" cy="51" r="4" fill="#2a2a2a"/>
+  <circle cx="35" cy="51" r="4" fill="#2a2a2a"/>
+  <!-- Wheel rims -->
+  <circle cx="13" cy="51" r="2" fill="#444"/>
+  <circle cx="35" cy="51" r="2" fill="#444"/>
+</svg>
