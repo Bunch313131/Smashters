@@ -10219,12 +10219,20 @@
         // Check if scoreboard content overflows — if so, start session cycling
         checkBroadcastOverflow();
 
-        // Spotlight — pick an active match to feature
+        // Spotlight — pick an active match or dumpster fire slide to feature
         const activeMatches = allMatches.filter(m => !getMatchPlayStatus(m).isComplete && getMatchPlayStatus(m).holesPlayed > 0);
-        const spotlightPool = activeMatches.length > 0 ? activeMatches : allMatches.filter(m => getMatchPlayStatus(m).holesPlayed > 0);
+        const matchPool = activeMatches.length > 0 ? activeMatches : allMatches.filter(m => getMatchPlayStatus(m).holesPlayed > 0);
+        const dfData = IndividualStats.getDumpsterFireData();
+        const spotlightPool = [...matchPool];
+        if (dfData.length > 0) spotlightPool.push({ type: 'dumpsterfire' });
         if (spotlightPool.length > 0) {
             broadcastSpotlightIndex = broadcastSpotlightIndex % spotlightPool.length;
-            renderBroadcastSpotlight(spotlightPool[broadcastSpotlightIndex]);
+            const slide = spotlightPool[broadcastSpotlightIndex];
+            if (slide.type === 'dumpsterfire') {
+                renderBroadcastDumpsterFire(dfData);
+            } else {
+                renderBroadcastSpotlight(slide);
+            }
         } else {
             document.getElementById('broadcastSpotlightContent').innerHTML =
                 '<div class="broadcast-spotlight-label">MATCH SPOTLIGHT</div>' +
@@ -10331,6 +10339,52 @@
         `;
 
         requestAnimationFrame(() => drawProbChart(match));
+    }
+
+    function renderBroadcastDumpsterFire(data) {
+        const el = document.getElementById('broadcastSpotlightContent');
+        const dfImg = (size) => `<img src="assets/images/dumpster-fire.svg" style="width:${size};height:${size};display:inline-block;vertical-align:middle;" alt="🔥">`;
+
+        const top5 = data.slice(0, 5);
+        let rowsHtml = '';
+        top5.forEach((p, i) => {
+            const rank = i + 1;
+            let rankHtml;
+            if (rank === 1) rankHtml = dfImg('clamp(28px,3.5vw,44px)');
+            else if (rank === 2) rankHtml = dfImg('clamp(22px,2.8vw,36px)');
+            else if (rank === 3) rankHtml = dfImg('clamp(18px,2.2vw,30px)');
+            else rankHtml = `<span style="color:#888;font-size:clamp(13px,1.5vw,20px);font-weight:bold;">${rank}</span>`;
+
+            const teamColor = p.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const relPar = p.netRelToPar > 0 ? `+${p.netRelToPar}` : p.netRelToPar === 0 ? 'E' : `${p.netRelToPar}`;
+            const scoreColor = p.netRelToPar > 8 ? '#ff4444' : p.netRelToPar > 3 ? '#ff7733' : p.netRelToPar > 0 ? '#ffaa55' : p.netRelToPar === 0 ? '#aaa' : '#4caf50';
+            const worstStr = p.worstHoleNet && p.worstHoleNet.diff > 0 ? `worst: +${p.worstHoleNet.diff} (H${p.worstHoleNet.hole})` : '';
+
+            rowsHtml += `
+                <div style="display:flex;align-items:center;gap:clamp(8px,1.2vw,16px);padding:clamp(6px,1vw,12px) 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+                    <div style="min-width:clamp(28px,3.5vw,44px);text-align:center;line-height:1;">${rankHtml}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:bold;color:${teamColor};font-size:clamp(13px,1.6vw,22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.playerName}</div>
+                        <div style="font-size:clamp(10px,1.1vw,15px);color:#888;margin-top:2px;">${p.holesPlayed} holes${worstStr ? ' · ' + worstStr : ''}</div>
+                    </div>
+                    <div style="text-align:right;min-width:clamp(36px,4vw,56px);">
+                        <div style="font-size:clamp(16px,2.2vw,30px);font-weight:bold;color:${scoreColor};line-height:1;">${relPar}</div>
+                        <div style="font-size:clamp(9px,0.9vw,12px);color:#666;margin-top:2px;">net</div>
+                    </div>
+                </div>`;
+        });
+
+        el.innerHTML = `
+            <div style="display:flex;flex-direction:column;height:100%;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:clamp(8px,1.2vw,16px);padding-bottom:clamp(8px,1.2vw,14px);border-bottom:2px solid rgba(255,100,0,0.3);">
+                    <div>${dfImg('clamp(36px,4.5vw,56px)')}</div>
+                    <div>
+                        <div style="color:#FBF308;font-family:'Azalea','Georgia',serif;font-size:clamp(16px,2.2vw,30px);letter-spacing:1px;line-height:1.1;">DUMPSTER FIRE</div>
+                        <div style="color:rgba(255,255,255,0.45);font-size:clamp(9px,1vw,13px);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Handicap-Adjusted · Worst to Best</div>
+                    </div>
+                </div>
+                <div style="flex:1;">${rowsHtml}</div>
+            </div>`;
     }
 
     // Match play win probability using dynamic programming
