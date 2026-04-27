@@ -5344,45 +5344,8 @@
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
         }
 
-        html += renderMatchHistory();
-
         el.innerHTML = html;
         triggerScoreAnimations();
-    }
-
-    function renderMatchHistory() {
-        const completed = Object.values(S.matches).filter(m => getMatchPlayStatus(m).isComplete);
-        if (completed.length === 0) return '';
-
-        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
-        let html = `<div class="lb-board" style="margin-top:16px;">
-            <div class="lb-section-header">Match History</div>`;
-
-        sessions.forEach(session => {
-            const sessionMatches = completed.filter(m => m.sessionId === session.id);
-            if (sessionMatches.length === 0) return;
-            html += `<div style="padding:3px 14px;background:#f7f7f7;border-bottom:1px solid #e8e8e8;">
-                <span style="font-size:0.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;">${session.name}</span>
-            </div>`;
-            sessionMatches.forEach(m => {
-                const status = getMatchPlayStatus(m);
-                const namesA = m.teamA.map(id => getPlayerName(id)).join(' / ');
-                const namesB = m.teamB.map(id => getPlayerName(id)).join(' / ');
-                const winner = status.leader;
-                const colorA = S.config.teamA.color, colorB = S.config.teamB.color;
-                const badgeBg = winner === 'A' ? colorA : winner === 'B' ? colorB : '#888';
-                const styleA = `font-weight:${winner === 'A' ? '700' : '400'};color:${winner === 'A' ? colorA : '#666'};`;
-                const styleB = `font-weight:${winner === 'B' ? '700' : '400'};color:${winner === 'B' ? colorB : '#666'};`;
-                html += `<div style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid #eee;font-size:0.88em;">
-                    <span style="${styleA};flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${namesA}</span>
-                    <span style="flex-shrink:0;font-weight:700;font-size:0.78em;padding:2px 8px;border-radius:10px;background:${badgeBg};color:#fff;white-space:nowrap;">${status.text}</span>
-                    <span style="${styleB};flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${namesB}</span>
-                </div>`;
-            });
-        });
-
-        html += `</div>`;
-        return html;
     }
 
     function enableScoring() {
