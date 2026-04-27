@@ -5623,29 +5623,26 @@
 
         let html = `<h2 class="section-title">Individual Performance</h2>`;
 
-        // View selector
-        html += `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        // View selector — 4-col grid so buttons never wrap
+        html += `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:${selectedView === 'stats' ? '10px' : '16px'};">
             <button class="btn ${selectedView === 'points' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('points')">Point Leaders</button>
+                onclick="setIndividualView('points')">Points</button>
             <button class="btn ${selectedView === 'daily' ? 'btn-primary' : 'btn-outline'} btn-sm"
-                onclick="setIndividualView('daily')">Daily Scores</button>
+                onclick="setIndividualView('daily')">Scores</button>
             <button class="btn ${selectedView === 'stats' ? 'btn-primary' : 'btn-outline'} btn-sm"
                 onclick="setIndividualView('stats')">Stats</button>
             <button class="btn btn-sm" style="${selectedView === 'dumpsterfire' ? 'background:#8B1a00;color:#FBF308;border-color:#8B1a00;' : 'background:transparent;border:1px solid #c0c0c0;color:#555;'}"
-                onclick="setIndividualView('dumpsterfire')"><img src="assets/images/dumpster-fire.svg" style="height:1.1em;vertical-align:middle;margin-right:4px;"> Dumpster Fire</button>
+                onclick="setIndividualView('dumpsterfire')"><img src="assets/images/dumpster-fire.svg" style="height:1em;vertical-align:middle;margin-right:3px;">Fire</button>
         </div>`;
 
-        // Gross/Net and Session filter — only for stats view
+        // Gross/Net + Session filter on one row — only for stats view
         if (selectedView === 'stats') {
-            html += `<div style="display:flex;gap:8px;margin-bottom:16px;">
+            html += `<div style="display:flex;gap:6px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
                 <button class="btn ${selectedType === 'gross' ? 'btn-gold' : 'btn-outline'} btn-sm"
                     onclick="setIndividualType('gross')">Gross</button>
                 <button class="btn ${selectedType === 'net' ? 'btn-gold' : 'btn-outline'} btn-sm"
                     onclick="setIndividualType('net')">Net</button>
-            </div>`;
-
-            html += `<div style="margin-bottom:16px;">
-                <select class="form-input" onchange="setIndividualSession(this.value)" style="width:auto;">
+                <select class="form-input" onchange="setIndividualSession(this.value)" style="flex:1;min-width:0;height:32px;padding:0 8px;font-size:0.85rem;">
                     <option value="all" ${selectedSession === 'all' ? 'selected' : ''}>All Sessions</option>
                     ${sessions.map(s => `<option value="${s.id}" ${selectedSession === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
                 </select>
