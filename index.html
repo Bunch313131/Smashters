@@ -533,10 +533,10 @@
 
         .hole-by-hole-grid {
             display: grid;
-            grid-template-columns: auto repeat(18, minmax(40px, 1fr));
+            grid-template-columns: auto repeat(18, minmax(0, 1fr));
             gap: 4px;
             font-size: 0.7rem;
-            min-width: max-content;
+            width: 100%;
         }
 
         .hole-cell {
@@ -5443,8 +5443,8 @@
             }
         }
 
-        // Horizontal scrollable grid
-        let html = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
+        // Grid scrolls only when it can't fit
+        let html = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;min-width:0;">';
         html += '<div class="hole-by-hole-grid">';
 
         // Row 1: Hole headers
