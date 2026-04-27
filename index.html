@@ -5028,19 +5028,22 @@
                 m.type !== 'foursomes' &&
                 (m.teamA.includes(playerId) || m.teamB.includes(playerId))
             );
-            let totalRelToPar = 0, netRelToPar = 0;
+            let totalRelToPar = 0, netRelToPar = 0, totalGross = 0, totalNet = 0;
             let holesPlayed = 0;
             matches.forEach(match => {
                 Object.keys(match.holes || {}).forEach(holeNum => {
                     const gross = match.holes[holeNum][playerId];
                     if (gross === undefined || gross === null) return;
                     const par = getHoleInfo(parseInt(holeNum)).par;
+                    const net = getNetScore(playerId, parseInt(holeNum), gross);
                     totalRelToPar += (gross - par);
-                    netRelToPar += (getNetScore(playerId, parseInt(holeNum), gross) - par);
+                    netRelToPar += (net - par);
+                    totalGross += gross;
+                    totalNet += net;
                     holesPlayed++;
                 });
             });
-            return { totalRelToPar, netRelToPar, holesPlayed };
+            return { totalRelToPar, netRelToPar, totalGross, totalNet, holesPlayed };
         },
 
         getDailyScoresData() {
@@ -5052,13 +5055,15 @@
             const sortBy = S.ui.dailySort || 'gross';
             const playerData = allPlayers.map(playerId => {
                 const sessionScores = {};
-                let overallRelToPar = 0, overallNetRelToPar = 0;
+                let overallRelToPar = 0, overallNetRelToPar = 0, overallGross = 0, overallNet = 0;
                 let overallHolesPlayed = 0;
                 scoringSessions.forEach(session => {
                     const result = this.getPlayerRelativeToParBySession(playerId, session.id);
                     sessionScores[session.id] = result;
                     overallRelToPar += result.totalRelToPar;
                     overallNetRelToPar += result.netRelToPar;
+                    overallGross += result.totalGross;
+                    overallNet += result.totalNet;
                     overallHolesPlayed += result.holesPlayed;
                 });
                 return {
@@ -5066,14 +5071,14 @@
                     playerName: getPlayerName(playerId),
                     team: S.players[playerId]?.team,
                     sessionScores,
-                    overallRelToPar,
-                    overallNetRelToPar,
+                    overallRelToPar, overallNetRelToPar,
+                    overallGross, overallNet,
                     overallHolesPlayed,
                 };
             }).filter(p => p.overallHolesPlayed > 0);
             playerData.sort((a, b) => sortBy === 'net'
-                ? a.overallNetRelToPar - b.overallNetRelToPar
-                : a.overallRelToPar - b.overallRelToPar);
+                ? a.overallNet - b.overallNet
+                : a.overallGross - b.overallGross);
             return { scoringSessions, playerData };
         },
 
@@ -6000,10 +6005,9 @@
             return `<div class="empty-state"><h3>No Scores Yet</h3><p>Scores will appear here once matches are played.</p></div>`;
         }
         const sortBy = S.ui.dailySort || 'gross';
-        function fmtRelPar(val) { return val === 0 ? 'E' : val > 0 ? '+' + val : '' + val; }
         function fmtThru(h) { return h === 0 ? '-' : h >= 18 ? 'F' : h; }
-        function grossStyle(val) { return val < 0 ? 'color:#1a7a1a;font-weight:700;' : val > 0 ? 'color:#c44;font-weight:700;' : 'font-weight:700;'; }
-        function netStyle(val)   { return val < 0 ? 'color:#2a9a2a;' : val > 0 ? 'color:#e06;' : ''; }
+        function grossStyle() { return 'font-weight:700;'; }
+        function netStyle()   { return 'color:#555;'; }
 
         const sortBtn = (key, label) => {
             const active = sortBy === key;
@@ -6033,16 +6037,16 @@
             scoringSessions.forEach(s => {
                 const sd = p.sessionScores[s.id];
                 if (sd && sd.holesPlayed > 0) {
-                    html += `<td style="padding:4px 3px;text-align:center;width:36px;${grossStyle(sd.totalRelToPar)}">${fmtRelPar(sd.totalRelToPar)}</td>`;
-                    html += `<td style="padding:4px 3px;text-align:center;width:32px;font-size:0.82em;${netStyle(sd.netRelToPar)}">${fmtRelPar(sd.netRelToPar)}</td>`;
+                    html += `<td style="padding:4px 3px;text-align:center;width:36px;${grossStyle()}">${sd.totalGross}</td>`;
+                    html += `<td style="padding:4px 3px;text-align:center;width:32px;font-size:0.82em;${netStyle()}">${sd.totalNet}</td>`;
                     html += `<td style="padding:4px 3px;text-align:center;width:28px;font-size:0.78em;color:#aaa;">${fmtThru(sd.holesPlayed)}</td>`;
                 } else {
                     html += `<td colspan="2" style="padding:4px 3px;text-align:center;color:#ccc;">-</td><td style="padding:4px 3px;text-align:center;color:#ccc;">-</td>`;
                 }
             });
             if (multi) {
-                html += `<td style="padding:4px 3px;text-align:center;width:36px;${grossStyle(p.overallRelToPar)}">${fmtRelPar(p.overallRelToPar)}</td>`;
-                html += `<td style="padding:4px 3px;text-align:center;width:32px;font-size:0.82em;${netStyle(p.overallNetRelToPar)}">${fmtRelPar(p.overallNetRelToPar)}</td>`;
+                html += `<td style="padding:4px 3px;text-align:center;width:36px;${grossStyle()}">${p.overallGross}</td>`;
+                html += `<td style="padding:4px 3px;text-align:center;width:32px;font-size:0.82em;${netStyle()}">${p.overallNet}</td>`;
                 html += `<td style="padding:4px 3px;text-align:center;width:28px;font-size:0.78em;color:#aaa;">${fmtThru(p.overallHolesPlayed)}</td>`;
             }
             html += '</tr>';
