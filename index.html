@@ -5091,7 +5091,7 @@
                             holesPlayed++;
                             if (netDiff > 1) doubleBogeysNet++;
                             if (worstHoleNet === null || netDiff > worstHoleNet.diff)
-                                worstHoleNet = { hole: holeNum, diff: netDiff };
+                                worstHoleNet = { hole: holeNum, diff: netDiff, gross };
                         });
                     });
 
@@ -5927,14 +5927,14 @@
         if (mostDbl && mostDbl.doubleBogeysNet > 0) {
             const tc = mostDbl.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
             const cnt = mostDbl.doubleBogeysNet;
-            awards.push({ title: 'Trash Hauler', sub: 'Most double bogeys or worse', name: mostDbl.playerName, detail: `${cnt} hole${cnt !== 1 ? 's' : ''}`, teamColor: tc });
+            awards.push({ title: 'Trash Hauler', sub: 'Most double bogeys or worse', name: mostDbl.playerName, detail: `${cnt} double bogey${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
         }
 
-        const byWorstHole = data.filter(p => p.worstHoleNet && p.worstHoleNet.diff > 0).sort((a, b) => b.worstHoleNet.diff - a.worstHoleNet.diff);
+        const byWorstHole = data.filter(p => p.worstHoleNet && p.worstHoleNet.gross != null).sort((a, b) => b.worstHoleNet.diff - a.worstHoleNet.diff);
         if (byWorstHole.length > 0) {
             const p = byWorstHole[0];
             const tc = p.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            awards.push({ title: 'The Big One', sub: 'Worst single hole (net)', name: p.playerName, detail: `+${p.worstHoleNet.diff} on H${p.worstHoleNet.hole}`, teamColor: tc });
+            awards.push({ title: 'The Big One', sub: 'Worst single hole (gross)', name: p.playerName, detail: `${p.worstHoleNet.gross} on Hole ${p.worstHoleNet.hole}`, teamColor: tc });
         }
 
         const awardRows = awards.map((a, i) => `
@@ -10360,15 +10360,15 @@
         if (mostDbl && mostDbl.doubleBogeysNet > 0) {
             const tc = mostDbl.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
             const cnt = mostDbl.doubleBogeysNet;
-            awards.push({ title: 'TRASH HAULER', sub: 'Most double bogeys or worse', name: mostDbl.playerName, detail: `${cnt} hole${cnt !== 1 ? 's' : ''}`, teamColor: tc });
+            awards.push({ title: 'TRASH HAULER', sub: 'Most double bogeys or worse', name: mostDbl.playerName, detail: `${cnt} double bogey${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
         }
 
-        // THE BIG ONE — worst single hole (net diff)
-        const byWorstHole = data.filter(p => p.worstHoleNet && p.worstHoleNet.diff > 0).sort((a, b) => b.worstHoleNet.diff - a.worstHoleNet.diff);
+        // THE BIG ONE — worst single hole (gross score)
+        const byWorstHole = data.filter(p => p.worstHoleNet && p.worstHoleNet.gross != null).sort((a, b) => b.worstHoleNet.diff - a.worstHoleNet.diff);
         if (byWorstHole.length > 0) {
             const p = byWorstHole[0];
             const tc = p.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            awards.push({ title: 'THE BIG ONE', sub: 'Worst single hole (net)', name: p.playerName, detail: `+${p.worstHoleNet.diff} on Hole ${p.worstHoleNet.hole}`, teamColor: tc });
+            awards.push({ title: 'THE BIG ONE', sub: 'Worst single hole (gross)', name: p.playerName, detail: `${p.worstHoleNet.gross} on Hole ${p.worstHoleNet.hole}`, teamColor: tc });
         }
 
         // Each award: no dark cards — sits directly on the green bg like the match spotlight
