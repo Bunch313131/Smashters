@@ -10343,17 +10343,16 @@
 
     function renderBroadcastDumpsterFire(data) {
         const el = document.getElementById('broadcastSpotlightContent');
-        const dfImg = (size) => `<img src="assets/images/dumpster-fire.svg" style="width:${size};height:${size};display:inline-block;vertical-align:middle;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));" alt="🔥">`;
+        const dfImg = (size) => `<img src="assets/images/dumpster-fire.svg" style="width:${size};height:${size};display:inline-block;vertical-align:middle;" alt="🔥">`;
 
-        // Build awards from the data
+        // Build awards
         const awards = [];
 
         // THE INFERNO — most over par total (net)
-        const worst = data[0]; // already sorted worst→best
+        const worst = data[0];
         if (worst && worst.netRelToPar > 0) {
             const tc = worst.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const rel = `+${worst.netRelToPar} net`;
-            awards.push({ title: 'THE INFERNO', sub: 'Most over par overall', name: worst.playerName, detail: rel, teamColor: tc });
+            awards.push({ title: 'THE INFERNO', sub: 'Most over par overall', name: worst.playerName, detail: `+${worst.netRelToPar} net`, teamColor: tc });
         }
 
         // TRASH HAULER — most double bogeys or worse (net)
@@ -10369,35 +10368,33 @@
         if (byWorstHole.length > 0) {
             const p = byWorstHole[0];
             const tc = p.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const diff = p.worstHoleNet.diff > 0 ? `+${p.worstHoleNet.diff} on Hole ${p.worstHoleNet.hole}` : `E on Hole ${p.worstHoleNet.hole}`;
-            awards.push({ title: 'THE BIG ONE', sub: 'Worst single hole (net)', name: p.playerName, detail: diff, teamColor: tc });
+            awards.push({ title: 'THE BIG ONE', sub: 'Worst single hole (net)', name: p.playerName, detail: `+${p.worstHoleNet.diff} on Hole ${p.worstHoleNet.hole}`, teamColor: tc });
         }
 
-        const awardCardsHtml = awards.map(a => `
-            <div style="background:rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:clamp(8px,1.2vw,14px) clamp(10px,1.5vw,18px);display:flex;align-items:center;gap:clamp(8px,1.2vw,14px);">
-                <div style="flex-shrink:0;">${dfImg('clamp(28px,3.2vw,42px)')}</div>
+        // Each award: no dark cards — sits directly on the green bg like the match spotlight
+        const awardBlocksHtml = awards.map((a, i) => `
+            ${i > 0 ? `<div style="height:1px;background:rgba(255,255,255,0.15);margin:clamp(8px,1.1vw,14px) 0;"></div>` : ''}
+            <div style="display:flex;align-items:center;gap:clamp(10px,1.4vw,18px);">
+                <div style="flex-shrink:0;">${dfImg('clamp(22px,2.6vw,36px)')}</div>
                 <div style="flex:1;min-width:0;">
-                    <div style="color:var(--masters-yellow,#FBF308);font-size:clamp(9px,1vw,13px);font-weight:800;letter-spacing:2px;text-transform:uppercase;line-height:1;">${a.title}</div>
-                    <div style="color:rgba(255,255,255,0.5);font-size:clamp(8px,0.85vw,11px);margin:2px 0 4px;text-transform:uppercase;letter-spacing:0.5px;">${a.sub}</div>
-                    <div style="color:#fff;font-size:clamp(14px,1.8vw,24px);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" ><span style="color:${a.teamColor}">${a.name}</span></div>
+                    <div style="color:#FBF308;font-size:clamp(9px,0.95vw,12px);font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">${a.title}</div>
+                    <div style="color:#fff;font-size:clamp(17px,2.2vw,30px);font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        <span style="border-left:4px solid ${a.teamColor};padding-left:9px;">${a.name}</span>
+                    </div>
+                    <div style="color:rgba(255,255,255,0.5);font-size:clamp(9px,0.9vw,12px);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">${a.sub}</div>
                 </div>
-                <div style="flex-shrink:0;text-align:right;">
-                    <div style="color:#ff7733;font-size:clamp(13px,1.6vw,20px);font-weight:800;white-space:nowrap;">${a.detail}</div>
+                <div style="flex-shrink:0;text-align:right;padding-left:8px;">
+                    <div style="color:#ffbb55;font-size:clamp(14px,1.9vw,24px);font-weight:800;letter-spacing:-0.5px;white-space:nowrap;">${a.detail}</div>
                 </div>
             </div>`).join('');
 
         el.innerHTML = `
             <div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:clamp(10px,1.4vw,18px);">
-                    ${dfImg('clamp(32px,4vw,50px)')}
-                    <div>
-                        <div class="broadcast-spotlight-label" style="margin-bottom:2px;">Dumpster Fire Awards</div>
-                        <div style="color:rgba(255,255,255,0.4);font-size:clamp(8px,0.9vw,12px);text-transform:uppercase;letter-spacing:1px;">Handicap-adjusted · Today's biggest disasters</div>
-                    </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:clamp(10px,1.5vw,20px);padding-bottom:clamp(8px,1.1vw,14px);border-bottom:2px solid rgba(251,243,8,0.4);">
+                    ${dfImg('clamp(28px,3.4vw,44px)')}
+                    <div class="broadcast-spotlight-label" style="margin-bottom:0;">Dumpster Fire Awards</div>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:clamp(6px,0.9vw,12px);">
-                    ${awardCardsHtml}
-                </div>
+                ${awardBlocksHtml}
             </div>`;
     }
 
