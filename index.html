@@ -396,27 +396,30 @@
         .lb-board {
             border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 10px 30px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.8) inset;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.08);
         }
 
         .lb-section-header {
-            background: var(--masters-green);
+            background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
             color: var(--masters-yellow);
-            padding: 10px 16px;
+            padding: 12px 18px;
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 0.85rem;
-            font-weight: bold;
-            letter-spacing: 1px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            letter-spacing: 2px;
             text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            border-bottom: 2px solid rgba(251,243,8,0.35);
         }
 
         /* Match row - 3 column broadcast layout */
         .lb-match-row {
             display: grid;
             grid-template-columns: 1fr var(--center-column-width) 1fr;
-            min-height: 52px;
-            border-bottom: 1px solid rgba(0,0,0,0.06);
+            min-height: 56px;
+            border-bottom: 1px solid rgba(0,0,0,0.07);
             font-size: 0.9rem;
         }
         .lb-match-row:last-child { border-bottom: none; }
@@ -432,7 +435,7 @@
         .lb-cell-a, .lb-cell-b {
             display: flex;
             align-items: center;
-            padding: 12px 14px;
+            padding: 13px 16px;
             color: var(--masters-white);
             background: #f8f9fa;
             color: var(--masters-black);
@@ -454,32 +457,37 @@
         }
 
         .lb-player-name {
-            font-weight: bold;
+            font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            font-size: 0.95rem;
+            letter-spacing: -0.2px;
         }
 
         .lb-match-score {
-            font-weight: bold;
-            font-size: 0.8rem;
+            font-weight: 800;
+            font-size: 0.95rem;
             white-space: nowrap;
             min-width: fit-content;
+            letter-spacing: -0.3px;
         }
 
         /* Leading team gets their color background */
         .lb-cell-a.leading {
-            background: var(--team-a-color);
+            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 75%, #000) 100%);
             color: var(--masters-white);
+            box-shadow: inset -3px 0 0 rgba(255,255,255,0.2);
         }
         .lb-cell-b.leading {
-            background: var(--team-b-color);
+            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 75%, #000) 100%);
             color: var(--masters-white);
+            box-shadow: inset 3px 0 0 rgba(255,255,255,0.2);
         }
 
         /* Tied/halved - both sides neutral */
         .lb-cell-a.tied, .lb-cell-b.tied {
-            background: #f8f9fa;
+            background: #f0f0f0;
             color: var(--masters-black);
         }
 
@@ -495,11 +503,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #4a4a4a;
+            background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
             color: var(--masters-white);
             font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -599,51 +608,57 @@
         .lb-totals-row {
             display: grid;
             grid-template-columns: 1fr var(--center-column-width) 1fr;
-            min-height: 52px;
+            min-height: 64px;
             font-size: 1rem;
         }
 
         .lb-totals-a, .lb-totals-b {
             display: flex;
             align-items: center;
-            padding: 10px 14px;
+            padding: 12px 18px;
             font-weight: bold;
             color: var(--masters-white);
-            gap: 10px;
+            gap: 12px;
         }
 
         .lb-totals-a {
-            background: var(--team-a-color);
+            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 70%, #000) 100%);
             justify-content: flex-end;
             text-align: right;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
         }
         .lb-totals-b {
-            background: var(--team-b-color);
+            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 70%, #000) 100%);
             justify-content: flex-start;
             text-align: left;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
         }
 
         .lb-total-team-name {
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 0.75rem;
-            font-weight: bold;
+            font-size: 0.7rem;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            opacity: 0.9;
+            letter-spacing: 1.5px;
+            opacity: 0.85;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
         .lb-total-pts {
-            font-size: 1.6rem;
+            font-size: 2rem;
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
-            font-weight: bold;
+            font-weight: 900;
             line-height: 1;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            letter-spacing: -1px;
         }
 
         .lb-totals-center {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #4a4a4a;
+            background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
         }
 
         .lb-totals-center img {
@@ -651,6 +666,7 @@
             height: 36px;
             object-fit: contain;
             border-radius: 4px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
 
         /* Session breakdown row */
@@ -788,11 +804,12 @@
         }
 
         .scoring-header {
-            background: var(--masters-green);
+            background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
             color: var(--masters-white);
             padding: 6px 12px;
             text-align: center;
             position: relative;
+            border-bottom: 1px solid rgba(251,243,8,0.3);
         }
         .scoring-lock-btn {
             position: absolute;
@@ -1155,23 +1172,26 @@
         .match-setup-card {
             background: var(--masters-white);
             border-radius: var(--radius);
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 10px 30px rgba(0,0,0,0.12);
             margin-bottom: 12px;
             overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.08);
         }
 
         .match-setup-header {
-            background: var(--masters-dark);
-            color: var(--masters-white);
+            background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
+            color: var(--masters-yellow);
             padding: 10px 16px;
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-size: 0.75rem;
-            font-weight: bold;
-            letter-spacing: 0.5px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            border-bottom: 1px solid rgba(251,243,8,0.3);
         }
 
         .match-setup-body {
@@ -2453,36 +2473,38 @@
             color: #fff;
         }
         .broadcast-team-card.team-a {
-            background: var(--team-a-color);
+            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 70%, #000) 100%);
             justify-content: flex-end;
             text-align: right;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
         }
         .broadcast-team-card.team-b {
-            background: var(--team-b-color);
+            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 70%, #000) 100%);
             justify-content: flex-start;
             text-align: left;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
         }
         .broadcast-team-name {
             font-size: clamp(10px, 1.3vw, 15px);
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            opacity: 0.9;
+            opacity: 0.85;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         .broadcast-team-score {
             font-size: clamp(28px, 5vw, 56px);
-            font-weight: 800;
+            font-weight: 900;
             line-height: 1;
             font-family: 'Trebuchet MS', sans-serif;
-        }
-        .broadcast-team-card.leading .broadcast-team-score {
-            text-shadow: 0 1px 8px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            letter-spacing: -1px;
         }
         .broadcast-teams-center {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #4a4a4a;
+            background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
             color: var(--masters-yellow);
             font-size: 0.6rem;
             font-weight: 700;
@@ -2513,12 +2535,14 @@
             font-size: clamp(10px, 1.1vw, 13px);
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-weight: 700;
+            font-weight: 800;
             margin: 14px 0 0 0;
-            padding: 6px 10px;
-            background: var(--masters-green);
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
             color: var(--masters-yellow);
             border-radius: 8px 8px 0 0;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            border-bottom: 2px solid rgba(251,243,8,0.35);
         }
 
         /* ── Match rows (leaderboard-style) ── */
@@ -2554,16 +2578,18 @@
             color: var(--masters-black);
         }
         .broadcast-match-teamA.leading {
-            background: var(--team-a-color);
+            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 75%, #000) 100%);
             color: #fff;
+            box-shadow: inset -3px 0 0 rgba(255,255,255,0.2);
         }
         .broadcast-match-teamB.leading {
-            background: var(--team-b-color);
+            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 75%, #000) 100%);
             color: #fff;
+            box-shadow: inset 3px 0 0 rgba(255,255,255,0.2);
         }
         .broadcast-match-teamA.tied,
         .broadcast-match-teamB.tied {
-            background: #f8f9fa;
+            background: #f0f0f0;
             color: var(--masters-black);
         }
         .broadcast-match-teamA.pending,
@@ -2575,13 +2601,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #4a4a4a;
+            background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
             color: #fff;
             font-weight: 700;
             font-size: clamp(9px, 1.1vw, 13px);
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
             text-align: center;
             white-space: nowrap;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
         /* ── Highlights (between hole dots and chart) ── */
@@ -2628,7 +2655,7 @@
             overflow: hidden;
         }
         .broadcast-prob-chart {
-            height: clamp(90px, 14vh, 150px);
+            height: clamp(140px, 22vh, 240px);
         }
         .broadcast-prob-chart canvas {
             width: 100%;
@@ -2735,13 +2762,14 @@
 
         /* ── Bonus event rows ── */
         .broadcast-bonus-label {
-            background: #4a4a4a;
-            color: var(--masters-cream);
-            padding: 4px 16px;
+            background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
+            color: var(--masters-yellow);
+            padding: 5px 16px;
             font-size: clamp(9px, 1.1vw, 13px);
-            font-weight: 700;
-            letter-spacing: 0.5px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
         }
         .broadcast-bonus-notes {
             font-size: clamp(8px, 1vw, 12px);
@@ -5557,7 +5585,7 @@
 
         return `
             <div class="bonus-event-container">
-                <div style="background:#4a4a4a;color:var(--masters-cream);padding:6px 16px;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;font-size:0.75rem;font-weight:bold;letter-spacing:0.5px;text-transform:uppercase;">${evt.name}</div>
+                <div style="background:linear-gradient(135deg,#004d35 0%,var(--masters-green) 50%,#007a52 100%);color:var(--masters-yellow);padding:7px 16px;font-family:'Trebuchet MS','Helvetica Neue',Arial,sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,0.4);border-bottom:1px solid rgba(251,243,8,0.3);">${evt.name}</div>
                 <div class="lb-match-row" style="border-bottom:none;">
                     <div class="lb-cell-a ${cellAClass}">
                         ${ptsA > 0 ? `<span class="lb-match-score">${formatScore(ptsA)}</span>` : ''}
@@ -10185,6 +10213,8 @@
     let broadcastTickerEvents = [];
     let broadcastPrevMatches = null;
     let broadcastSessionCycleTimer = null;
+    let broadcastProbMatch = null;
+    let broadcastProbResizeObserver = null;
     let broadcastSessionCycleIndex = 0;
     let broadcastIsCycling = false;
 
@@ -10512,10 +10542,24 @@
             </div>
         `;
 
-        requestAnimationFrame(() => drawProbChart(match));
+        broadcastProbMatch = match;
+        requestAnimationFrame(() => {
+            drawProbChart(match);
+            // Set up ResizeObserver to redraw when container changes size
+            const canvas = document.getElementById('broadcastProbCanvas');
+            if (canvas) {
+                if (broadcastProbResizeObserver) broadcastProbResizeObserver.disconnect();
+                broadcastProbResizeObserver = new ResizeObserver(() => {
+                    if (broadcastProbMatch) drawProbChart(broadcastProbMatch);
+                });
+                broadcastProbResizeObserver.observe(canvas.parentElement);
+            }
+        });
     }
 
     function renderBroadcastDumpsterFire(data) {
+        broadcastProbMatch = null;
+        if (broadcastProbResizeObserver) { broadcastProbResizeObserver.disconnect(); broadcastProbResizeObserver = null; }
         const el = document.getElementById('broadcastSpotlightContent');
         const dfImg = (size) => `<img src="assets/images/dumpster-fire.svg" style="width:${size};height:${size};display:inline-block;vertical-align:middle;" alt="🔥">`;
 
@@ -10574,6 +10618,8 @@
     }
 
     function renderBroadcastHotHand(data) {
+        broadcastProbMatch = null;
+        if (broadcastProbResizeObserver) { broadcastProbResizeObserver.disconnect(); broadcastProbResizeObserver = null; }
         const el = document.getElementById('broadcastSpotlightContent');
 
         const awards = [];
@@ -10651,7 +10697,10 @@
         const W = container.clientWidth;
         const H = container.clientHeight;
 
-        const padL = 28, padR = 36, padT = 8, padB = 18;
+        const fontSize = Math.min(12, Math.max(7, W * 0.018));
+        const padL = Math.ceil(fontSize * 3.2) + 6;  // wide enough for "100%"
+        const padR = 48;  // fixed — end labels are now height-based and capped at 13px
+        const padT = 8, padB = 18;
         const cW = W - padL - padR;
         const cH = H - padT - padB;
 
@@ -10706,7 +10755,7 @@
 
         // Y-axis labels
         ctx.fillStyle = '#aaa';
-        ctx.font = `${Math.max(7, W * 0.018)}px Trebuchet MS`;
+        ctx.font = `${fontSize}px Trebuchet MS`;
         ctx.textAlign = 'right';
         ['100%', '50%', '0%'].forEach((label, i) => {
             const y = padT + (i / 2) * cH;
@@ -10735,9 +10784,9 @@
             }
             ctx.stroke();
         }
-        drawLine(probTie, '#ccc', 1);
-        drawLine(probA, S.config.teamA.color, 2.5);
-        drawLine(probB, S.config.teamB.color, 2.5);
+        drawLine(probTie, '#ccc', 1.5);
+        drawLine(probA, S.config.teamA.color, 4);
+        drawLine(probB, S.config.teamB.color, 4);
 
         // End dots + percentage labels
         const lastI = probA.length - 1;
@@ -10746,17 +10795,19 @@
             const dotY = padT + cH - data[lastI] * cH;
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(dotX, dotY, 3.5, 0, Math.PI * 2);
+            ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
             ctx.fill();
             // White outline
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 1.5;
             ctx.stroke();
-            // Percentage label
+            // Percentage label — scale with height not width, flip when near right edge
             ctx.fillStyle = color;
-            ctx.font = `bold ${Math.max(9, W * 0.022)}px Trebuchet MS`;
-            ctx.textAlign = 'left';
-            ctx.fillText(Math.round(data[lastI] * 100) + '%', dotX + 6, dotY + 4);
+            const labelFont = Math.min(13, Math.max(9, H * 0.1));
+            ctx.font = `bold ${labelFont}px Trebuchet MS`;
+            const nearRight = dotX > W - padR - 4;
+            ctx.textAlign = nearRight ? 'right' : 'left';
+            ctx.fillText(Math.round(data[lastI] * 100) + '%', nearRight ? dotX - 10 : dotX + 10, dotY + 4);
         });
     }
 
