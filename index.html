@@ -4152,6 +4152,7 @@
             individualView: 'points',
             individualType: 'gross',
             individualSession: 'all',
+            dailySort: 'gross',
         },
     });
 
@@ -5027,7 +5028,7 @@
                 m.type !== 'foursomes' &&
                 (m.teamA.includes(playerId) || m.teamB.includes(playerId))
             );
-            let totalRelToPar = 0;
+            let totalRelToPar = 0, netRelToPar = 0;
             let holesPlayed = 0;
             matches.forEach(match => {
                 Object.keys(match.holes || {}).forEach(holeNum => {
@@ -5035,10 +5036,11 @@
                     if (gross === undefined || gross === null) return;
                     const par = getHoleInfo(parseInt(holeNum)).par;
                     totalRelToPar += (gross - par);
+                    netRelToPar += (getNetScore(playerId, parseInt(holeNum), gross) - par);
                     holesPlayed++;
                 });
             });
-            return { totalRelToPar, holesPlayed };
+            return { totalRelToPar, netRelToPar, holesPlayed };
         },
 
         getDailyScoresData() {
@@ -5047,14 +5049,16 @@
             const scoringSessions = sessions.filter(session =>
                 getMatchesBySession(session.id).some(m => m.type !== 'foursomes')
             );
+            const sortBy = S.ui.dailySort || 'gross';
             const playerData = allPlayers.map(playerId => {
                 const sessionScores = {};
-                let overallRelToPar = 0;
+                let overallRelToPar = 0, overallNetRelToPar = 0;
                 let overallHolesPlayed = 0;
                 scoringSessions.forEach(session => {
                     const result = this.getPlayerRelativeToParBySession(playerId, session.id);
                     sessionScores[session.id] = result;
                     overallRelToPar += result.totalRelToPar;
+                    overallNetRelToPar += result.netRelToPar;
                     overallHolesPlayed += result.holesPlayed;
                 });
                 return {
@@ -5063,10 +5067,13 @@
                     team: S.players[playerId]?.team,
                     sessionScores,
                     overallRelToPar,
+                    overallNetRelToPar,
                     overallHolesPlayed,
                 };
             }).filter(p => p.overallHolesPlayed > 0);
-            playerData.sort((a, b) => a.overallRelToPar - b.overallRelToPar);
+            playerData.sort((a, b) => sortBy === 'net'
+                ? a.overallNetRelToPar - b.overallNetRelToPar
+                : a.overallRelToPar - b.overallRelToPar);
             return { scoringSessions, playerData };
         },
 
@@ -5678,6 +5685,12 @@
         renderIndividual();
     }
 
+    function setDailySort(sort) {
+        S.ui.dailySort = sort;
+        saveState();
+        renderIndividual();
+    }
+
     function setIndividualSession(sessionId) {
         S.ui.individualSession = sessionId;
         saveState();
@@ -5986,26 +5999,36 @@
         if (playerData.length === 0) {
             return `<div class="empty-state"><h3>No Scores Yet</h3><p>Scores will appear here once matches are played.</p></div>`;
         }
+        const sortBy = S.ui.dailySort || 'gross';
         function fmtRelPar(val) { return val === 0 ? 'E' : val > 0 ? '+' + val : '' + val; }
         function fmtThru(h) { return h === 0 ? '-' : h >= 18 ? 'F' : h; }
-        function scoreStyle(val) {
-            if (val < 0) return 'color:#d32f2f;font-weight:bold;';
-            if (val > 0) return 'color:#666;font-weight:bold;';
-            return 'font-weight:bold;';
-        }
+        function grossStyle(val) { return val < 0 ? 'color:#1a7a1a;font-weight:700;' : val > 0 ? 'color:#c44;font-weight:700;' : 'font-weight:700;'; }
+        function netStyle(val)   { return val < 0 ? 'color:#2a9a2a;' : val > 0 ? 'color:#e06;' : ''; }
+
+        const sortBtn = (key, label) => {
+            const active = sortBy === key;
+            return `<span onclick="setDailySort('${key}')" style="cursor:pointer;padding:1px 5px;border-radius:3px;font-size:0.75em;font-weight:${active?'800':'500'};color:${active?'#00432e':'#aaa'};text-decoration:${active?'underline':'none'};user-select:none;">${label}</span>`;
+        };
+
         const multi = scoringSessions.length > 1;
         let html = `<div class="lb-board">
-            <div class="lb-section-header">Daily Scores</div>
+            <div class="lb-section-header">Scores</div>
             <div style="padding:12px;overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;font-size:0.85em;">
                     <thead><tr style="border-bottom:2px solid #ddd;">
                         <th style="padding:6px 8px;text-align:left;font-weight:600;">Player</th>`;
         scoringSessions.forEach(s => {
-            html += `<th style="padding:6px 4px;text-align:center;font-weight:600;font-size:0.85em;">${s.name}</th>`;
+            html += `<th style="padding:6px 4px;text-align:center;" colspan="2">
+                        <div style="font-weight:600;font-size:0.85em;margin-bottom:2px;">${s.name}</div>
+                        <div style="display:flex;justify-content:center;gap:4px;">${sortBtn('gross','Gross')}${sortBtn('net','Net')}</div>
+                     </th>`;
             html += `<th style="padding:6px 4px;text-align:center;font-weight:400;font-size:0.7em;color:#999;">Thru</th>`;
         });
         if (multi) {
-            html += `<th style="padding:6px 8px;text-align:center;font-weight:700;">Total</th>`;
+            html += `<th style="padding:6px 4px;text-align:center;" colspan="2">
+                        <div style="font-weight:700;font-size:0.85em;margin-bottom:2px;">Total</div>
+                        <div style="display:flex;justify-content:center;gap:4px;">${sortBtn('gross','Gross')}${sortBtn('net','Net')}</div>
+                     </th>`;
             html += `<th style="padding:6px 4px;text-align:center;font-weight:400;font-size:0.7em;color:#999;">Thru</th>`;
         }
         html += '</tr></thead><tbody>';
@@ -6016,15 +6039,17 @@
             scoringSessions.forEach(s => {
                 const sd = p.sessionScores[s.id];
                 if (sd && sd.holesPlayed > 0) {
-                    html += `<td style="padding:6px 4px;text-align:center;${scoreStyle(sd.totalRelToPar)}">${fmtRelPar(sd.totalRelToPar)}</td>`;
-                    html += `<td style="padding:6px 4px;text-align:center;font-size:0.8em;color:#888;">${fmtThru(sd.holesPlayed)}</td>`;
+                    html += `<td style="padding:6px 2px;text-align:center;${grossStyle(sd.totalRelToPar)}">${fmtRelPar(sd.totalRelToPar)}</td>`;
+                    html += `<td style="padding:6px 2px;text-align:center;font-size:0.85em;${netStyle(sd.netRelToPar)}">${fmtRelPar(sd.netRelToPar)}</td>`;
+                    html += `<td style="padding:6px 4px;text-align:center;font-size:0.8em;color:#aaa;">${fmtThru(sd.holesPlayed)}</td>`;
                 } else {
-                    html += `<td style="padding:6px 4px;text-align:center;color:#ccc;">-</td><td style="padding:6px 4px;text-align:center;color:#ccc;">-</td>`;
+                    html += `<td colspan="2" style="padding:6px 4px;text-align:center;color:#ccc;">-</td><td style="padding:6px 4px;text-align:center;color:#ccc;">-</td>`;
                 }
             });
             if (multi) {
-                html += `<td style="padding:6px 8px;text-align:center;font-size:1.05em;${scoreStyle(p.overallRelToPar)}">${fmtRelPar(p.overallRelToPar)}</td>`;
-                html += `<td style="padding:6px 4px;text-align:center;font-size:0.8em;color:#888;">${fmtThru(p.overallHolesPlayed)}</td>`;
+                html += `<td style="padding:6px 2px;text-align:center;${grossStyle(p.overallRelToPar)}">${fmtRelPar(p.overallRelToPar)}</td>`;
+                html += `<td style="padding:6px 2px;text-align:center;font-size:0.85em;${netStyle(p.overallNetRelToPar)}">${fmtRelPar(p.overallNetRelToPar)}</td>`;
+                html += `<td style="padding:6px 4px;text-align:center;font-size:0.8em;color:#aaa;">${fmtThru(p.overallHolesPlayed)}</td>`;
             }
             html += '</tr>';
         });
