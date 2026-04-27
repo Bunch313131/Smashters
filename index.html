@@ -6018,18 +6018,12 @@
                     <thead><tr style="border-bottom:2px solid #ddd;">
                         <th style="padding:6px 8px;text-align:left;font-weight:600;">Player</th>`;
         scoringSessions.forEach(s => {
-            html += `<th style="padding:6px 4px;text-align:center;" colspan="2">
-                        <div style="font-weight:600;font-size:0.85em;margin-bottom:2px;">${s.name}</div>
-                        <div style="display:flex;justify-content:center;gap:4px;">${sortBtn('gross','Gross')}${sortBtn('net','Net')}</div>
-                     </th>`;
-            html += `<th style="padding:6px 4px;text-align:center;font-weight:400;font-size:0.7em;color:#999;">Thru</th>`;
+            html += `<th style="padding:4px 2px;text-align:center;font-weight:600;font-size:0.82em;white-space:nowrap;" colspan="2">${s.name}<br><span style="font-weight:400;font-size:0.82em;">${sortBtn('gross','Gross')} / ${sortBtn('net','Net')}</span></th>`;
+            html += `<th style="padding:4px 2px;text-align:center;font-weight:400;font-size:0.7em;color:#999;width:28px;">Thru</th>`;
         });
         if (multi) {
-            html += `<th style="padding:6px 4px;text-align:center;" colspan="2">
-                        <div style="font-weight:700;font-size:0.85em;margin-bottom:2px;">Total</div>
-                        <div style="display:flex;justify-content:center;gap:4px;">${sortBtn('gross','Gross')}${sortBtn('net','Net')}</div>
-                     </th>`;
-            html += `<th style="padding:6px 4px;text-align:center;font-weight:400;font-size:0.7em;color:#999;">Thru</th>`;
+            html += `<th style="padding:4px 2px;text-align:center;font-weight:700;font-size:0.82em;white-space:nowrap;" colspan="2">Total<br><span style="font-weight:400;font-size:0.82em;">${sortBtn('gross','Gross')} / ${sortBtn('net','Net')}</span></th>`;
+            html += `<th style="padding:4px 2px;text-align:center;font-weight:400;font-size:0.7em;color:#999;width:28px;">Thru</th>`;
         }
         html += '</tr></thead><tbody>';
         playerData.forEach(p => {
@@ -6039,17 +6033,17 @@
             scoringSessions.forEach(s => {
                 const sd = p.sessionScores[s.id];
                 if (sd && sd.holesPlayed > 0) {
-                    html += `<td style="padding:6px 2px;text-align:center;${grossStyle(sd.totalRelToPar)}">${fmtRelPar(sd.totalRelToPar)}</td>`;
-                    html += `<td style="padding:6px 2px;text-align:center;font-size:0.85em;${netStyle(sd.netRelToPar)}">${fmtRelPar(sd.netRelToPar)}</td>`;
-                    html += `<td style="padding:6px 4px;text-align:center;font-size:0.8em;color:#aaa;">${fmtThru(sd.holesPlayed)}</td>`;
+                    html += `<td style="padding:4px 3px;text-align:center;width:36px;${grossStyle(sd.totalRelToPar)}">${fmtRelPar(sd.totalRelToPar)}</td>`;
+                    html += `<td style="padding:4px 3px;text-align:center;width:32px;font-size:0.82em;${netStyle(sd.netRelToPar)}">${fmtRelPar(sd.netRelToPar)}</td>`;
+                    html += `<td style="padding:4px 3px;text-align:center;width:28px;font-size:0.78em;color:#aaa;">${fmtThru(sd.holesPlayed)}</td>`;
                 } else {
-                    html += `<td colspan="2" style="padding:6px 4px;text-align:center;color:#ccc;">-</td><td style="padding:6px 4px;text-align:center;color:#ccc;">-</td>`;
+                    html += `<td colspan="2" style="padding:4px 3px;text-align:center;color:#ccc;">-</td><td style="padding:4px 3px;text-align:center;color:#ccc;">-</td>`;
                 }
             });
             if (multi) {
-                html += `<td style="padding:6px 2px;text-align:center;${grossStyle(p.overallRelToPar)}">${fmtRelPar(p.overallRelToPar)}</td>`;
-                html += `<td style="padding:6px 2px;text-align:center;font-size:0.85em;${netStyle(p.overallNetRelToPar)}">${fmtRelPar(p.overallNetRelToPar)}</td>`;
-                html += `<td style="padding:6px 4px;text-align:center;font-size:0.8em;color:#aaa;">${fmtThru(p.overallHolesPlayed)}</td>`;
+                html += `<td style="padding:4px 3px;text-align:center;width:36px;${grossStyle(p.overallRelToPar)}">${fmtRelPar(p.overallRelToPar)}</td>`;
+                html += `<td style="padding:4px 3px;text-align:center;width:32px;font-size:0.82em;${netStyle(p.overallNetRelToPar)}">${fmtRelPar(p.overallNetRelToPar)}</td>`;
+                html += `<td style="padding:4px 3px;text-align:center;width:28px;font-size:0.78em;color:#aaa;">${fmtThru(p.overallHolesPlayed)}</td>`;
             }
             html += '</tr>';
         });
