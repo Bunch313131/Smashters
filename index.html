@@ -5917,9 +5917,10 @@
         const awards = [];
 
         const worst = data[0];
-        if (worst && worst.netRelToPar > 0) {
+        if (worst) {
             const tc = worst.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            awards.push({ title: 'The Inferno', sub: 'Most over par overall', name: worst.playerName, detail: `+${worst.netRelToPar} net`, teamColor: tc });
+            const rel = worst.netRelToPar > 0 ? `+${worst.netRelToPar} net` : worst.netRelToPar === 0 ? 'E net' : `${worst.netRelToPar} net`;
+            awards.push({ title: 'The Inferno', sub: 'Most over par overall', name: worst.playerName, detail: rel, teamColor: tc });
         }
 
         const mostDbl = [...data].sort((a, b) => b.doubleBogeysNet - a.doubleBogeysNet)[0];
@@ -10348,9 +10349,10 @@
 
         // THE INFERNO — most over par total (net)
         const worst = data[0];
-        if (worst && worst.netRelToPar > 0) {
+        if (worst) {
             const tc = worst.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            awards.push({ title: 'THE INFERNO', sub: 'Most over par overall', name: worst.playerName, detail: `+${worst.netRelToPar} net`, teamColor: tc });
+            const rel = worst.netRelToPar > 0 ? `+${worst.netRelToPar} net` : worst.netRelToPar === 0 ? 'E net' : `${worst.netRelToPar} net`;
+            awards.push({ title: 'THE INFERNO', sub: 'Most over par overall', name: worst.playerName, detail: rel, teamColor: tc });
         }
 
         // TRASH HAULER — most double bogeys or worse (net)
