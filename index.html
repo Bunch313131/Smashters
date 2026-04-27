@@ -5912,50 +5912,48 @@
         }
 
         const dfImg = (size) => `<img src="assets/images/dumpster-fire.svg" style="width:${size};height:${size};display:inline-block;vertical-align:middle;" alt="dumpster fire">`;
-        let html = `
-            <div style="background:linear-gradient(135deg,#1c0800,#2d1200);border-radius:12px;padding:16px 16px 12px;margin-bottom:16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
-                <div style="margin-bottom:6px;">${dfImg('56px')}</div>
-                <div style="color:#FBF308;font-family:'Azalea','Georgia',serif;font-size:1.5rem;letter-spacing:1px;">Dumpster Fire Rankings</div>
-                <div style="color:rgba(255,255,255,0.5);font-size:0.72rem;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Handicap-Adjusted · Worst to Best</div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:8px;">`;
 
-        data.forEach((p, i) => {
-            const rank = i + 1;
-            let rankDisplay, borderColor, bgColor;
-            if (rank === 1) {
-                rankDisplay = dfImg('36px'); borderColor = 'rgba(200,60,0,0.5)'; bgColor = 'rgba(200,60,0,0.12)';
-            } else if (rank === 2) {
-                rankDisplay = dfImg('28px'); borderColor = 'rgba(160,60,0,0.35)'; bgColor = 'rgba(160,60,0,0.07)';
-            } else if (rank === 3) {
-                rankDisplay = dfImg('24px'); borderColor = 'rgba(120,60,0,0.25)'; bgColor = 'rgba(120,60,0,0.05)';
-            } else {
-                rankDisplay = `<span style="color:#777;font-size:0.85rem;font-weight:bold;">${rank}</span>`;
-                borderColor = 'rgba(0,0,0,0.08)'; bgColor = 'transparent';
-            }
+        // Build awards (same logic as TV slide)
+        const awards = [];
 
-            const teamColor = p.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const relPar = p.netRelToPar > 0 ? `+${p.netRelToPar}` : p.netRelToPar === 0 ? 'E' : `${p.netRelToPar}`;
-            const scoreColor = p.netRelToPar > 8 ? '#ff3333' : p.netRelToPar > 3 ? '#ff7733' : p.netRelToPar > 0 ? '#ffaa55' : p.netRelToPar === 0 ? '#888' : '#4caf50';
-            const worstStr = p.worstHoleNet && p.worstHoleNet.diff > 0 ? `+${p.worstHoleNet.diff} (H${p.worstHoleNet.hole})` : '—';
+        const worst = data[0];
+        if (worst && worst.netRelToPar > 0) {
+            const tc = worst.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            awards.push({ title: 'The Inferno', sub: 'Most over par overall', name: worst.playerName, detail: `+${worst.netRelToPar} net`, teamColor: tc });
+        }
 
-            html += `
-                <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:12px;">
-                    <div style="font-size:${rank <= 3 ? '1.5' : '1rem'}rem;min-width:34px;text-align:center;line-height:1;">${rankDisplay}</div>
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-weight:bold;color:${teamColor};font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.playerName}</div>
-                        <div style="font-size:0.72rem;color:#999;margin-top:2px;">${p.holesPlayed} holes · ${p.doubleBogeysNet} dbl+ bogey · worst: ${worstStr}</div>
-                    </div>
-                    <div style="text-align:right;min-width:40px;">
-                        <div style="font-size:1.25rem;font-weight:bold;color:${scoreColor};line-height:1;">${relPar}</div>
-                        <div style="font-size:0.65rem;color:#aaa;margin-top:2px;">net</div>
-                    </div>
-                </div>`;
-        });
+        const mostDbl = [...data].sort((a, b) => b.doubleBogeysNet - a.doubleBogeysNet)[0];
+        if (mostDbl && mostDbl.doubleBogeysNet > 0) {
+            const tc = mostDbl.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const cnt = mostDbl.doubleBogeysNet;
+            awards.push({ title: 'Trash Hauler', sub: 'Most double bogeys or worse', name: mostDbl.playerName, detail: `${cnt} hole${cnt !== 1 ? 's' : ''}`, teamColor: tc });
+        }
 
-        html += `</div>
-            <p style="text-align:center;color:#bbb;font-size:0.72rem;margin-top:14px;">Net scores relative to par · handicap strokes applied</p>`;
-        return html;
+        const byWorstHole = data.filter(p => p.worstHoleNet && p.worstHoleNet.diff > 0).sort((a, b) => b.worstHoleNet.diff - a.worstHoleNet.diff);
+        if (byWorstHole.length > 0) {
+            const p = byWorstHole[0];
+            const tc = p.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            awards.push({ title: 'The Big One', sub: 'Worst single hole (net)', name: p.playerName, detail: `+${p.worstHoleNet.diff} on H${p.worstHoleNet.hole}`, teamColor: tc });
+        }
+
+        const awardRows = awards.map((a, i) => `
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;${i < awards.length - 1 ? 'border-bottom:1px solid #eee;' : ''}">
+                <div style="flex-shrink:0;">${dfImg('28px')}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.7rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:2px;">${a.title}</div>
+                    <div style="font-weight:700;font-size:1rem;color:${a.teamColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.name}</div>
+                    <div style="font-size:0.7rem;color:#aaa;margin-top:1px;">${a.sub}</div>
+                </div>
+                <div style="font-size:1.1rem;font-weight:800;color:#c85000;white-space:nowrap;">${a.detail}</div>
+            </div>`).join('');
+
+        return `
+            <div class="lb-board">
+                <div class="lb-section-header" style="display:flex;align-items:center;gap:8px;">
+                    ${dfImg('20px')} Dumpster Fire Awards
+                </div>
+                <div style="padding:0 14px;">${awardRows}</div>
+            </div>`;
     }
 
     function renderPointLeaders() {
