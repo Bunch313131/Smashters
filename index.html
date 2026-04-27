@@ -6057,17 +6057,17 @@
         if (data.surgeon) {
             const tc = data.surgeon.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
             const cnt = data.surgeon.birdiePlusNet;
-            awards.push({ title: 'The Surgeon', sub: 'Most birdies or better (net)', name: data.surgeon.playerName, playerId: data.surgeon.playerId, detail: `${cnt} birdie${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
+            awards.push({ title: 'Bird Machine', sub: 'Most birdies or better (net)', name: data.surgeon.playerName, playerId: data.surgeon.playerId, detail: `${cnt} birdie${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
         }
         if (data.ace) {
             const tc = data.ace.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
             const d = data.ace.bestHoleNet;
             const label = d.diff <= -2 ? 'Eagle' : 'Birdie';
-            awards.push({ title: 'The Ace', sub: 'Best single hole (net)', name: data.ace.playerName, playerId: data.ace.playerId, detail: `${label} on Hole ${d.hole}`, teamColor: tc });
+            awards.push({ title: 'Highlight Reel', sub: 'Best single hole (net)', name: data.ace.playerName, playerId: data.ace.playerId, detail: `${label} on Hole ${d.hole}`, teamColor: tc });
         }
         if (data.coolHand) {
             const tc = data.coolHand.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            awards.push({ title: 'Cool Hand', sub: 'Lowest net total (9+ holes)', name: data.coolHand.playerName, playerId: data.coolHand.playerId, detail: `${data.coolHand.netTotal} net`, teamColor: tc });
+            awards.push({ title: 'The Grinder', sub: 'Lowest net total (9+ holes)', name: data.coolHand.playerName, playerId: data.coolHand.playerId, detail: `${data.coolHand.netTotal} net`, teamColor: tc });
         }
 
         const awardRows = awards.map((a, i) => `
@@ -10617,17 +10617,17 @@
         if (data.surgeon) {
             const tc = data.surgeon.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
             const cnt = data.surgeon.birdiePlusNet;
-            awards.push({ title: 'THE SURGEON', sub: 'Most birdies or better (net)', name: data.surgeon.playerName, detail: `${cnt} birdie${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
+            awards.push({ title: 'BIRD MACHINE', sub: 'Most birdies or better (net)', name: data.surgeon.playerName, detail: `${cnt} birdie${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
         }
         if (data.ace) {
             const tc = data.ace.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
             const d = data.ace.bestHoleNet;
             const label = d.diff <= -2 ? 'Eagle' : 'Birdie';
-            awards.push({ title: 'THE ACE', sub: 'Best single hole (net)', name: data.ace.playerName, detail: `${label} on Hole ${d.hole}`, teamColor: tc });
+            awards.push({ title: 'HIGHLIGHT REEL', sub: 'Best single hole (net)', name: data.ace.playerName, detail: `${label} on Hole ${d.hole}`, teamColor: tc });
         }
         if (data.coolHand) {
             const tc = data.coolHand.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            awards.push({ title: 'COOL HAND', sub: 'Lowest net total (9+ holes)', name: data.coolHand.playerName, detail: `${data.coolHand.netTotal} net`, teamColor: tc });
+            awards.push({ title: 'THE GRINDER', sub: 'Lowest net total (9+ holes)', name: data.coolHand.playerName, detail: `${data.coolHand.netTotal} net`, teamColor: tc });
         }
 
         const awardBlocksHtml = awards.map((a, i) => `
