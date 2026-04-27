@@ -5119,6 +5119,46 @@
             return data;
         },
 
+        getHotHandData() {
+            const allPlayers = Object.keys(S.players);
+            const playerStats = allPlayers.map(playerId => {
+                let birdiePlusNet = 0, netTotal = 0, holesPlayed = 0;
+                let bestHoleNet = null; // { hole, diff, net }
+                Object.values(S.matches)
+                    .filter(m => m.type !== 'foursomes' &&
+                        (m.teamA.includes(playerId) || m.teamB.includes(playerId)))
+                    .forEach(match => {
+                        Object.keys(match.holes || {}).forEach(holeNumStr => {
+                            const holeNum = parseInt(holeNumStr);
+                            const gross = match.holes[holeNum][playerId];
+                            if (gross === undefined || gross === null) return;
+                            const par = getHoleInfo(holeNum).par;
+                            const net = getNetScore(playerId, holeNum, gross);
+                            const diff = net - par;
+                            netTotal += net;
+                            holesPlayed++;
+                            if (diff <= -1) birdiePlusNet++;
+                            if (bestHoleNet === null || diff < bestHoleNet.diff)
+                                bestHoleNet = { hole: holeNum, diff, net };
+                        });
+                    });
+                return { playerId, playerName: getPlayerName(playerId), team: S.players[playerId]?.team, birdiePlusNet, netTotal, holesPlayed, bestHoleNet };
+            }).filter(p => p.holesPlayed > 0);
+
+            if (playerStats.length === 0) return null;
+
+            const surgeon = [...playerStats].sort((a, b) => b.birdiePlusNet - a.birdiePlusNet)[0];
+            const ace = [...playerStats].filter(p => p.bestHoleNet && p.bestHoleNet.diff <= -1)
+                .sort((a, b) => a.bestHoleNet.diff - b.bestHoleNet.diff)[0];
+            const coolHand = [...playerStats].filter(p => p.holesPlayed >= 9)
+                .sort((a, b) => a.netTotal - b.netTotal)[0];
+            return {
+                surgeon: surgeon?.birdiePlusNet > 0 ? surgeon : null,
+                ace: ace || null,
+                coolHand: coolHand || null,
+            };
+        },
+
         getPointLeaders() {
             const allPlayers = Object.keys(S.players);
             const allMatches = Object.values(S.matches);
@@ -5302,13 +5342,47 @@
 
         if (allMatches.length === 0) {
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
-        } else {
-            // Share Results button removed for now
         }
 
+        html += renderMatchHistory();
 
         el.innerHTML = html;
         triggerScoreAnimations();
+    }
+
+    function renderMatchHistory() {
+        const completed = Object.values(S.matches).filter(m => getMatchPlayStatus(m).isComplete);
+        if (completed.length === 0) return '';
+
+        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        let html = `<div class="lb-board" style="margin-top:16px;">
+            <div class="lb-section-header">Match History</div>`;
+
+        sessions.forEach(session => {
+            const sessionMatches = completed.filter(m => m.sessionId === session.id);
+            if (sessionMatches.length === 0) return;
+            html += `<div style="padding:3px 14px;background:#f7f7f7;border-bottom:1px solid #e8e8e8;">
+                <span style="font-size:0.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;">${session.name}</span>
+            </div>`;
+            sessionMatches.forEach(m => {
+                const status = getMatchPlayStatus(m);
+                const namesA = m.teamA.map(id => getPlayerName(id)).join(' / ');
+                const namesB = m.teamB.map(id => getPlayerName(id)).join(' / ');
+                const winner = status.leader;
+                const colorA = S.config.teamA.color, colorB = S.config.teamB.color;
+                const badgeBg = winner === 'A' ? colorA : winner === 'B' ? colorB : '#888';
+                const styleA = `font-weight:${winner === 'A' ? '700' : '400'};color:${winner === 'A' ? colorA : '#666'};`;
+                const styleB = `font-weight:${winner === 'B' ? '700' : '400'};color:${winner === 'B' ? colorB : '#666'};`;
+                html += `<div style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid #eee;font-size:0.88em;">
+                    <span style="${styleA};flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${namesA}</span>
+                    <span style="flex-shrink:0;font-weight:700;font-size:0.78em;padding:2px 8px;border-radius:10px;background:${badgeBg};color:#fff;white-space:nowrap;">${status.text}</span>
+                    <span style="${styleB};flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${namesB}</span>
+                </div>`;
+            });
+        });
+
+        html += `</div>`;
+        return html;
     }
 
     function enableScoring() {
@@ -5636,7 +5710,7 @@
         let html = `<h2 class="section-title">Individual Performance</h2>`;
 
         // View selector — 4-col grid so buttons never wrap
-        html += `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:${selectedView === 'stats' ? '10px' : '16px'};">
+        html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:${selectedView === 'stats' ? '10px' : '16px'};">
             <button class="btn ${selectedView === 'points' ? 'btn-primary' : 'btn-outline'} btn-sm"
                 onclick="setIndividualView('points')">Points</button>
             <button class="btn ${selectedView === 'daily' ? 'btn-primary' : 'btn-outline'} btn-sm"
@@ -5644,7 +5718,9 @@
             <button class="btn ${selectedView === 'stats' ? 'btn-primary' : 'btn-outline'} btn-sm"
                 onclick="setIndividualView('stats')">Stats</button>
             <button class="btn btn-sm" style="${selectedView === 'dumpsterfire' ? 'background:#8B1a00;color:#FBF308;border-color:#8B1a00;' : 'background:transparent;border:1px solid #c0c0c0;color:#555;'}"
-                onclick="setIndividualView('dumpsterfire')"><img src="assets/images/dumpster-fire.svg" style="height:1em;vertical-align:middle;margin-right:3px;">Fire</button>
+                onclick="setIndividualView('dumpsterfire')"><img src="assets/images/dumpster-fire.svg" style="height:1em;vertical-align:middle;margin-right:2px;">Fire</button>
+            <button class="btn btn-sm" style="${selectedView === 'hothand' ? 'background:#00432e;color:#FBF308;border-color:#00432e;' : 'background:transparent;border:1px solid #c0c0c0;color:#555;'}"
+                onclick="setIndividualView('hothand')">⭐ Hot</button>
         </div>`;
 
         // Gross/Net + Session filter on one row — only for stats view
@@ -5672,6 +5748,8 @@
             html += renderAllStats(selectedType, sessionFilter);
         } else if (selectedView === 'dumpsterfire') {
             html += renderDumpsterFire();
+        } else if (selectedView === 'hothand') {
+            html += renderHotHand();
         }
 
 
@@ -5903,7 +5981,7 @@
             const roundAvg = stats.holesPlayed >= 9 ? ((stats[totalField] / stats.holesPlayed) * 18).toFixed(1) : '-';
 
             html += `<tr style="border-bottom:1px solid #eee;">
-                <td style="padding:6px 8px;"><span style="color:${teamColor};font-weight:bold;">${stats.playerName}</span></td>
+                <td style="padding:6px 8px;"><span style="color:${teamColor};font-weight:bold;cursor:pointer;text-decoration:underline dotted;" onclick="showPlayerScorecard('${stats.playerId}')">${stats.playerName}</span></td>
                 <td style="padding:6px 4px;text-align:center;">${stats.holesPlayed}</td>
                 <td style="padding:6px 4px;text-align:center;font-weight:bold;">${roundAvg}</td>
                 <td style="padding:6px 4px;text-align:center;">${stats[eagleField] || '-'}</td>
@@ -5969,6 +6047,119 @@
             </div>`;
     }
 
+    function renderHotHand() {
+        const data = IndividualStats.getHotHandData();
+        if (!data || (!data.surgeon && !data.ace && !data.coolHand)) {
+            return `<div class="empty-state"><h3>No Scores Yet</h3><p>Hot Hand awards will appear once matches are played.</p></div>`;
+        }
+
+        const awards = [];
+        if (data.surgeon) {
+            const tc = data.surgeon.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const cnt = data.surgeon.birdiePlusNet;
+            awards.push({ title: 'The Surgeon', sub: 'Most birdies or better (net)', name: data.surgeon.playerName, playerId: data.surgeon.playerId, detail: `${cnt} birdie${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
+        }
+        if (data.ace) {
+            const tc = data.ace.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const d = data.ace.bestHoleNet;
+            const label = d.diff <= -2 ? 'Eagle' : 'Birdie';
+            awards.push({ title: 'The Ace', sub: 'Best single hole (net)', name: data.ace.playerName, playerId: data.ace.playerId, detail: `${label} on Hole ${d.hole}`, teamColor: tc });
+        }
+        if (data.coolHand) {
+            const tc = data.coolHand.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            awards.push({ title: 'Cool Hand', sub: 'Lowest net total (9+ holes)', name: data.coolHand.playerName, playerId: data.coolHand.playerId, detail: `${data.coolHand.netTotal} net`, teamColor: tc });
+        }
+
+        const awardRows = awards.map((a, i) => `
+            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;${i < awards.length - 1 ? 'border-bottom:1px solid #eee;' : ''}">
+                <div style="flex-shrink:0;font-size:1.4em;line-height:1;">⭐</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.75em;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:2px;">${a.title}</div>
+                    <div style="font-weight:bold;color:${a.teamColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;text-decoration:underline dotted;" onclick="showPlayerScorecard('${a.playerId}')">${a.name}</div>
+                    <div style="font-size:0.8em;color:#aaa;margin-top:1px;">${a.sub}</div>
+                </div>
+                <div style="font-weight:bold;color:#006747;white-space:nowrap;">${a.detail}</div>
+            </div>`).join('');
+
+        return `
+            <div class="lb-board">
+                <div class="lb-section-header" style="display:flex;align-items:center;gap:8px;">
+                    ⭐ Hot Hand Awards
+                </div>
+                <div style="padding:0 14px;font-size:0.9em;">${awardRows}</div>
+            </div>`;
+    }
+
+    function showPlayerScorecard(playerId) {
+        const playerName = getPlayerName(playerId);
+        const matches = Object.values(S.matches).filter(m =>
+            m.type !== 'foursomes' &&
+            (m.teamA.includes(playerId) || m.teamB.includes(playerId))
+        );
+        const holeData = [];
+        let grossTotal = 0, netTotal = 0, parTotal = 0;
+        for (let h = 1; h <= 18; h++) {
+            for (const match of matches) {
+                const gross = match.holes?.[h]?.[playerId];
+                if (gross !== undefined && gross !== null) {
+                    const par = getHoleInfo(h).par;
+                    const net = getNetScore(playerId, h, gross);
+                    const diff = net - par;
+                    holeData.push({ h, par, gross, net, diff });
+                    grossTotal += gross; netTotal += net; parTotal += par;
+                    break;
+                }
+            }
+        }
+        if (holeData.length === 0) {
+            openModal(playerName + ' — Scorecard', '<div class="empty-state"><p>No scores recorded yet.</p></div>');
+            return;
+        }
+        function rowBg(diff) {
+            if (diff <= -2) return '#fffbe6';
+            if (diff === -1) return '#e8f5e9';
+            if (diff === 1)  return '#fff3e0';
+            if (diff >= 2)   return '#fde8e8';
+            return '';
+        }
+        function fmt(diff) { return diff === 0 ? 'E' : diff > 0 ? '+' + diff : '' + diff; }
+        function diffColor(diff) { return diff > 0 ? '#c85000' : diff < 0 ? '#006747' : '#999'; }
+        const rows = holeData.map(d => `
+            <tr style="background:${rowBg(d.diff)};border-bottom:1px solid #eee;">
+                <td style="padding:6px 8px;text-align:center;font-weight:600;">${d.h}</td>
+                <td style="padding:6px 8px;text-align:center;">${d.par}</td>
+                <td style="padding:6px 8px;text-align:center;font-weight:700;">${d.gross}</td>
+                <td style="padding:6px 8px;text-align:center;">${d.net}</td>
+                <td style="padding:6px 8px;text-align:center;font-weight:600;color:${diffColor(d.diff)};">${fmt(d.diff)}</td>
+            </tr>`).join('');
+        const overallDiff = netTotal - parTotal;
+        const body = `<div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.9em;">
+                <thead>
+                    <tr style="border-bottom:2px solid #ddd;background:#f9f9f9;">
+                        <th style="padding:6px 8px;text-align:center;">Hole</th>
+                        <th style="padding:6px 8px;text-align:center;">Par</th>
+                        <th style="padding:6px 8px;text-align:center;">Gross</th>
+                        <th style="padding:6px 8px;text-align:center;">Net</th>
+                        <th style="padding:6px 8px;text-align:center;">+/-</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                    <tr style="border-top:2px solid #ddd;background:#f9f9f9;font-weight:700;">
+                        <td style="padding:6px 8px;text-align:center;">Total</td>
+                        <td style="padding:6px 8px;text-align:center;">${parTotal}</td>
+                        <td style="padding:6px 8px;text-align:center;">${grossTotal}</td>
+                        <td style="padding:6px 8px;text-align:center;">${netTotal}</td>
+                        <td style="padding:6px 8px;text-align:center;color:${diffColor(overallDiff)};">${fmt(overallDiff)}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="font-size:0.75em;color:#aaa;margin:8px 0 0;text-align:center;">🟡 Eagle+ &nbsp; 🟢 Birdie &nbsp; 🟠 Bogey &nbsp; 🔴 Double+</p>
+        </div>`;
+        openModal(playerName + ' — Scorecard', body);
+    }
+
     function renderPointLeaders() {
         const leaders = IndividualStats.getPointLeaders();
         if (leaders.length === 0) {
@@ -5988,7 +6179,7 @@
             const tc = r.team === 'A' ? S.config.teamA.color : r.team === 'B' ? S.config.teamB.color : '#666';
             html += `<tr style="border-bottom:1px solid #eee;">
                 <td style="padding:6px 4px;text-align:center;color:#999;">${i + 1}</td>
-                <td style="padding:6px 8px;"><span style="color:${tc};font-weight:bold;">${r.playerName}</span></td>
+                <td style="padding:6px 8px;"><span style="color:${tc};font-weight:bold;cursor:pointer;text-decoration:underline dotted;" onclick="showPlayerScorecard('${r.playerId}')">${r.playerName}</span></td>
                 <td style="padding:6px 4px;text-align:center;font-weight:bold;">${r.wins}-${r.losses}-${r.ties}</td>
                 <td style="padding:6px 4px;text-align:center;font-weight:bold;">${formatScore(r.totalPoints)}</td>
             </tr>`;
@@ -6030,7 +6221,7 @@
         playerData.forEach(p => {
             const tc = p.team === 'A' ? S.config.teamA.color : p.team === 'B' ? S.config.teamB.color : '#666';
             html += `<tr style="border-bottom:1px solid #eee;">
-                <td style="padding:6px 8px;white-space:nowrap;"><span style="color:${tc};font-weight:bold;">${p.playerName}</span></td>`;
+                <td style="padding:6px 8px;white-space:nowrap;"><span style="color:${tc};font-weight:bold;cursor:pointer;text-decoration:underline dotted;" onclick="showPlayerScorecard('${p.playerId}')">${p.playerName}</span></td>`;
             scoringSessions.forEach(s => {
                 const sd = p.sessionScores[s.id];
                 if (sd && sd.holesPlayed > 0) {
@@ -10239,13 +10430,17 @@
         const activeMatches = allMatches.filter(m => !getMatchPlayStatus(m).isComplete && getMatchPlayStatus(m).holesPlayed > 0);
         const matchPool = activeMatches.length > 0 ? activeMatches : allMatches.filter(m => getMatchPlayStatus(m).holesPlayed > 0);
         const dfData = IndividualStats.getDumpsterFireData();
+        const hhData = IndividualStats.getHotHandData();
         const spotlightPool = [...matchPool];
         if (dfData.length > 0) spotlightPool.push({ type: 'dumpsterfire' });
+        if (hhData && (hhData.surgeon || hhData.ace || hhData.coolHand)) spotlightPool.push({ type: 'hothand' });
         if (spotlightPool.length > 0) {
             broadcastSpotlightIndex = broadcastSpotlightIndex % spotlightPool.length;
             const slide = spotlightPool[broadcastSpotlightIndex];
             if (slide.type === 'dumpsterfire') {
                 renderBroadcastDumpsterFire(dfData);
+            } else if (slide.type === 'hothand') {
+                renderBroadcastHotHand(hhData);
             } else {
                 renderBroadcastSpotlight(slide);
             }
@@ -10410,6 +10605,52 @@
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:clamp(10px,1.5vw,20px);padding-bottom:clamp(8px,1.1vw,14px);border-bottom:2px solid rgba(251,243,8,0.4);">
                     ${dfImg('clamp(28px,3.4vw,44px)')}
                     <div class="broadcast-spotlight-label" style="margin-bottom:0;">Dumpster Fire Awards</div>
+                </div>
+                ${awardBlocksHtml}
+            </div>`;
+    }
+
+    function renderBroadcastHotHand(data) {
+        const el = document.getElementById('broadcastSpotlightContent');
+
+        const awards = [];
+        if (data.surgeon) {
+            const tc = data.surgeon.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const cnt = data.surgeon.birdiePlusNet;
+            awards.push({ title: 'THE SURGEON', sub: 'Most birdies or better (net)', name: data.surgeon.playerName, detail: `${cnt} birdie${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
+        }
+        if (data.ace) {
+            const tc = data.ace.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const d = data.ace.bestHoleNet;
+            const label = d.diff <= -2 ? 'Eagle' : 'Birdie';
+            awards.push({ title: 'THE ACE', sub: 'Best single hole (net)', name: data.ace.playerName, detail: `${label} on Hole ${d.hole}`, teamColor: tc });
+        }
+        if (data.coolHand) {
+            const tc = data.coolHand.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            awards.push({ title: 'COOL HAND', sub: 'Lowest net total (9+ holes)', name: data.coolHand.playerName, detail: `${data.coolHand.netTotal} net`, teamColor: tc });
+        }
+
+        const awardBlocksHtml = awards.map((a, i) => `
+            ${i > 0 ? `<div style="height:1px;background:rgba(255,255,255,0.15);margin:clamp(8px,1.1vw,14px) 0;"></div>` : ''}
+            <div style="display:flex;align-items:center;gap:clamp(10px,1.4vw,18px);">
+                <div style="flex-shrink:0;font-size:clamp(18px,2.4vw,32px);line-height:1;">⭐</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="color:#FBF308;font-size:clamp(9px,0.95vw,12px);font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;">${a.title}</div>
+                    <div style="color:#fff;font-size:clamp(17px,2.2vw,30px);font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        <span style="border-left:4px solid ${a.teamColor};padding-left:9px;">${a.name}</span>
+                    </div>
+                    <div style="color:rgba(255,255,255,0.5);font-size:clamp(9px,0.9vw,12px);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">${a.sub}</div>
+                </div>
+                <div style="flex-shrink:0;text-align:right;padding-left:8px;">
+                    <div style="color:#7dffb3;font-size:clamp(14px,1.9vw,24px);font-weight:800;letter-spacing:-0.5px;white-space:nowrap;">${a.detail}</div>
+                </div>
+            </div>`).join('');
+
+        el.innerHTML = `
+            <div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:clamp(10px,1.5vw,20px);padding-bottom:clamp(8px,1.1vw,14px);border-bottom:2px solid rgba(251,243,8,0.4);">
+                    <div style="font-size:clamp(24px,3.2vw,44px);line-height:1;">⭐</div>
+                    <div class="broadcast-spotlight-label" style="margin-bottom:0;">Hot Hand Awards</div>
                 </div>
                 ${awardBlocksHtml}
             </div>`;
