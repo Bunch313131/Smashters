@@ -3828,7 +3828,7 @@
         .hr-pair-num { font-size: 0.75rem; color: #888; width: 18px; flex-shrink: 0; text-align: center; }
         .hr-pair-selects { display: flex; gap: 5px; flex: 1; }
         .hr-select { flex: 1; background: #f8f8f8; color: #222; border: 1px solid #ddd; border-radius: 5px; padding: 6px 4px; font-size: 0.8rem; min-width: 0; }
-        .hr-hcp-pill { font-size: 0.75rem; background: #e8f5ee; color: var(--masters-green); border-radius: 10px; padding: 2px 7px; white-space: nowrap; font-weight: bold; flex-shrink: 0; min-width: 44px; text-align: center; }
+        .hr-hcp-pill { font-size: 0.75rem; background: #e8f5ee; color: var(--masters-green); border-radius: 10px; padding: 2px 7px; white-space: nowrap; font-weight: bold; flex-shrink: 0; width: 52px; text-align: center; }
         .hr-btn-start { width: 100%; background: var(--masters-green); color: #fff; border: none; border-radius: 8px; padding: 13px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 4px; }
 
         /* Scoring screen */
@@ -4143,7 +4143,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.8.1';
+    const APP_VERSION = '2.8.2';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -12463,8 +12463,8 @@
     }
 
     function hrCalcHcp(p1Id, p2Id) {
-        const h1 = S.players[p1Id]?.handicap ?? 0;
-        const h2 = S.players[p2Id]?.handicap ?? 0;
+        const h1 = parseInt(S.players[p1Id]?.handicap) || 0;
+        const h2 = parseInt(S.players[p2Id]?.handicap) || 0;
         return Math.floor((h1 + h2) * 0.5);
     }
 
@@ -12549,6 +12549,35 @@
         renderTab('horserace');
     }
 
+    function hrGoBack() {
+        const race = hrGetRace();
+        if (!race) return;
+        if (race.status === 'chipoff') {
+            // Back from chipoff → return to scoring that round (scores stay, just re-pick)
+            delete race.rounds[race.currentRound]._chipoffData;
+            race.status = 'scoring';
+        } else if (race.status === 'scoring') {
+            const rn = race.currentRound;
+            if (rn === 1) {
+                // Back from round 1 → go to setup
+                race.status = 'setup';
+                race.rounds[1].scores = {};
+            } else {
+                // Back from round N → restore round N-1
+                const prev = race.rounds[rn - 1];
+                race.activeTeamIds = prev.prevActiveTeamIds || race.teams.map(t => t.id);
+                race.rounds[rn].scores = {};
+                delete race.rounds[rn - 1]._chipoffData;
+                race.rounds[rn - 1].chipoffWinners = null;
+                race.rounds[rn - 1].prevActiveTeamIds = null;
+                race.currentRound = rn - 1;
+                race.status = 'scoring';
+            }
+        }
+        scheduleSave(true);
+        renderTab('horserace');
+    }
+
     // Re-renders all player selects to remove already-chosen players from other dropdowns
     function hrRefreshSelects() {
         const allSelects = [...document.querySelectorAll('.hr-player-select')];
@@ -12558,7 +12587,7 @@
             const smashtersTeam = sel.dataset.team;
             const players = Object.values(S.players || {})
                 .filter(p => p.team === smashtersTeam)
-                .sort((a, b) => (a.handicap ?? 0) - (b.handicap ?? 0));
+                .sort((a, b) => (parseInt(a.handicap) || 0) - (parseInt(b.handicap) || 0));
             let opts = `<option value="">— Select —</option>`;
             players.forEach(p => {
                 if (chosen.has(p.id) && p.id !== currentVal) return;
@@ -12627,6 +12656,7 @@
         });
         if (!valid) { showToast('Enter valid scores (1–15) for all teams'); return; }
         race.rounds[rn].scores = scores;
+        race.rounds[rn].prevActiveTeamIds = [...race.activeTeamIds]; // snapshot for undo
         const result = hrEvalRound(race, rn);
         if (result.type === 'chipoff') {
             race.rounds[rn]._chipoffData = result;
@@ -12658,6 +12688,7 @@
             return;
         }
         race.rounds[rn].chipoffWinners = selected;
+        race.rounds[rn].prevActiveTeamIds = race.rounds[rn].prevActiveTeamIds || [...race.activeTeamIds];
         const survivors = [...chipData.clearSurvivors, ...selected];
         if (rn < 3) {
             race.activeTeamIds = survivors;
@@ -12809,7 +12840,10 @@
             }).join('');
         }
 
-        return `<button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
+        return `<div style="display:flex;gap:8px;margin-bottom:4px;">
+                <button class="hr-back-btn" onclick="hrBackHome()">← Home</button>
+                <button class="hr-back-btn" onclick="hrGoBack()">↩ Undo Round</button>
+            </div>
             <h2 class="section-title">${race.name}</h2>
             <div class="hr-round-banner">
                 <div class="hr-round-banner-title">${roundNames[rn]} — Hole ${holeNum}</div>
@@ -12852,7 +12886,10 @@
             </label>`;
         }).join('');
 
-        return `<button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
+        return `<div style="display:flex;gap:8px;margin-bottom:4px;">
+                <button class="hr-back-btn" onclick="hrBackHome()">← Home</button>
+                <button class="hr-back-btn" onclick="hrGoBack()">↩ Re-score</button>
+            </div>
             <h2 class="section-title">${race.name} — Chip-Off</h2>
             <div class="hr-round-banner">
                 <div class="hr-round-banner-title">${roundNames[rn]} · Hole ${holeNum} — Tied!</div>
