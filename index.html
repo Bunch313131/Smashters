@@ -1040,11 +1040,6 @@
         }
         .score-drum-num.center.eagle,
         .score-drum-num.center.birdie {
-            color:var(--masters-green);
-            text-shadow:0 0 8px rgba(0,103,71,0.3), 0 1px 0 rgba(255,255,255,0.1);
-        }
-        .score-drum-num.center.bogey,
-        .score-drum-num.center.double-bogey {
             color:var(--masters-red, #CE1141);
             text-shadow:0 0 8px rgba(206,17,65,0.3), 0 1px 0 rgba(255,255,255,0.1);
         }
@@ -1055,17 +1050,15 @@
             box-shadow:0 0 8px rgba(200,169,81,0.3), inset 0 0 6px rgba(200,169,81,0.1);
             background:rgba(200,169,81,0.04);
         }
-        .score-drum-frame.eagle,
-        .score-drum-frame.birdie {
+        .score-drum-frame.hole-winner {
             border-color:var(--masters-green);
             box-shadow:0 0 12px rgba(0,103,71,0.3), inset 0 0 8px rgba(0,103,71,0.1);
             background:rgba(0,103,71,0.04);
         }
-        .score-drum-frame.bogey,
-        .score-drum-frame.double-bogey {
-            border-color:var(--masters-red, #CE1141);
-            box-shadow:0 0 12px rgba(206,17,65,0.3), inset 0 0 8px rgba(206,17,65,0.1);
-            background:rgba(206,17,65,0.04);
+        .score-drum-frame.hole-loser {
+            border-color:rgba(30,30,30,0.75);
+            box-shadow:0 0 4px rgba(0,0,0,0.2), inset 0 0 4px rgba(0,0,0,0.1);
+            background:rgba(0,0,0,0.06);
         }
         .score-drum-frame.no-score-yet {
             border-color:rgba(200,169,81,0.4);
@@ -5600,7 +5593,7 @@
             </div>`;
     }
 
-    function renderFoursomesScoreRow(match, teamIds, holeNum, holeScores, holeInfo, teamLetter) {
+    function renderFoursomesScoreRow(match, teamIds, holeNum, holeScores, holeInfo, teamLetter, holeWinner) {
         const names = teamIds.map(id => getPlayer(id)?.name || 'Unknown').join(' / ');
         const teamHcp = getTeamHandicap(teamIds);
         const teamStrokes = getAlternateShotStrokes(match);
@@ -5628,13 +5621,12 @@
         const centerDiff = currentScore - par;
 
         let frameClass = 'score-drum-frame';
-        if (hasScore) {
-            if (centerDiff <= -2) frameClass += ' eagle';
-            else if (centerDiff === -1) frameClass += ' birdie';
-            else if (centerDiff === 1) frameClass += ' bogey';
-            else if (centerDiff >= 2) frameClass += ' double-bogey';
-        } else {
+        if (!hasScore) {
             frameClass += ' no-score-yet';
+        } else if (holeWinner === teamLetter || holeWinner === 'halved') {
+            frameClass += ' hole-winner';
+        } else if (holeWinner && holeWinner !== teamLetter) {
+            frameClass += ' hole-loser';
         }
 
         const drumCenter = DRUM_W / 2;
@@ -6476,12 +6468,12 @@
         let teamARows, teamBRows;
         if (match.type === 'foursomes') {
             // Foursomes: one score per team (stored under first player)
-            teamARows = renderFoursomesScoreRow(match, match.teamA, hole, holeScores, holeInfo, 'A');
-            teamBRows = renderFoursomesScoreRow(match, match.teamB, hole, holeScores, holeInfo, 'B');
+            teamARows = renderFoursomesScoreRow(match, match.teamA, hole, holeScores, holeInfo, 'A', holeWinner);
+            teamBRows = renderFoursomesScoreRow(match, match.teamB, hole, holeScores, holeInfo, 'B', holeWinner);
         } else {
             // Four Ball or Singles: individual score rows
-            teamARows = match.teamA.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
-            teamBRows = match.teamB.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo)).join('');
+            teamARows = match.teamA.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo, holeWinner)).join('');
+            teamBRows = match.teamB.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo, holeWinner)).join('');
         }
 
         // Best ball values for four-ball (inline with team labels)
@@ -6585,7 +6577,7 @@
         }
     }
 
-    function renderScoreEntryRow(match, playerId, holeNum, holeScores, holeInfo) {
+    function renderScoreEntryRow(match, playerId, holeNum, holeScores, holeInfo, holeWinner) {
         const player = getPlayer(playerId);
         const name = player?.name || 'Unknown';
         const hcp = getPlayerHcp(playerId);
@@ -6610,15 +6602,15 @@
         const centerIdx = drumNums.indexOf(currentScore);
         const centerDiff = currentScore - par;
 
-        // Frame class for color coding
+        // Frame class: green for hole winner/tie, black for loser, faded if no score
+        const teamLetter = match.teamA.includes(playerId) ? 'A' : 'B';
         let frameClass = 'score-drum-frame';
-        if (hasScore) {
-            if (centerDiff <= -2) frameClass += ' eagle';
-            else if (centerDiff === -1) frameClass += ' birdie';
-            else if (centerDiff === 1) frameClass += ' bogey';
-            else if (centerDiff >= 2) frameClass += ' double-bogey';
-        } else {
+        if (!hasScore) {
             frameClass += ' no-score-yet';
+        } else if (holeWinner === teamLetter || holeWinner === 'halved') {
+            frameClass += ' hole-winner';
+        } else if (holeWinner && holeWinner !== teamLetter) {
+            frameClass += ' hole-loser';
         }
 
         // Track offset to center the selected number
