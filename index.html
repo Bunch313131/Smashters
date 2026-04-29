@@ -3851,7 +3851,8 @@
         .hr-score-team-hcp { color: #888; font-size: 0.72rem; }
         .hr-score-entry { display: flex; align-items: center; gap: 6px; }
         .hr-score-btn { width: 30px; height: 30px; border-radius: 50%; background: #eee; border: none; color: #333; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .hr-score-input { width: 38px; text-align: center; background: #f4f4f4; color: #111; border: 1px solid #ccc; border-radius: 5px; padding: 4px 2px; font-size: 1.1rem; font-weight: bold; }
+        .hr-score-input { width: 38px; text-align: center; background: #f4f4f4; color: #111; border: 1px solid #ccc; border-radius: 5px; padding: 4px 2px; font-size: 1.1rem; font-weight: bold; -moz-appearance: textfield; }
+        .hr-score-input::-webkit-outer-spin-button, .hr-score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .hr-btn-submit { width: 100%; background: var(--masters-green); color: #fff; border: none; border-radius: 8px; padding: 13px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 8px; }
 
         /* Chip-off screen */
@@ -4149,7 +4150,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.8.4';
+    const APP_VERSION = '2.8.5';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
