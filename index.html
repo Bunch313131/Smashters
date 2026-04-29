@@ -3801,59 +3801,63 @@
         }
 
         /* ── HORSE RACE MODULE ───────────────────────────── */
-        .hr-container { padding: 12px 12px 80px; max-width: 540px; margin: 0 auto; }
-        .hr-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-        .hr-header h2 { margin: 0; font-size: 1.2rem; color: var(--masters-white); flex: 1; }
-        .hr-back-btn { background: none; border: 1px solid rgba(255,255,255,0.3); color: var(--masters-white); border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; cursor: pointer; }
-        .hr-new-btn { background: var(--masters-green); color: var(--masters-white); border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+        /* Home list */
+        .hr-home-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .hr-new-btn { background: var(--masters-green); color: var(--masters-white); border: none; border-radius: 6px; padding: 9px 16px; font-size: 0.9rem; font-weight: bold; cursor: pointer; letter-spacing: 0.02em; }
         .hr-empty { color: rgba(255,255,255,0.5); text-align: center; padding: 40px 20px; font-size: 0.95rem; }
-
-        .hr-race-card { background: rgba(255,255,255,0.07); border-radius: 10px; padding: 14px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .hr-race-card.complete { opacity: 0.75; }
-        .hr-race-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .hr-race-name { font-weight: bold; color: var(--masters-white); font-size: 1rem; }
-        .hr-race-status { font-size: 0.8rem; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); border-radius: 4px; padding: 2px 8px; }
-        .hr-winner-badge { border-radius: 6px; padding: 6px 12px; text-align: center; font-weight: bold; color: #fff; font-size: 0.9rem; margin-bottom: 8px; }
+        .hr-race-card { background: var(--masters-white); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-bottom: 12px; overflow: hidden; }
+        .hr-race-card-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--masters-green); }
+        .hr-race-name { font-weight: bold; color: var(--masters-yellow); font-size: 0.95rem; letter-spacing: 0.02em; }
+        .hr-race-status-badge { font-size: 0.72rem; color: rgba(255,255,255,0.75); background: rgba(0,0,0,0.2); border-radius: 4px; padding: 2px 8px; }
+        .hr-race-card-body { padding: 12px 14px; }
+        .hr-winner-badge { border-radius: 6px; padding: 8px 12px; text-align: center; font-weight: bold; color: #fff; font-size: 0.9rem; margin-bottom: 10px; }
         .hr-race-card-actions { display: flex; gap: 8px; }
+        .hr-btn-resume { background: var(--masters-green); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .hr-btn-delete { background: #fff; color: #CE1141; border: 1px solid #CE1141; border-radius: 6px; padding: 8px 12px; font-size: 0.85rem; cursor: pointer; }
 
-        .hr-btn-primary { background: var(--masters-green); color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-size: 0.95rem; font-weight: bold; cursor: pointer; }
-        .hr-btn-danger { background: rgba(206,17,65,0.2); color: #CE1141; border: 1px solid #CE1141; border-radius: 8px; padding: 10px 18px; font-size: 0.95rem; cursor: pointer; }
-        .hr-btn-full { width: 100%; margin-top: 16px; padding: 14px; font-size: 1rem; }
+        /* Setup screen */
+        .hr-back-btn { background: none; border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; margin-bottom: 10px; display: inline-block; }
+        .hr-setup-card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-bottom: 14px; overflow: hidden; }
+        .hr-setup-card-head { padding: 10px 14px; font-size: 0.78rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+        .hr-setup-card-body { padding: 10px 14px; }
+        .hr-hole-row { display: flex; align-items: center; gap: 10px; }
+        .hr-hole-row label { font-size: 0.85rem; color: #333; white-space: nowrap; }
+        .hr-select-hole { flex: 1; background: #fff; color: #222; border: 1px solid #ccc; border-radius: 6px; padding: 7px 10px; font-size: 0.95rem; }
+        .hr-pair-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+        .hr-pair-row:last-child { border-bottom: none; }
+        .hr-pair-num { font-size: 0.75rem; color: #888; width: 18px; flex-shrink: 0; text-align: center; }
+        .hr-pair-selects { display: flex; gap: 5px; flex: 1; }
+        .hr-select { flex: 1; background: #f8f8f8; color: #222; border: 1px solid #ddd; border-radius: 5px; padding: 6px 4px; font-size: 0.8rem; min-width: 0; }
+        .hr-hcp-pill { font-size: 0.75rem; background: #e8f5ee; color: var(--masters-green); border-radius: 10px; padding: 2px 7px; white-space: nowrap; font-weight: bold; flex-shrink: 0; min-width: 44px; text-align: center; }
+        .hr-btn-start { width: 100%; background: var(--masters-green); color: #fff; border: none; border-radius: 8px; padding: 13px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 4px; }
 
-        .hr-section { margin-bottom: 16px; }
-        .hr-section-title { font-weight: bold; color: rgba(255,255,255,0.6); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
-        .hr-label { display: block; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 6px; }
-        .hr-select-hole { width: 100%; background: rgba(255,255,255,0.1); color: var(--masters-white); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 10px; font-size: 1rem; }
-
-        .hr-team-setup { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
-        .hr-team-label { font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; }
-        .hr-player-row { display: flex; gap: 8px; }
-        .hr-select { flex: 1; background: rgba(0,0,0,0.3); color: var(--masters-white); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 8px 6px; font-size: 0.85rem; }
-        .hr-hcp-display { margin-top: 6px; font-size: 0.8rem; color: rgba(255,255,255,0.5); }
-        .hr-hcp-val { font-weight: bold; color: var(--masters-yellow); }
-
-        .hr-round-info { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .hr-round-label { font-weight: bold; color: var(--masters-white); font-size: 1rem; margin-bottom: 4px; }
-        .hr-hole-info { color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-bottom: 4px; }
-        .hr-elim-info { color: var(--masters-yellow); font-size: 0.8rem; }
-
-        .hr-scores-list { display: flex; flex-direction: column; gap: 10px; }
-        .hr-score-row { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.1); }
-        .hr-score-team { display: flex; align-items: center; gap: 10px; }
-        .hr-team-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-        .hr-score-team-name { font-weight: bold; color: var(--masters-white); font-size: 0.9rem; }
-        .hr-score-team-hcp { color: rgba(255,255,255,0.5); font-size: 0.75rem; }
+        /* Scoring screen */
+        .hr-round-banner { background: var(--masters-green); border-radius: var(--radius-lg); padding: 12px 16px; margin-bottom: 14px; text-align: center; color: #fff; }
+        .hr-round-banner-title { font-weight: bold; font-size: 1rem; margin-bottom: 2px; color: var(--masters-yellow); }
+        .hr-round-banner-sub { font-size: 0.82rem; color: rgba(255,255,255,0.75); }
+        .hr-round-banner-elim { font-size: 0.78rem; color: var(--masters-yellow); margin-top: 4px; }
+        .hr-score-card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-bottom: 10px; overflow: hidden; }
+        .hr-score-card-head { padding: 7px 14px; font-size: 0.72rem; font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase; color: rgba(255,255,255,0.9); }
+        .hr-score-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #f0f0f0; }
+        .hr-score-row:last-child { border-bottom: none; }
+        .hr-score-team { display: flex; align-items: center; gap: 8px; }
+        .hr-team-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .hr-score-team-name { font-weight: bold; color: #222; font-size: 0.88rem; }
+        .hr-score-team-hcp { color: #888; font-size: 0.72rem; }
         .hr-score-entry { display: flex; align-items: center; gap: 6px; }
-        .hr-score-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
-        .hr-score-input { width: 42px; text-align: center; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px; font-size: 1.1rem; font-weight: bold; }
+        .hr-score-btn { width: 30px; height: 30px; border-radius: 50%; background: #eee; border: none; color: #333; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .hr-score-input { width: 38px; text-align: center; background: #f4f4f4; color: #111; border: 1px solid #ccc; border-radius: 5px; padding: 4px 2px; font-size: 1.1rem; font-weight: bold; }
+        .hr-btn-submit { width: 100%; background: var(--masters-green); color: #fff; border: none; border-radius: 8px; padding: 13px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 8px; }
 
-        .hr-chipoff-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
-        .hr-chipoff-option { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
-        .hr-chipoff-option input[type=checkbox] { width: 20px; height: 20px; cursor: pointer; }
-        .hr-chipoff-option span:last-child { color: var(--masters-white); font-weight: bold; }
-        .hr-clear-section { background: rgba(0,103,71,0.15); border: 1px solid rgba(0,103,71,0.4); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
-        .hr-clear-label { color: var(--masters-green); font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; }
-        .hr-clear-team { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+        /* Chip-off screen */
+        .hr-chipoff-card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--card-shadow); overflow: hidden; margin-bottom: 14px; }
+        .hr-chipoff-option { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .hr-chipoff-option:last-child { border-bottom: none; }
+        .hr-chipoff-option input[type=checkbox] { width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; }
+        .hr-chipoff-label { font-weight: bold; color: #222; font-size: 0.9rem; }
+        .hr-clear-card { background: #e8f5ee; border: 1px solid #b2dfca; border-radius: var(--radius-lg); padding: 10px 14px; margin-bottom: 12px; }
+        .hr-clear-card-title { font-size: 0.75rem; font-weight: bold; color: var(--masters-green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .hr-clear-team { color: #2a6049; font-size: 0.88rem; }
     </style>
 <script>
 (function(){
@@ -4139,7 +4143,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.8.0';
+    const APP_VERSION = '2.8.1';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -12505,6 +12509,7 @@
     }
 
     function hrNewRace() {
+        if (!requireAdmin('create a new Horse Race')) return;
         if (!S.horseRaces) S.horseRaces = [];
         const raceNum = S.horseRaces.length + 1;
         const race = {
@@ -12515,7 +12520,7 @@
             startingHole: 1,
             teams: [],
             activeTeamIds: [],
-            rounds: { 1: { scores: {}, chipoffWinner: null }, 2: { scores: {}, chipoffWinner: null }, 3: { scores: {}, chipoffWinner: null } },
+            rounds: { 1: { scores: {} }, 2: { scores: {} }, 3: { scores: {} } },
             winner: null,
         };
         S.horseRaces.push(race);
@@ -12531,6 +12536,7 @@
     }
 
     function hrDeleteRace(raceId) {
+        if (!requireAdmin('delete this race')) return;
         S.horseRaces = (S.horseRaces || []).filter(r => r.id !== raceId);
         if (S.ui.activeHorseRaceId === raceId) S.ui.activeHorseRaceId = null;
         scheduleSave(true);
@@ -12543,26 +12549,53 @@
         renderTab('horserace');
     }
 
+    // Re-renders all player selects to remove already-chosen players from other dropdowns
+    function hrRefreshSelects() {
+        const allSelects = [...document.querySelectorAll('.hr-player-select')];
+        const chosen = new Set(allSelects.map(s => s.value).filter(Boolean));
+        allSelects.forEach(sel => {
+            const currentVal = sel.value;
+            const smashtersTeam = sel.dataset.team;
+            const players = Object.values(S.players || {})
+                .filter(p => p.team === smashtersTeam)
+                .sort((a, b) => (a.handicap ?? 0) - (b.handicap ?? 0));
+            let opts = `<option value="">— Select —</option>`;
+            players.forEach(p => {
+                if (chosen.has(p.id) && p.id !== currentVal) return;
+                opts += `<option value="${p.id}" ${p.id === currentVal ? 'selected' : ''}>${p.name} (${p.handicap ?? 0})</option>`;
+            });
+            sel.innerHTML = opts;
+            sel.value = currentVal;
+        });
+        // Update hcp pills
+        document.querySelectorAll('.hr-pair-row').forEach(row => {
+            const sels = row.querySelectorAll('.hr-player-select');
+            const pill = row.querySelector('.hr-hcp-pill');
+            if (!pill || sels.length < 2) return;
+            const p1 = sels[0].value, p2 = sels[1].value;
+            pill.textContent = (p1 && p2 && p1 !== p2) ? `Hcp ${hrCalcHcp(p1, p2)}` : 'Hcp —';
+        });
+    }
+
     function hrSaveSetup() {
         const race = hrGetRace();
         if (!race) return;
-        const holeEl = document.getElementById('hr-starting-hole');
-        race.startingHole = parseInt(holeEl?.value) || 1;
-        const teamEls = document.querySelectorAll('.hr-team-setup');
+        race.startingHole = parseInt(document.getElementById('hr-starting-hole')?.value) || 1;
+        const rows = [...document.querySelectorAll('.hr-pair-row')];
         const teams = [];
         const usedPlayers = new Set();
         let valid = true;
-        teamEls.forEach((el, i) => {
-            const smashtersTeam = el.dataset.smashtersTeam;
-            const p1 = el.querySelector('.hr-p1')?.value;
-            const p2 = el.querySelector('.hr-p2')?.value;
+        rows.forEach((row, i) => {
+            const smashtersTeam = row.dataset.smashtersTeam;
+            const sels = row.querySelectorAll('.hr-player-select');
+            const p1 = sels[0]?.value, p2 = sels[1]?.value;
             if (!p1 || !p2 || p1 === p2) { valid = false; return; }
             if (usedPlayers.has(p1) || usedPlayers.has(p2)) { valid = false; return; }
             usedPlayers.add(p1); usedPlayers.add(p2);
             teams.push({ id: 'ht_' + i, playerIds: [p1, p2], smashtersTeam, hcp: hrCalcHcp(p1, p2) });
         });
         if (!valid || teams.length !== 6) {
-            showToast('Select 2 different players for each team (no repeats)');
+            showToast('Select 2 different players for each pair — no repeats');
             return;
         }
         race.teams = teams;
@@ -12571,19 +12604,6 @@
         race.currentRound = 1;
         scheduleSave(true);
         renderTab('horserace');
-    }
-
-    function hrUpdateHcp(el) {
-        const teamEl = el.closest('.hr-team-setup');
-        if (!teamEl) return;
-        const p1 = teamEl.querySelector('.hr-p1')?.value;
-        const p2 = teamEl.querySelector('.hr-p2')?.value;
-        const hcpEl = teamEl.querySelector('.hr-hcp-val');
-        if (p1 && p2 && p1 !== p2) {
-            hcpEl.textContent = hrCalcHcp(p1, p2);
-        } else {
-            hcpEl.textContent = '--';
-        }
     }
 
     function hrAdjScore(teamId, delta) {
@@ -12662,6 +12682,7 @@
             el.innerHTML = renderHRHome();
         } else if (race.status === 'setup') {
             el.innerHTML = renderHRSetup(race);
+            hrRefreshSelects();
         } else if (race.status === 'scoring') {
             el.innerHTML = renderHRScoring(race);
         } else if (race.status === 'chipoff') {
@@ -12671,13 +12692,12 @@
 
     function renderHRHome() {
         const races = S.horseRaces || [];
-        let html = `<div class="hr-container">
-            <div class="hr-header">
-                <h2>🏇 Horse Race</h2>
+        let html = `<h2 class="section-title">🏇 Horse Race</h2>
+            <div class="hr-home-actions">
                 <button class="hr-new-btn" onclick="hrNewRace()">+ New Race</button>
             </div>`;
         if (races.length === 0) {
-            html += `<div class="hr-empty">No races yet. Tap "New Race" to begin.</div>`;
+            html += `<div class="hr-empty">No races yet. Tap "+ New Race" to begin.</div>`;
         } else {
             races.slice().reverse().forEach(race => {
                 const isComplete = race.status === 'complete';
@@ -12688,69 +12708,70 @@
                     const color = race.winner.smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
                     winnerHtml = `<div class="hr-winner-badge" style="background:${color}">🏆 ${teamName} wins!</div>`;
                 }
-                const resumeBtn = !isComplete ? `<button class="hr-btn-primary" onclick="hrViewRace('${race.id}')">Resume</button>` : '';
-                html += `<div class="hr-race-card ${isComplete ? 'complete' : 'active'}">
-                    <div class="hr-race-card-top">
+                html += `<div class="hr-race-card">
+                    <div class="hr-race-card-head">
                         <span class="hr-race-name">${race.name}</span>
-                        <span class="hr-race-status">${statusLabel}</span>
+                        <span class="hr-race-status-badge">${statusLabel}</span>
                     </div>
-                    ${winnerHtml}
-                    <div class="hr-race-card-actions">
-                        ${resumeBtn}
-                        <button class="hr-btn-danger" onclick="if(confirm('Delete ${race.name}?'))hrDeleteRace('${race.id}')">Delete</button>
+                    <div class="hr-race-card-body">
+                        ${winnerHtml}
+                        <div class="hr-race-card-actions">
+                            ${!isComplete ? `<button class="hr-btn-resume" onclick="hrViewRace('${race.id}')">Resume</button>` : ''}
+                            <button class="hr-btn-delete" onclick="hrDeleteRace('${race.id}')">Delete</button>
+                        </div>
                     </div>
                 </div>`;
             });
         }
-        html += `</div>`;
         return html;
     }
 
     function renderHRSetup(race) {
-        const allPlayers = Object.values(S.players || {});
-        const teamAPlayers = allPlayers.filter(p => p.team === 'A').sort((a,b) => a.name.localeCompare(b.name));
-        const teamBPlayers = allPlayers.filter(p => p.team === 'B').sort((a,b) => a.name.localeCompare(b.name));
+        const colorA = S.config.teamA.color, colorB = S.config.teamB.color;
+        const nameA = S.config.teamA.name, nameB = S.config.teamB.name;
 
-        function playerOpts(players) {
-            return `<option value="">-- Select --</option>` +
-                players.map(p => `<option value="${p.id}">${p.name} (${p.handicap ?? 0})</option>`).join('');
+        function pairRows(smashtersTeam, count) {
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                html += `<div class="hr-pair-row" data-smashters-team="${smashtersTeam}">
+                    <span class="hr-pair-num">${i + 1}</span>
+                    <div class="hr-pair-selects">
+                        <select class="hr-select hr-player-select" data-team="${smashtersTeam}" onchange="hrRefreshSelects()">
+                            <option value="">— Select —</option>
+                        </select>
+                        <select class="hr-select hr-player-select" data-team="${smashtersTeam}" onchange="hrRefreshSelects()">
+                            <option value="">— Select —</option>
+                        </select>
+                    </div>
+                    <span class="hr-hcp-pill">Hcp —</span>
+                </div>`;
+            }
+            return html;
         }
-        function teamSlot(smashtersTeam, slotIdx) {
-            const players = smashtersTeam === 'A' ? teamAPlayers : teamBPlayers;
-            const color = smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const label = smashtersTeam === 'A' ? S.config.teamA.name : S.config.teamB.name;
-            return `<div class="hr-team-setup" data-smashters-team="${smashtersTeam}">
-                <div class="hr-team-label" style="color:${color}">${label} — Team ${slotIdx + 1}</div>
-                <div class="hr-player-row">
-                    <select class="hr-p1 hr-select" onchange="hrUpdateHcp(this)">${playerOpts(players)}</select>
-                    <select class="hr-p2 hr-select" onchange="hrUpdateHcp(this)">${playerOpts(players)}</select>
-                </div>
-                <div class="hr-hcp-display">Combined Hcp: <span class="hr-hcp-val">--</span></div>
-            </div>`;
-        }
-
-        let slots = '';
-        for (let i = 0; i < 3; i++) slots += teamSlot('A', i);
-        for (let i = 0; i < 3; i++) slots += teamSlot('B', i);
 
         let holeOpts = '';
         for (let h = 1; h <= 18; h++) holeOpts += `<option value="${h}" ${race.startingHole === h ? 'selected' : ''}>Hole ${h}</option>`;
 
-        return `<div class="hr-container">
-            <div class="hr-header">
-                <button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
-                <h2>${race.name} — Setup</h2>
+        return `<button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
+            <h2 class="section-title">${race.name} — Setup</h2>
+            <div class="hr-setup-card">
+                <div class="hr-setup-card-head" style="background:var(--masters-green);color:var(--masters-yellow);">Starting Hole</div>
+                <div class="hr-setup-card-body">
+                    <div class="hr-hole-row">
+                        <label>Race begins on:</label>
+                        <select id="hr-starting-hole" class="hr-select-hole">${holeOpts}</select>
+                    </div>
+                </div>
             </div>
-            <div class="hr-section">
-                <label class="hr-label">Starting Hole</label>
-                <select id="hr-starting-hole" class="hr-select-hole">${holeOpts}</select>
+            <div class="hr-setup-card">
+                <div class="hr-setup-card-head" style="background:${colorA};color:#fff;">${nameA} — 3 Pairs</div>
+                <div class="hr-setup-card-body">${pairRows('A', 3)}</div>
             </div>
-            <div class="hr-section">
-                <div class="hr-section-title">Teams (3 per side, 6 total)</div>
-                ${slots}
+            <div class="hr-setup-card">
+                <div class="hr-setup-card-head" style="background:${colorB};color:#fff;">${nameB} — 3 Pairs</div>
+                <div class="hr-setup-card-body">${pairRows('B', 3)}</div>
             </div>
-            <button class="hr-btn-primary hr-btn-full" onclick="hrSaveSetup()">Start Race →</button>
-        </div>`;
+            <button class="hr-btn-start" onclick="hrSaveSetup()">Start Race →</button>`;
     }
 
     function renderHRScoring(race) {
@@ -12759,83 +12780,87 @@
         const holeInfo = getHoleInfo(holeNum);
         const activeTeams = race.teams.filter(t => race.activeTeamIds.includes(t.id));
         const roundNames = { 1: '1st Round', 2: '2nd Round', 3: 'Final Round' };
-        const elimAfter = rn < 3 ? `${activeTeams.length - (rn === 1 ? 4 : 2)} eliminated after this hole` : 'Winner earns the Smashters point';
+        const elimCount = rn < 3 ? activeTeams.length - (rn === 1 ? 4 : 2) : 0;
+        const elimMsg = rn < 3 ? `Bottom ${elimCount} eliminated after this hole` : 'Winner earns the Smashters point';
+        const colorA = S.config.teamA.color, colorB = S.config.teamB.color;
+        const teamsA = activeTeams.filter(t => t.smashtersTeam === 'A');
+        const teamsB = activeTeams.filter(t => t.smashtersTeam === 'B');
 
-        let rows = '';
-        activeTeams.forEach(team => {
-            const color = team.smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const name = hrTeamDisplayName(race, team.id);
-            const strokes = getStrokesOnHole(team.hcp, holeInfo.hcp);
-            const existing = race.rounds[rn].scores[team.id] ?? holeInfo.par;
-            rows += `<div class="hr-score-row">
-                <div class="hr-score-team">
-                    <span class="hr-team-dot" style="background:${color}"></span>
-                    <div>
-                        <div class="hr-score-team-name">${name}</div>
-                        <div class="hr-score-team-hcp">Hcp ${team.hcp}${strokes > 0 ? ` · ${strokes} stroke${strokes > 1 ? 's' : ''}` : ''}</div>
+        function scoreRows(teams) {
+            return teams.map(team => {
+                const color = team.smashtersTeam === 'A' ? colorA : colorB;
+                const name = hrTeamDisplayName(race, team.id);
+                const strokes = getStrokesOnHole(team.hcp, holeInfo.hcp);
+                const existing = race.rounds[rn].scores[team.id] ?? holeInfo.par;
+                return `<div class="hr-score-row">
+                    <div class="hr-score-team">
+                        <span class="hr-team-dot" style="background:${color}"></span>
+                        <div>
+                            <div class="hr-score-team-name">${name}</div>
+                            <div class="hr-score-team-hcp">Hcp ${team.hcp}${strokes > 0 ? ` · ${strokes} stroke${strokes > 1 ? 's' : ''}` : ''}</div>
+                        </div>
                     </div>
-                </div>
-                <div class="hr-score-entry">
-                    <button class="hr-score-btn" onclick="hrAdjScore('${team.id}',-1)">−</button>
-                    <input class="hr-score-input" data-team-id="${team.id}" type="number" min="1" max="15" value="${existing}" inputmode="numeric">
-                    <button class="hr-score-btn" onclick="hrAdjScore('${team.id}',1)">+</button>
-                </div>
-            </div>`;
-        });
+                    <div class="hr-score-entry">
+                        <button class="hr-score-btn" onclick="hrAdjScore('${team.id}',-1)">−</button>
+                        <input class="hr-score-input" data-team-id="${team.id}" type="number" min="1" max="15" value="${existing}" inputmode="numeric">
+                        <button class="hr-score-btn" onclick="hrAdjScore('${team.id}',1)">+</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
 
-        return `<div class="hr-container">
-            <div class="hr-header">
-                <button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
-                <h2>${race.name}</h2>
+        return `<button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
+            <h2 class="section-title">${race.name}</h2>
+            <div class="hr-round-banner">
+                <div class="hr-round-banner-title">${roundNames[rn]} — Hole ${holeNum}</div>
+                <div class="hr-round-banner-sub">Par ${holeInfo.par} · Hcp Rank ${holeInfo.hcp}</div>
+                <div class="hr-round-banner-elim">${elimMsg}</div>
             </div>
-            <div class="hr-round-info">
-                <div class="hr-round-label">${roundNames[rn]}</div>
-                <div class="hr-hole-info">Hole ${holeNum} · Par ${holeInfo.par} · Hcp Rank ${holeInfo.hcp}</div>
-                <div class="hr-elim-info">${elimAfter}</div>
-            </div>
-            <div class="hr-scores-list">${rows}</div>
-            <button class="hr-btn-primary hr-btn-full" onclick="hrSubmitScores()">Complete Round →</button>
-        </div>`;
+            ${teamsA.length ? `<div class="hr-score-card">
+                <div class="hr-score-card-head" style="background:${colorA}">${S.config.teamA.name}</div>
+                ${scoreRows(teamsA)}
+            </div>` : ''}
+            ${teamsB.length ? `<div class="hr-score-card">
+                <div class="hr-score-card-head" style="background:${colorB}">${S.config.teamB.name}</div>
+                ${scoreRows(teamsB)}
+            </div>` : ''}
+            <button class="hr-btn-submit" onclick="hrSubmitScores()">Complete Round →</button>`;
     }
 
     function renderHRChipoff(race) {
         const rn = race.currentRound;
         const chipData = race.rounds[rn]._chipoffData;
-        if (!chipData) return `<div class="hr-container">${renderHRHome()}</div>`;
+        if (!chipData) { hrBackHome(); return; }
         const holeNum = hrActualHole(race, rn);
         const roundNames = { 1: '1st Round', 2: '2nd Round', 3: 'Final Round' };
 
         let clearHtml = '';
         if (chipData.clearSurvivors.length > 0) {
-            clearHtml = `<div class="hr-clear-section">
-                <div class="hr-clear-label">Already through:</div>
-                ${chipData.clearSurvivors.map(tid => `<div class="hr-clear-team">${hrTeamDisplayName(race, tid)}</div>`).join('')}
+            clearHtml = `<div class="hr-clear-card">
+                <div class="hr-clear-card-title">Already through</div>
+                ${chipData.clearSurvivors.map(tid => `<div class="hr-clear-team">&#x2713; ${hrTeamDisplayName(race, tid)}</div>`).join('')}
             </div>`;
         }
 
-        let tiedHtml = '';
-        chipData.tiedTeams.forEach(teamId => {
+        const tiedHtml = chipData.tiedTeams.map(teamId => {
             const team = race.teams.find(t => t.id === teamId);
             const color = team?.smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            tiedHtml += `<label class="hr-chipoff-option">
+            return `<label class="hr-chipoff-option">
                 <input type="checkbox" class="hr-chipoff-check" value="${teamId}">
                 <span class="hr-team-dot" style="background:${color}"></span>
-                <span>${hrTeamDisplayName(race, teamId)}</span>
+                <span class="hr-chipoff-label">${hrTeamDisplayName(race, teamId)}</span>
             </label>`;
-        });
+        }).join('');
 
-        return `<div class="hr-container">
-            <div class="hr-header">
-                <h2>${race.name} — Chip-Off</h2>
-            </div>
-            <div class="hr-round-info">
-                <div class="hr-round-label">${roundNames[rn]} · Hole ${holeNum}</div>
-                <div class="hr-elim-info">Tie! Select ${chipData.spotsLeft} team${chipData.spotsLeft > 1 ? 's' : ''} to advance</div>
+        return `<button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
+            <h2 class="section-title">${race.name} — Chip-Off</h2>
+            <div class="hr-round-banner">
+                <div class="hr-round-banner-title">${roundNames[rn]} · Hole ${holeNum} — Tied!</div>
+                <div class="hr-round-banner-elim">Select ${chipData.spotsLeft} team${chipData.spotsLeft > 1 ? 's' : ''} to advance</div>
             </div>
             ${clearHtml}
-            <div class="hr-chipoff-list">${tiedHtml}</div>
-            <button class="hr-btn-primary hr-btn-full" onclick="hrSubmitChipoff()">Confirm →</button>
-        </div>`;
+            <div class="hr-chipoff-card">${tiedHtml}</div>
+            <button class="hr-btn-submit" onclick="hrSubmitChipoff()">Confirm →</button>`;
     }
 
     init();
