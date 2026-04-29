@@ -9868,21 +9868,23 @@
             }
             ctx.restore();
 
-            // Start fading audio as burn nears completion
-            if (progress >= 0.8 && !audioFading) {
+            // Fire audio fades out starting at 50% — completes well before burn ends
+            if (progress >= 0.5 && !audioFading) {
                 audioFading = true;
                 SplashAudio.fadeOut(2000);
-                // Fade out fire sound too
-                const fadeDur = 2000;
-                const fadeStart = performance.now();
-                const startVol = fireAudio.volume;
-                const fadeFireAudio = (now) => {
-                    const p = Math.min((now - fadeStart) / fadeDur, 1);
-                    fireAudio.volume = Math.max(0, startVol * (1 - p));
-                    if (p < 1) requestAnimationFrame(fadeFireAudio);
-                    else { try { fireAudio.pause(); } catch(e) {} }
-                };
-                requestAnimationFrame(fadeFireAudio);
+                // Fade fire sound over 1.2s so it's gone by the time the burn finishes
+                if (fireAudio) {
+                    const fadeDur = 1200;
+                    const fadeStart = performance.now();
+                    const startVol = fireAudio.volume;
+                    const fadeFireAudio = (now) => {
+                        const p = Math.min((now - fadeStart) / fadeDur, 1);
+                        fireAudio.volume = Math.max(0, startVol * (1 - p));
+                        if (p < 1) requestAnimationFrame(fadeFireAudio);
+                        else { try { fireAudio.pause(); } catch(e) {} }
+                    };
+                    requestAnimationFrame(fadeFireAudio);
+                }
             }
 
             if (progress < 1 || embers.length > 0 || flames.length > 0) {
@@ -9893,7 +9895,6 @@
                 ctx.clearRect(0, 0, W, H);
                 canvas.width = 0;
                 SplashAudio.stop();
-                try { fireAudio.pause(); } catch(e) {}
                 canvas.height = 0;
             }
         }
