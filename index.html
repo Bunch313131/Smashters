@@ -6765,49 +6765,7 @@
     }
 
     // ─────────────────────────────────────────────────────────
-    // SWIPE GESTURE DETECTION FOR TAB NAVIGATION
-    // ─────────────────────────────────────────────────────────
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
-
-    let _swipeStartedInDrum = false;
-
-    function handleSwipe() {
-        // Skip tab swipe if touch originated inside a drum picker
-        if (_swipeStartedInDrum) return;
-
-        const deltaX = touchEndX - touchStartX;
-        const deltaY = touchEndY - touchStartY;
-        const minSwipeDistance = 80;
-
-        // Only register as horizontal swipe if mostly horizontal
-        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-            const currentIndex = tabOrder.indexOf(S.ui.activeTab);
-
-            if (deltaX > 0 && currentIndex > 0) {
-                // Swipe right - go to previous tab
-                switchTab(tabOrder[currentIndex - 1], 'right');
-            } else if (deltaX < 0 && currentIndex < tabOrder.length - 1) {
-                // Swipe left - go to next tab
-                switchTab(tabOrder[currentIndex + 1], 'left');
-            }
-        }
-    }
-
-    // Add swipe listeners to content area
-    document.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-        _swipeStartedInDrum = !!(e.target && e.target.closest && e.target.closest('.score-drum-touch'));
-    }, { passive: true });
-
-    document.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
-        handleSwipe();
-    }, { passive: true });
+    // Tab swipe navigation removed — use menu buttons instead
 
     // ─────────────────────────────────────────────────────────
     // MORPHING RIPPLE EFFECT
