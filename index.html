@@ -1045,15 +1045,15 @@
         }
         .score-drum-frame {
             position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-            width:50px; height:43px; border:2px solid var(--masters-yellow);
+            width:50px; height:43px; border:2px solid var(--masters-green);
             border-radius:4px; pointer-events:none; z-index:4;
-            box-shadow:0 0 8px rgba(251,243,8,0.4), inset 0 0 6px rgba(251,243,8,0.1);
-            background:rgba(251,243,8,0.04);
+            box-shadow:0 0 8px rgba(0,103,71,0.3), inset 0 0 6px rgba(0,103,71,0.1);
+            background:rgba(0,103,71,0.04);
         }
         .score-drum-frame.hole-winner {
-            border-color:var(--masters-green);
-            box-shadow:0 0 12px rgba(0,103,71,0.3), inset 0 0 8px rgba(0,103,71,0.1);
-            background:rgba(0,103,71,0.04);
+            border-color:var(--masters-yellow);
+            box-shadow:0 0 12px rgba(251,243,8,0.5), inset 0 0 8px rgba(251,243,8,0.15);
+            background:rgba(251,243,8,0.04);
         }
         .score-drum-frame.no-score-yet {
             border-color:rgba(200,169,81,0.4);
@@ -9597,6 +9597,11 @@
         // Audio starts immediately — already unlocked by opt-in tap
         SplashAudio.play();
 
+        // Pre-unlock fire audio within this user-gesture context (iOS requires it)
+        const fireAudio = new Audio('assets/audio/soundreality-fire-sound-334130.mp3');
+        fireAudio.volume = 0;
+        fireAudio.play().then(() => { fireAudio.pause(); fireAudio.currentTime = 0; fireAudio.volume = 0.7; }).catch(() => {});
+
         // Pre-start video 500ms early so it's decoded & in motion when crossfade reveals it
         setTimeout(() => {
             videoEl.currentTime = 0;
@@ -9630,7 +9635,7 @@
 
                 // === PHASE 2: Smashters (5s visible then burn) ===
                 setTimeout(() => {
-                    startBurnEffect(phase2);
+                    startBurnEffect(phase2, fireAudio);
                 }, 5000);
             }, 12000);
         }, 3750);
@@ -9644,11 +9649,9 @@
         if (vid) { vid.pause(); vid.currentTime = 0; }
     }
 
-    function startBurnEffect(phase2El) {
-        // Play fire crackling sound for the burn effect
-        const fireAudio = new Audio('assets/audio/soundreality-fire-sound-334130.mp3');
-        fireAudio.volume = 0.7;
-        fireAudio.play().catch(() => {});
+    function startBurnEffect(phase2El, fireAudio) {
+        // Fire audio was pre-unlocked during showSplash() user gesture — just play it now
+        if (fireAudio) fireAudio.play().catch(() => {});
 
         const canvas = document.getElementById('burnCanvas');
         const ctx = canvas.getContext('2d');
