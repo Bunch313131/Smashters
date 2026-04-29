@@ -1045,20 +1045,15 @@
         }
         .score-drum-frame {
             position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-            width:50px; height:43px; border:2px solid var(--masters-gold);
+            width:50px; height:43px; border:2px solid var(--masters-yellow);
             border-radius:4px; pointer-events:none; z-index:4;
-            box-shadow:0 0 8px rgba(200,169,81,0.3), inset 0 0 6px rgba(200,169,81,0.1);
-            background:rgba(200,169,81,0.04);
+            box-shadow:0 0 8px rgba(251,243,8,0.4), inset 0 0 6px rgba(251,243,8,0.1);
+            background:rgba(251,243,8,0.04);
         }
         .score-drum-frame.hole-winner {
             border-color:var(--masters-green);
             box-shadow:0 0 12px rgba(0,103,71,0.3), inset 0 0 8px rgba(0,103,71,0.1);
             background:rgba(0,103,71,0.04);
-        }
-        .score-drum-frame.hole-loser {
-            border-color:rgba(30,30,30,0.75);
-            box-shadow:0 0 4px rgba(0,0,0,0.2), inset 0 0 4px rgba(0,0,0,0.1);
-            background:rgba(0,0,0,0.06);
         }
         .score-drum-frame.no-score-yet {
             border-color:rgba(200,169,81,0.4);
@@ -1093,8 +1088,8 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
-        .hole-result-banner.team-a-win { background: var(--team-a-color); color: var(--masters-white); }
-        .hole-result-banner.team-b-win { background: var(--team-b-color); color: var(--masters-white); }
+        .hole-result-banner.team-a-win { background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 75%, #000) 100%); color: var(--masters-white); }
+        .hole-result-banner.team-b-win { background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 75%, #000) 100%); color: var(--masters-white); }
         .hole-result-banner.hole-halved { background: #f0f0e8; color: #666; }
         .hole-result-banner.hole-pending { background: #f9f9f5; color: #bbb; }
 
@@ -4800,6 +4795,35 @@
         }
     }
 
+    // Returns Set of player IDs whose score "won" the hole (for green box highlight)
+    function getHoleWinningPlayerIds(match, holeNum) {
+        const winner = getHoleWinner(match, holeNum);
+        if (!winner) return new Set();
+        const holeScores = match.holes[holeNum] || {};
+
+        const teamBestIds = (teamIds) => {
+            const nets = teamIds.map(id => {
+                const g = holeScores[id];
+                return g != null ? { id, net: getMatchNetScore(match, id, holeNum, g) } : null;
+            }).filter(Boolean);
+            if (!nets.length) return [];
+            const best = Math.min(...nets.map(n => n.net));
+            return nets.filter(n => n.net === best).map(n => n.id);
+        };
+
+        if (match.type === 'foursomes') {
+            if (winner === 'halved') return new Set([match.teamA[0], match.teamB[0]]);
+            return new Set(winner === 'A' ? [match.teamA[0]] : [match.teamB[0]]);
+        } else if (match.type === 'fourball') {
+            if (winner === 'halved') return new Set([...teamBestIds(match.teamA), ...teamBestIds(match.teamB)]);
+            return new Set(teamBestIds(winner === 'A' ? match.teamA : match.teamB));
+        } else {
+            // Singles
+            if (winner === 'halved') return new Set([...match.teamA, ...match.teamB]);
+            return new Set(winner === 'A' ? match.teamA : match.teamB);
+        }
+    }
+
     // ─────────────────────────────────────────────────────────
     // MATCH PLAY STATUS
     // ─────────────────────────────────────────────────────────
@@ -5593,7 +5617,7 @@
             </div>`;
     }
 
-    function renderFoursomesScoreRow(match, teamIds, holeNum, holeScores, holeInfo, teamLetter, holeWinner) {
+    function renderFoursomesScoreRow(match, teamIds, holeNum, holeScores, holeInfo, teamLetter, winningPlayerIds) {
         const names = teamIds.map(id => getPlayer(id)?.name || 'Unknown').join(' / ');
         const teamHcp = getTeamHandicap(teamIds);
         const teamStrokes = getAlternateShotStrokes(match);
@@ -5623,10 +5647,8 @@
         let frameClass = 'score-drum-frame';
         if (!hasScore) {
             frameClass += ' no-score-yet';
-        } else if (holeWinner === teamLetter || holeWinner === 'halved') {
+        } else if (winningPlayerIds && winningPlayerIds.has(scorePlayerId)) {
             frameClass += ' hole-winner';
-        } else if (holeWinner && holeWinner !== teamLetter) {
-            frameClass += ' hole-loser';
         }
 
         const drumCenter = DRUM_W / 2;
@@ -6459,6 +6481,7 @@
             const holeScores = match.holes[hole] || {};
             const allPlayers = [...match.teamA, ...match.teamB];
             const holeWinner = getHoleWinner(match, hole);
+        const winningPlayerIds = getHoleWinningPlayerIds(match, hole);
 
         let statusText = status.text;
         if (status.leader === 'A') statusText = `${S.config.teamA.name} ${status.text}`;
@@ -6468,12 +6491,12 @@
         let teamARows, teamBRows;
         if (match.type === 'foursomes') {
             // Foursomes: one score per team (stored under first player)
-            teamARows = renderFoursomesScoreRow(match, match.teamA, hole, holeScores, holeInfo, 'A', holeWinner);
-            teamBRows = renderFoursomesScoreRow(match, match.teamB, hole, holeScores, holeInfo, 'B', holeWinner);
+            teamARows = renderFoursomesScoreRow(match, match.teamA, hole, holeScores, holeInfo, 'A', winningPlayerIds);
+            teamBRows = renderFoursomesScoreRow(match, match.teamB, hole, holeScores, holeInfo, 'B', winningPlayerIds);
         } else {
             // Four Ball or Singles: individual score rows
-            teamARows = match.teamA.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo, holeWinner)).join('');
-            teamBRows = match.teamB.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo, holeWinner)).join('');
+            teamARows = match.teamA.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo, winningPlayerIds)).join('');
+            teamBRows = match.teamB.map(id => renderScoreEntryRow(match, id, hole, holeScores, holeInfo, winningPlayerIds)).join('');
         }
 
         // Best ball values for four-ball (inline with team labels)
@@ -6577,7 +6600,7 @@
         }
     }
 
-    function renderScoreEntryRow(match, playerId, holeNum, holeScores, holeInfo, holeWinner) {
+    function renderScoreEntryRow(match, playerId, holeNum, holeScores, holeInfo, winningPlayerIds) {
         const player = getPlayer(playerId);
         const name = player?.name || 'Unknown';
         const hcp = getPlayerHcp(playerId);
@@ -6602,15 +6625,12 @@
         const centerIdx = drumNums.indexOf(currentScore);
         const centerDiff = currentScore - par;
 
-        // Frame class: green for hole winner/tie, black for loser, faded if no score
-        const teamLetter = match.teamA.includes(playerId) ? 'A' : 'B';
+        // Frame class: green for the specific player(s) with the winning score, yellow default
         let frameClass = 'score-drum-frame';
         if (!hasScore) {
             frameClass += ' no-score-yet';
-        } else if (holeWinner === teamLetter || holeWinner === 'halved') {
+        } else if (winningPlayerIds && winningPlayerIds.has(playerId)) {
             frameClass += ' hole-winner';
-        } else if (holeWinner && holeWinner !== teamLetter) {
-            frameClass += ' hole-loser';
         }
 
         // Track offset to center the selected number
