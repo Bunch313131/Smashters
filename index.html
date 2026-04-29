@@ -4152,7 +4152,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.8.8';
+    const APP_VERSION = '2.8.9';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -10539,6 +10539,8 @@
         const spotlightPool = [...matchPool];
         if (dfData.length > 0) spotlightPool.push({ type: 'dumpsterfire' });
         if (hhData && (hhData.surgeon || hhData.ace || hhData.coolHand)) spotlightPool.push({ type: 'hothand' });
+        (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0)
+            .forEach(race => spotlightPool.push({ type: 'horserace', race }));
         if (spotlightPool.length > 0) {
             broadcastSpotlightIndex = broadcastSpotlightIndex % spotlightPool.length;
             const slide = spotlightPool[broadcastSpotlightIndex];
@@ -10546,6 +10548,8 @@
                 renderBroadcastDumpsterFire(dfData);
             } else if (slide.type === 'hothand') {
                 renderBroadcastHotHand(hhData);
+            } else if (slide.type === 'horserace') {
+                renderBroadcastHorseRace(slide.race);
             } else {
                 renderBroadcastSpotlight(slide);
             }
@@ -10775,6 +10779,112 @@
                 </div>
                 ${awardBlocksHtml}
             </div>`;
+    }
+
+    function renderBroadcastHorseRace(race) {
+        broadcastProbMatch = null;
+        if (broadcastProbResizeObserver) { broadcastProbResizeObserver.disconnect(); broadcastProbResizeObserver = null; }
+        const el = document.getElementById('broadcastSpotlightContent');
+
+        const roundNames = { 1: '1st Round', 2: '2nd Round', 3: 'Final' };
+        const totalRounds = race.status === 'complete' ? 3 : race.currentRound;
+        const colorA = S.config.teamA.color, colorB = S.config.teamB.color;
+
+        // Build list of teams active at start of each round
+        function activeInRound(rn) {
+            return race.rounds[rn]?.prevActiveTeamIds || race.teams.map(t => t.id);
+        }
+        function survivorsOfRound(rn) {
+            const chipWinners = race.rounds[rn]?.chipoffWinners || [];
+            const chipData = race.rounds[rn]?._chipoffData;
+            if (rn === 3) return race.winner ? [race.winner.teamId] : [];
+            // survivors = activeTeamIds after this round completed
+            // stored as prevActiveTeamIds of next round
+            return race.rounds[rn + 1]?.prevActiveTeamIds || [];
+        }
+
+        let roundsHtml = '';
+        const roundsToShow = race.status === 'complete' ? 3 : race.currentRound - 1;
+        for (let rn = 1; rn <= roundsToShow; rn++) {
+            const round = race.rounds[rn];
+            if (!round?.scores || Object.keys(round.scores).length === 0) break;
+            const holeNum = hrActualHole(race, rn);
+            const holeInfo = getHoleInfo(holeNum);
+            const active = activeInRound(rn);
+            const survivors = survivorsOfRound(rn);
+            const eliminated = active.filter(id => !survivors.includes(id));
+            const chipoffWinners = round.chipoffWinners || [];
+
+            // Sort teams by net score ascending
+            const rows = active.map(teamId => {
+                const team = race.teams.find(t => t.id === teamId);
+                const gross = round.scores[teamId] ?? '—';
+                const net = gross !== '—' ? hrNetScore(team.hcp, holeNum, gross) : '—';
+                const isElim = eliminated.includes(teamId);
+                const isChipoff = chipoffWinners.length > 0 && round._chipoffData?.tiedTeams?.includes(teamId);
+                return { teamId, team, gross, net, isElim };
+            }).sort((a, b) => (a.net === '—' ? 99 : a.net) - (b.net === '—' ? 99 : b.net));
+
+            const rowsHtml = rows.map(({ teamId, team, gross, net, isElim }) => {
+                const color = team?.smashtersTeam === 'A' ? colorA : colorB;
+                const name = hrTeamDisplayName(race, teamId);
+                const opacity = isElim ? 'opacity:0.4;text-decoration:line-through;' : '';
+                const elimBadge = isElim ? `<span style="color:#ff6b6b;font-size:0.7em;margin-left:6px;">✕ OUT</span>` : '';
+                return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0;${opacity}">
+                    <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+                    <span style="flex:1;color:#fff;font-size:clamp(11px,1.3vw,16px);font-weight:${isElim ? '400' : '600'};">${name}${elimBadge}</span>
+                    <span style="color:#7dffb3;font-weight:700;font-size:clamp(12px,1.4vw,18px);min-width:24px;text-align:right;">${gross}</span>
+                    <span style="color:rgba(255,255,255,0.45);font-size:clamp(10px,1.1vw,14px);min-width:36px;text-align:right;">net ${net}</span>
+                </div>`;
+            }).join('');
+
+            const chipoffNote = chipoffWinners.length > 0
+                ? `<div style="color:var(--masters-yellow);font-size:clamp(9px,0.95vw,12px);margin-top:4px;letter-spacing:0.5px;">⚑ CHIP-OFF · ${chipoffWinners.map(id => hrTeamDisplayName(race, id)).join(' vs ')}</div>`
+                : '';
+
+            roundsHtml += `
+                <div style="margin-bottom:clamp(8px,1.1vw,14px);">
+                    <div style="color:var(--masters-yellow);font-size:clamp(9px,0.9vw,11px);font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;">
+                        ${roundNames[rn]} · Hole ${holeNum} · Par ${holeInfo.par}
+                    </div>
+                    <div style="background:rgba(0,0,0,0.25);border-radius:6px;padding:8px 10px;">
+                        ${rowsHtml}
+                    </div>
+                    ${chipoffNote}
+                </div>`;
+        }
+
+        // Winner block
+        let winnerHtml = '';
+        if (race.status === 'complete' && race.winner) {
+            const winTeam = race.teams.find(t => t.id === race.winner.teamId);
+            const wColor = race.winner.smashtersTeam === 'A' ? colorA : colorB;
+            const wTeamName = race.winner.smashtersTeam === 'A' ? S.config.teamA.name : S.config.teamB.name;
+            winnerHtml = `<div style="margin-top:clamp(8px,1.1vw,14px);background:${wColor};border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+                <span style="font-size:clamp(18px,2.4vw,30px);">🏆</span>
+                <div>
+                    <div style="color:rgba(255,255,255,0.75);font-size:clamp(8px,0.85vw,11px);letter-spacing:2px;text-transform:uppercase;">Winner · ${wTeamName}</div>
+                    <div style="color:#fff;font-weight:800;font-size:clamp(14px,1.8vw,24px);">${hrTeamDisplayName(race, race.winner.teamId)}</div>
+                </div>
+            </div>`;
+        } else if (race.status !== 'complete') {
+            const holeNum = hrActualHole(race, race.currentRound);
+            winnerHtml = `<div style="color:rgba(255,255,255,0.5);font-size:clamp(10px,1.1vw,14px);margin-top:8px;text-align:center;letter-spacing:1px;">
+                🏇 Round ${race.currentRound} in progress · Hole ${holeNum}
+            </div>`;
+        }
+
+        const holes = [1,2,3].map(r => hrActualHole(race, r)).join(' · ');
+        el.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:clamp(8px,1.2vw,16px);padding-bottom:clamp(6px,0.9vw,10px);border-bottom:2px solid rgba(251,243,8,0.4);">
+                <div style="font-size:clamp(20px,2.8vw,38px);line-height:1;">🏇</div>
+                <div>
+                    <div class="broadcast-spotlight-label" style="margin-bottom:0;">${race.name}</div>
+                    <div style="color:rgba(255,255,255,0.5);font-size:clamp(9px,0.9vw,12px);letter-spacing:1px;">Holes ${holes}</div>
+                </div>
+            </div>
+            ${roundsHtml}
+            ${winnerHtml}`;
     }
 
     // Match play win probability using dynamic programming
