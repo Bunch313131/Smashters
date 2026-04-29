@@ -9512,6 +9512,68 @@
     };
 
     // ─────────────────────────────────────────────────────────
+    // FIRE AUDIO (Web Audio API — fetched during user gesture, played at burn)
+    // ─────────────────────────────────────────────────────────
+    const FireAudio = {
+        _ctx: null,
+        _buffer: null,
+        _source: null,
+        _gain: null,
+        _fadeTimer: null,
+
+        // Call during showSplash() (user gesture) — unlocks context and fetches buffer
+        prepare() {
+            try {
+                this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch(e) { return; }
+            // Play a silent buffer to unlock the AudioContext on iOS
+            const silent = this._ctx.createBuffer(1, 1, 22050);
+            const s = this._ctx.createBufferSource();
+            s.buffer = silent;
+            s.connect(this._ctx.destination);
+            s.start(0);
+            // Fetch and decode fire sound in background
+            fetch('assets/audio/soundreality-fire-sound-334130.mp3')
+                .then(r => r.arrayBuffer())
+                .then(buf => this._ctx && this._ctx.decodeAudioData(buf))
+                .then(decoded => { if (decoded) this._buffer = decoded; })
+                .catch(() => {});
+        },
+
+        play() {
+            if (!this._ctx || !this._buffer) return;
+            this._gain = this._ctx.createGain();
+            this._gain.gain.value = 0.7;
+            this._gain.connect(this._ctx.destination);
+            this._source = this._ctx.createBufferSource();
+            this._source.buffer = this._buffer;
+            this._source.connect(this._gain);
+            this._source.start(0);
+        },
+
+        fadeOut(duration) {
+            if (!this._gain) return;
+            const steps = 24;
+            const stepMs = Math.round(duration / steps);
+            const startVol = this._gain.gain.value;
+            let step = 0;
+            this._fadeTimer = setInterval(() => {
+                step++;
+                if (this._gain) this._gain.gain.value = Math.max(0, startVol * (1 - step / steps));
+                if (step >= steps) { clearInterval(this._fadeTimer); this.stop(); }
+            }, stepMs);
+        },
+
+        stop() {
+            if (this._fadeTimer) { clearInterval(this._fadeTimer); this._fadeTimer = null; }
+            try { if (this._source) this._source.stop(); } catch(e) {}
+            if (this._gain) this._gain.disconnect();
+            if (this._ctx) this._ctx.close().catch(() => {});
+            this._source = null; this._gain = null; this._ctx = null; this._buffer = null;
+        },
+    };
+
+    // ─────────────────────────────────────────────────────────
     // MOBILE GATE & OPT-IN LOGIC
     // ─────────────────────────────────────────────────────────
     function showMobileGate() {
@@ -9596,11 +9658,7 @@
 
         // Audio starts immediately — already unlocked by opt-in tap
         SplashAudio.play();
-
-        // Pre-unlock fire audio within this user-gesture context (iOS requires it)
-        const fireAudio = new Audio('assets/audio/soundreality-fire-sound-334130.mp3');
-        fireAudio.volume = 0;
-        fireAudio.play().then(() => { fireAudio.pause(); fireAudio.currentTime = 0; fireAudio.volume = 0.7; }).catch(() => {});
+        FireAudio.prepare(); // fetch & decode fire sound within user-gesture context
 
         // Pre-start video 500ms early so it's decoded & in motion when crossfade reveals it
         setTimeout(() => {
@@ -9635,7 +9693,7 @@
 
                 // === PHASE 2: Smashters (5s visible then burn) ===
                 setTimeout(() => {
-                    startBurnEffect(phase2, fireAudio);
+                    startBurnEffect(phase2);
                 }, 5000);
             }, 12000);
         }, 3750);
@@ -9649,9 +9707,8 @@
         if (vid) { vid.pause(); vid.currentTime = 0; }
     }
 
-    function startBurnEffect(phase2El, fireAudio) {
-        // Fire audio was pre-unlocked during showSplash() user gesture — just play it now
-        if (fireAudio) fireAudio.play().catch(() => {});
+    function startBurnEffect(phase2El) {
+        FireAudio.play();
 
         const canvas = document.getElementById('burnCanvas');
         const ctx = canvas.getContext('2d');
@@ -9868,25 +9925,11 @@
             }
             ctx.restore();
 
-            // Fire audio fades out starting at 50% — completes well before burn ends
+            // Fade both audio tracks as burn nears completion
             if (progress >= 0.5 && !audioFading) {
                 audioFading = true;
                 SplashAudio.fadeOut(2000);
-                // Fade fire sound via setInterval (more reliable than rAF on iOS PWA)
-                if (fireAudio) {
-                    const steps = 24;
-                    const stepMs = 50; // 24 steps × 50ms = 1200ms total
-                    const startVol = fireAudio.volume;
-                    let step = 0;
-                    const fadeTimer = setInterval(() => {
-                        step++;
-                        fireAudio.volume = Math.max(0, startVol * (1 - step / steps));
-                        if (step >= steps) {
-                            clearInterval(fadeTimer);
-                            try { fireAudio.pause(); } catch(e) {}
-                        }
-                    }, stepMs);
-                }
+                FireAudio.fadeOut(1200);
             }
 
             if (progress < 1 || embers.length > 0 || flames.length > 0) {
@@ -9897,6 +9940,7 @@
                 ctx.clearRect(0, 0, W, H);
                 canvas.width = 0;
                 SplashAudio.stop();
+                FireAudio.stop();
                 canvas.height = 0;
             }
         }
