@@ -3814,6 +3814,8 @@
         .hr-race-card-actions { display: flex; gap: 8px; }
         .hr-btn-resume { background: var(--masters-green); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
         .hr-btn-delete { background: #fff; color: #CE1141; border: 1px solid #CE1141; border-radius: 6px; padding: 8px 12px; font-size: 0.85rem; cursor: pointer; }
+        .hr-btn-award { background: var(--masters-yellow); color: #222; border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .hr-point-awarded { font-size: 0.82rem; color: var(--masters-green); font-weight: bold; align-self: center; }
 
         /* Setup screen */
         .hr-back-btn { background: none; border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; display: inline-block; }
@@ -4150,7 +4152,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.8.5';
+    const APP_VERSION = '2.8.6';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -12732,6 +12734,31 @@
         renderTab('horserace');
     }
 
+    function hrAwardPoint(raceId) {
+        const race = (S.horseRaces || []).find(r => r.id === raceId);
+        if (!race || race.status !== 'complete' || !race.winner) return;
+        if (!requireAdmin('award a Horse Race point')) return;
+        if (race.pointAwarded) { showToast('Point already awarded for this race'); return; }
+        const winnerName = hrTeamDisplayName(race, race.winner.teamId);
+        const smTeam = race.winner.smashtersTeam;
+        const id = 'bonus-' + Date.now();
+        const maxOrder = Math.max(...Object.values(S.bonusEvents).map(e => e.order || 0), 0);
+        S.bonusEvents[id] = {
+            id,
+            name: `🏇 ${race.name}`,
+            sessionId: null,
+            pointsA: smTeam === 'A' ? 1 : 0,
+            pointsB: smTeam === 'B' ? 1 : 0,
+            notesA: smTeam === 'A' ? winnerName : '',
+            notesB: smTeam === 'B' ? winnerName : '',
+            order: maxOrder + 1,
+        };
+        race.pointAwarded = true;
+        saveState();
+        renderTab('horserace');
+        showToast('Point awarded and added to leaderboard!');
+    }
+
     function renderHorseRace() {
         const el = document.getElementById('horserace-content');
         if (!el) return;
@@ -12763,10 +12790,14 @@
                 const isComplete = race.status === 'complete';
                 const statusLabel = { setup: 'Setup', scoring: `Round ${race.currentRound} — Scoring`, chipoff: `Round ${race.currentRound} — Chip-Off`, complete: 'Complete' }[race.status] || race.status;
                 let winnerHtml = '';
+                let awardBtn = '';
                 if (isComplete && race.winner) {
                     const teamName = hrTeamDisplayName(race, race.winner.teamId);
                     const color = race.winner.smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
                     winnerHtml = `<div class="hr-winner-badge" style="background:${color}">🏆 ${teamName} wins!</div>`;
+                    awardBtn = race.pointAwarded
+                        ? `<span class="hr-point-awarded">✓ Point on Leaderboard</span>`
+                        : `<button class="hr-btn-award" onclick="hrAwardPoint('${race.id}')">+ Award Point</button>`;
                 }
                 html += `<div class="hr-race-card">
                     <div class="hr-race-card-head">
@@ -12777,6 +12808,7 @@
                         ${winnerHtml}
                         <div class="hr-race-card-actions">
                             ${!isComplete ? `<button class="hr-btn-resume" onclick="hrViewRace('${race.id}')">Resume</button>` : ''}
+                            ${awardBtn}
                             <button class="hr-btn-delete" onclick="hrDeleteRace('${race.id}')">Delete</button>
                         </div>
                     </div>
