@@ -4082,7 +4082,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.7.1';
+    const APP_VERSION = '2.7.2';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -9512,31 +9512,23 @@
     };
 
     // ─────────────────────────────────────────────────────────
-    // FIRE AUDIO (Web Audio API — fetched during user gesture, played at burn)
+    // FIRE AUDIO (shares SplashAudio's AudioContext — one context on iOS)
     // ─────────────────────────────────────────────────────────
     const FireAudio = {
-        _ctx: null,
+        _ctx: null,   // borrowed from SplashAudio — do NOT close it here
         _buffer: null,
         _source: null,
         _gain: null,
         _fadeTimer: null,
 
-        // Call during showSplash() (user gesture) — unlocks context and fetches buffer
-        prepare() {
-            try {
-                this._ctx = new (window.AudioContext || window.webkitAudioContext)();
-            } catch(e) { return; }
-            // Play a silent buffer to unlock the AudioContext on iOS
-            const silent = this._ctx.createBuffer(1, 1, 22050);
-            const s = this._ctx.createBufferSource();
-            s.buffer = silent;
-            s.connect(this._ctx.destination);
-            s.start(0);
-            // Fetch and decode fire sound in background
+        // Pass SplashAudio's already-unlocked context, then fetch/decode fire sound
+        prepare(ctx) {
+            this._ctx = ctx;
+            if (!ctx) return;
             fetch('assets/audio/soundreality-fire-sound-334130.mp3')
                 .then(r => r.arrayBuffer())
-                .then(buf => this._ctx && this._ctx.decodeAudioData(buf))
-                .then(decoded => { if (decoded) this._buffer = decoded; })
+                .then(buf => ctx.decodeAudioData(buf))
+                .then(decoded => { this._buffer = decoded; })
                 .catch(() => {});
         },
 
@@ -9567,9 +9559,9 @@
         stop() {
             if (this._fadeTimer) { clearInterval(this._fadeTimer); this._fadeTimer = null; }
             try { if (this._source) this._source.stop(); } catch(e) {}
-            if (this._gain) this._gain.disconnect();
-            if (this._ctx) this._ctx.close().catch(() => {});
-            this._source = null; this._gain = null; this._ctx = null; this._buffer = null;
+            try { if (this._gain) this._gain.disconnect(); } catch(e) {}
+            // Context is owned by SplashAudio — don't close it here
+            this._source = null; this._gain = null; this._buffer = null;
         },
     };
 
@@ -9658,7 +9650,7 @@
 
         // Audio starts immediately — already unlocked by opt-in tap
         SplashAudio.play();
-        FireAudio.prepare(); // fetch & decode fire sound within user-gesture context
+        FireAudio.prepare(SplashAudio._ctx); // share the same AudioContext — iOS only allows one
 
         // Pre-start video 500ms early so it's decoded & in motion when crossfade reveals it
         setTimeout(() => {
