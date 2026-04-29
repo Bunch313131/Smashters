@@ -4152,7 +4152,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.8.7';
+    const APP_VERSION = '2.8.8';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -12342,6 +12342,23 @@
         // Migrate: strip "The " from event name
         if (S.config.eventName && S.config.eventName.startsWith('The ')) {
             S.config.eventName = S.config.eventName.replace(/^The /, '');
+            saveState();
+        }
+
+        // Migrate: ensure Horse Race placeholder bonus event exists
+        const hasHRPlaceholder = Object.values(S.bonusEvents).some(e => e.id === 'bonus-horserace-placeholder');
+        if (!hasHRPlaceholder) {
+            const maxOrder = Math.max(...Object.values(S.bonusEvents).map(e => e.order || 0), 0);
+            S.bonusEvents['bonus-horserace-placeholder'] = {
+                id: 'bonus-horserace-placeholder',
+                name: '🏇 Horse Race',
+                sessionId: null,
+                pointsA: 0,
+                pointsB: 0,
+                notesA: '',
+                notesB: '',
+                order: maxOrder + 1,
+            };
             saveState();
         }
 
