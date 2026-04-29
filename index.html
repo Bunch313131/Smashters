@@ -3799,6 +3799,61 @@
                 opacity: 0;
             }
         }
+
+        /* ── HORSE RACE MODULE ───────────────────────────── */
+        .hr-container { padding: 12px 12px 80px; max-width: 540px; margin: 0 auto; }
+        .hr-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .hr-header h2 { margin: 0; font-size: 1.2rem; color: var(--masters-white); flex: 1; }
+        .hr-back-btn { background: none; border: 1px solid rgba(255,255,255,0.3); color: var(--masters-white); border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; cursor: pointer; }
+        .hr-new-btn { background: var(--masters-green); color: var(--masters-white); border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+        .hr-empty { color: rgba(255,255,255,0.5); text-align: center; padding: 40px 20px; font-size: 0.95rem; }
+
+        .hr-race-card { background: rgba(255,255,255,0.07); border-radius: 10px; padding: 14px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .hr-race-card.complete { opacity: 0.75; }
+        .hr-race-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .hr-race-name { font-weight: bold; color: var(--masters-white); font-size: 1rem; }
+        .hr-race-status { font-size: 0.8rem; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); border-radius: 4px; padding: 2px 8px; }
+        .hr-winner-badge { border-radius: 6px; padding: 6px 12px; text-align: center; font-weight: bold; color: #fff; font-size: 0.9rem; margin-bottom: 8px; }
+        .hr-race-card-actions { display: flex; gap: 8px; }
+
+        .hr-btn-primary { background: var(--masters-green); color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-size: 0.95rem; font-weight: bold; cursor: pointer; }
+        .hr-btn-danger { background: rgba(206,17,65,0.2); color: #CE1141; border: 1px solid #CE1141; border-radius: 8px; padding: 10px 18px; font-size: 0.95rem; cursor: pointer; }
+        .hr-btn-full { width: 100%; margin-top: 16px; padding: 14px; font-size: 1rem; }
+
+        .hr-section { margin-bottom: 16px; }
+        .hr-section-title { font-weight: bold; color: rgba(255,255,255,0.6); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+        .hr-label { display: block; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 6px; }
+        .hr-select-hole { width: 100%; background: rgba(255,255,255,0.1); color: var(--masters-white); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 10px; font-size: 1rem; }
+
+        .hr-team-setup { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .hr-team-label { font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; }
+        .hr-player-row { display: flex; gap: 8px; }
+        .hr-select { flex: 1; background: rgba(0,0,0,0.3); color: var(--masters-white); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 8px 6px; font-size: 0.85rem; }
+        .hr-hcp-display { margin-top: 6px; font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+        .hr-hcp-val { font-weight: bold; color: var(--masters-yellow); }
+
+        .hr-round-info { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .hr-round-label { font-weight: bold; color: var(--masters-white); font-size: 1rem; margin-bottom: 4px; }
+        .hr-hole-info { color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-bottom: 4px; }
+        .hr-elim-info { color: var(--masters-yellow); font-size: 0.8rem; }
+
+        .hr-scores-list { display: flex; flex-direction: column; gap: 10px; }
+        .hr-score-row { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.1); }
+        .hr-score-team { display: flex; align-items: center; gap: 10px; }
+        .hr-team-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .hr-score-team-name { font-weight: bold; color: var(--masters-white); font-size: 0.9rem; }
+        .hr-score-team-hcp { color: rgba(255,255,255,0.5); font-size: 0.75rem; }
+        .hr-score-entry { display: flex; align-items: center; gap: 6px; }
+        .hr-score-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+        .hr-score-input { width: 42px; text-align: center; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px; font-size: 1.1rem; font-weight: bold; }
+
+        .hr-chipoff-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+        .hr-chipoff-option { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+        .hr-chipoff-option input[type=checkbox] { width: 20px; height: 20px; cursor: pointer; }
+        .hr-chipoff-option span:last-child { color: var(--masters-white); font-weight: bold; }
+        .hr-clear-section { background: rgba(0,103,71,0.15); border: 1px solid rgba(0,103,71,0.4); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+        .hr-clear-label { color: var(--masters-green); font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; }
+        .hr-clear-team { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
     </style>
 <script>
 (function(){
@@ -3913,6 +3968,7 @@
     <section class="tab-content" id="tab-players"><div id="players-content"></div></section>
     <section class="tab-content" id="tab-draft"><div id="draft-content"></div></section>
     <section class="tab-content" id="tab-settings"><div id="settings-content"></div></section>
+    <section class="tab-content" id="tab-horserace"><div id="horserace-content"></div></section>
 
     <!-- Bottom Navigation Bar (mobile) -->
     <nav class="bottom-nav" id="bottomNav">
@@ -3950,6 +4006,7 @@
         <button class="slide-menu-item" data-tab="draft">Draft</button>
         <button class="slide-menu-item" id="slideMenuTimer">Hole Timer</button>
         <button class="slide-menu-item" data-tab="settings">Settings</button>
+        <button class="slide-menu-item" data-tab="horserace">🏇 Horse Race</button>
         <button class="slide-menu-item slide-menu-tv" onclick="launchTvDisplay(); closeSlideMenu();">📺 TV Display</button>
     </div>
 
@@ -4082,7 +4139,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.7.2';
+    const APP_VERSION = '2.8.0';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -4160,6 +4217,7 @@
         matches: {},
         bonusEvents: {},
         holeTimes: [],
+        horseRaces: [],
         ui: {
             activeTab: 'schedule',
             activeMatchId: null,
@@ -4169,6 +4227,7 @@
             individualType: 'gross',
             individualSession: 'all',
             dailySort: 'gross',
+            activeHorseRaceId: null,
         },
     });
 
@@ -4207,6 +4266,7 @@
                     matches,
                     bonusEvents: parsed.bonusEvents || {},
                     holeTimes: parsed.holeTimes || [],
+                    horseRaces: parsed.horseRaces || [],
                     ui: { ...base.ui, ...parsed.ui, settingsUnlocked: false },
                     _lastSync: parsed._lastSync || 0,
                 };
@@ -4553,7 +4613,8 @@
 
     function renderTab(tabId) {
         const r = { leaderboard: renderLeaderboard, individual: renderIndividual, scoring: renderScoring,
-            schedule: renderSchedule, matches: renderMatches, players: renderPlayers, draft: renderDraft, settings: renderSettings };
+            schedule: renderSchedule, matches: renderMatches, players: renderPlayers, draft: renderDraft, settings: renderSettings,
+            horserace: renderHorseRace };
         if (r[tabId]) r[tabId]();
     }
 
@@ -12383,6 +12444,399 @@
         if (e.target === e.currentTarget) closeModal();
     });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // ─────────────────────────────────────────────────────────
+    // HORSE RACE MODULE
+    // ─────────────────────────────────────────────────────────
+
+    function hrTeamDisplayName(race, teamId) {
+        const team = race.teams.find(t => t.id === teamId);
+        if (!team) return '?';
+        return team.playerIds.map(id => {
+            const p = S.players[id];
+            return p ? p.name.split(' ')[0] : '?';
+        }).join(' & ');
+    }
+
+    function hrCalcHcp(p1Id, p2Id) {
+        const h1 = S.players[p1Id]?.handicap ?? 0;
+        const h2 = S.players[p2Id]?.handicap ?? 0;
+        return Math.floor((h1 + h2) * 0.5);
+    }
+
+    function hrActualHole(race, roundNum) {
+        return ((race.startingHole - 1 + roundNum - 1) % 18) + 1;
+    }
+
+    function hrNetScore(teamHcp, holeNum, gross) {
+        if (gross == null) return Infinity;
+        const info = getHoleInfo(holeNum);
+        const strokes = getStrokesOnHole(teamHcp, info.hcp);
+        return gross - strokes;
+    }
+
+    function hrEvalRound(race, roundNum) {
+        const round = race.rounds[roundNum];
+        const holeNum = hrActualHole(race, roundNum);
+        // R1: 6 teams → keep 4; R2: 4 → keep 2; R3: 2 → keep 1
+        const survivorsNeeded = roundNum === 1 ? 4 : roundNum === 2 ? 2 : 1;
+        const active = race.teams.filter(t => race.activeTeamIds.includes(t.id));
+        const nets = active.map(t => ({
+            teamId: t.id,
+            net: hrNetScore(t.hcp, holeNum, round.scores[t.id])
+        })).sort((a, b) => a.net - b.net);
+
+        if (nets.length <= survivorsNeeded) {
+            return { type: 'clear', survivors: nets.map(n => n.teamId) };
+        }
+        const cutNet = nets[survivorsNeeded - 1].net;
+        const nextNet = nets[survivorsNeeded].net;
+        if (cutNet === nextNet) {
+            const clearSurvivors = nets.filter(n => n.net < cutNet).map(n => n.teamId);
+            const tiedTeams = nets.filter(n => n.net === cutNet).map(n => n.teamId);
+            const spotsLeft = survivorsNeeded - clearSurvivors.length;
+            return { type: 'chipoff', clearSurvivors, tiedTeams, spotsLeft };
+        }
+        return { type: 'clear', survivors: nets.slice(0, survivorsNeeded).map(n => n.teamId) };
+    }
+
+    function hrGetRace() {
+        return (S.horseRaces || []).find(r => r.id === S.ui.activeHorseRaceId) || null;
+    }
+
+    function hrNewRace() {
+        if (!S.horseRaces) S.horseRaces = [];
+        const raceNum = S.horseRaces.length + 1;
+        const race = {
+            id: 'hr_' + Date.now(),
+            name: 'Race ' + raceNum,
+            status: 'setup',
+            currentRound: 1,
+            startingHole: 1,
+            teams: [],
+            activeTeamIds: [],
+            rounds: { 1: { scores: {}, chipoffWinner: null }, 2: { scores: {}, chipoffWinner: null }, 3: { scores: {}, chipoffWinner: null } },
+            winner: null,
+        };
+        S.horseRaces.push(race);
+        S.ui.activeHorseRaceId = race.id;
+        scheduleSave(true);
+        renderTab('horserace');
+    }
+
+    function hrViewRace(raceId) {
+        S.ui.activeHorseRaceId = raceId;
+        scheduleSave(true);
+        renderTab('horserace');
+    }
+
+    function hrDeleteRace(raceId) {
+        S.horseRaces = (S.horseRaces || []).filter(r => r.id !== raceId);
+        if (S.ui.activeHorseRaceId === raceId) S.ui.activeHorseRaceId = null;
+        scheduleSave(true);
+        renderTab('horserace');
+    }
+
+    function hrBackHome() {
+        S.ui.activeHorseRaceId = null;
+        scheduleSave(true);
+        renderTab('horserace');
+    }
+
+    function hrSaveSetup() {
+        const race = hrGetRace();
+        if (!race) return;
+        const holeEl = document.getElementById('hr-starting-hole');
+        race.startingHole = parseInt(holeEl?.value) || 1;
+        const teamEls = document.querySelectorAll('.hr-team-setup');
+        const teams = [];
+        const usedPlayers = new Set();
+        let valid = true;
+        teamEls.forEach((el, i) => {
+            const smashtersTeam = el.dataset.smashtersTeam;
+            const p1 = el.querySelector('.hr-p1')?.value;
+            const p2 = el.querySelector('.hr-p2')?.value;
+            if (!p1 || !p2 || p1 === p2) { valid = false; return; }
+            if (usedPlayers.has(p1) || usedPlayers.has(p2)) { valid = false; return; }
+            usedPlayers.add(p1); usedPlayers.add(p2);
+            teams.push({ id: 'ht_' + i, playerIds: [p1, p2], smashtersTeam, hcp: hrCalcHcp(p1, p2) });
+        });
+        if (!valid || teams.length !== 6) {
+            showToast('Select 2 different players for each team (no repeats)');
+            return;
+        }
+        race.teams = teams;
+        race.activeTeamIds = teams.map(t => t.id);
+        race.status = 'scoring';
+        race.currentRound = 1;
+        scheduleSave(true);
+        renderTab('horserace');
+    }
+
+    function hrUpdateHcp(el) {
+        const teamEl = el.closest('.hr-team-setup');
+        if (!teamEl) return;
+        const p1 = teamEl.querySelector('.hr-p1')?.value;
+        const p2 = teamEl.querySelector('.hr-p2')?.value;
+        const hcpEl = teamEl.querySelector('.hr-hcp-val');
+        if (p1 && p2 && p1 !== p2) {
+            hcpEl.textContent = hrCalcHcp(p1, p2);
+        } else {
+            hcpEl.textContent = '--';
+        }
+    }
+
+    function hrAdjScore(teamId, delta) {
+        const el = document.querySelector(`.hr-score-input[data-team-id="${teamId}"]`);
+        if (!el) return;
+        const val = parseInt(el.value) || 4;
+        el.value = Math.max(1, Math.min(15, val + delta));
+    }
+
+    function hrSubmitScores() {
+        const race = hrGetRace();
+        if (!race) return;
+        const rn = race.currentRound;
+        const scores = {};
+        let valid = true;
+        document.querySelectorAll('.hr-score-input').forEach(el => {
+            const teamId = el.dataset.teamId;
+            const val = parseInt(el.value);
+            if (isNaN(val) || val < 1 || val > 15) { valid = false; return; }
+            scores[teamId] = val;
+        });
+        if (!valid) { showToast('Enter valid scores (1–15) for all teams'); return; }
+        race.rounds[rn].scores = scores;
+        const result = hrEvalRound(race, rn);
+        if (result.type === 'chipoff') {
+            race.rounds[rn]._chipoffData = result;
+            race.status = 'chipoff';
+        } else {
+            if (rn < 3) {
+                race.activeTeamIds = result.survivors;
+                race.currentRound = rn + 1;
+                race.status = 'scoring';
+            } else {
+                const winTeam = race.teams.find(t => t.id === result.survivors[0]);
+                race.winner = { teamId: result.survivors[0], smashtersTeam: winTeam?.smashtersTeam };
+                race.status = 'complete';
+            }
+        }
+        scheduleSave(true);
+        renderTab('horserace');
+    }
+
+    function hrSubmitChipoff() {
+        const race = hrGetRace();
+        if (!race) return;
+        const rn = race.currentRound;
+        const chipData = race.rounds[rn]._chipoffData;
+        if (!chipData) return;
+        const selected = [...document.querySelectorAll('.hr-chipoff-check:checked')].map(el => el.value);
+        if (selected.length !== chipData.spotsLeft) {
+            showToast(`Select exactly ${chipData.spotsLeft} team${chipData.spotsLeft > 1 ? 's' : ''} to advance`);
+            return;
+        }
+        race.rounds[rn].chipoffWinners = selected;
+        const survivors = [...chipData.clearSurvivors, ...selected];
+        if (rn < 3) {
+            race.activeTeamIds = survivors;
+            race.currentRound = rn + 1;
+            race.status = 'scoring';
+        } else {
+            const winTeam = race.teams.find(t => t.id === selected[0]);
+            race.winner = { teamId: selected[0], smashtersTeam: winTeam?.smashtersTeam };
+            race.status = 'complete';
+        }
+        scheduleSave(true);
+        renderTab('horserace');
+    }
+
+    function renderHorseRace() {
+        const el = document.getElementById('horserace-content');
+        if (!el) return;
+        if (!S.horseRaces) S.horseRaces = [];
+        if (!S.ui.activeHorseRaceId) S.ui.activeHorseRaceId = null;
+        const race = hrGetRace();
+        if (!race || race.status === 'complete') {
+            el.innerHTML = renderHRHome();
+        } else if (race.status === 'setup') {
+            el.innerHTML = renderHRSetup(race);
+        } else if (race.status === 'scoring') {
+            el.innerHTML = renderHRScoring(race);
+        } else if (race.status === 'chipoff') {
+            el.innerHTML = renderHRChipoff(race);
+        }
+    }
+
+    function renderHRHome() {
+        const races = S.horseRaces || [];
+        let html = `<div class="hr-container">
+            <div class="hr-header">
+                <h2>🏇 Horse Race</h2>
+                <button class="hr-new-btn" onclick="hrNewRace()">+ New Race</button>
+            </div>`;
+        if (races.length === 0) {
+            html += `<div class="hr-empty">No races yet. Tap "New Race" to begin.</div>`;
+        } else {
+            races.slice().reverse().forEach(race => {
+                const isComplete = race.status === 'complete';
+                const statusLabel = { setup: 'Setup', scoring: `Round ${race.currentRound} — Scoring`, chipoff: `Round ${race.currentRound} — Chip-Off`, complete: 'Complete' }[race.status] || race.status;
+                let winnerHtml = '';
+                if (isComplete && race.winner) {
+                    const teamName = hrTeamDisplayName(race, race.winner.teamId);
+                    const color = race.winner.smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
+                    winnerHtml = `<div class="hr-winner-badge" style="background:${color}">🏆 ${teamName} wins!</div>`;
+                }
+                const resumeBtn = !isComplete ? `<button class="hr-btn-primary" onclick="hrViewRace('${race.id}')">Resume</button>` : '';
+                html += `<div class="hr-race-card ${isComplete ? 'complete' : 'active'}">
+                    <div class="hr-race-card-top">
+                        <span class="hr-race-name">${race.name}</span>
+                        <span class="hr-race-status">${statusLabel}</span>
+                    </div>
+                    ${winnerHtml}
+                    <div class="hr-race-card-actions">
+                        ${resumeBtn}
+                        <button class="hr-btn-danger" onclick="if(confirm('Delete ${race.name}?'))hrDeleteRace('${race.id}')">Delete</button>
+                    </div>
+                </div>`;
+            });
+        }
+        html += `</div>`;
+        return html;
+    }
+
+    function renderHRSetup(race) {
+        const allPlayers = Object.values(S.players || {});
+        const teamAPlayers = allPlayers.filter(p => p.team === 'A').sort((a,b) => a.name.localeCompare(b.name));
+        const teamBPlayers = allPlayers.filter(p => p.team === 'B').sort((a,b) => a.name.localeCompare(b.name));
+
+        function playerOpts(players) {
+            return `<option value="">-- Select --</option>` +
+                players.map(p => `<option value="${p.id}">${p.name} (${p.handicap ?? 0})</option>`).join('');
+        }
+        function teamSlot(smashtersTeam, slotIdx) {
+            const players = smashtersTeam === 'A' ? teamAPlayers : teamBPlayers;
+            const color = smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const label = smashtersTeam === 'A' ? S.config.teamA.name : S.config.teamB.name;
+            return `<div class="hr-team-setup" data-smashters-team="${smashtersTeam}">
+                <div class="hr-team-label" style="color:${color}">${label} — Team ${slotIdx + 1}</div>
+                <div class="hr-player-row">
+                    <select class="hr-p1 hr-select" onchange="hrUpdateHcp(this)">${playerOpts(players)}</select>
+                    <select class="hr-p2 hr-select" onchange="hrUpdateHcp(this)">${playerOpts(players)}</select>
+                </div>
+                <div class="hr-hcp-display">Combined Hcp: <span class="hr-hcp-val">--</span></div>
+            </div>`;
+        }
+
+        let slots = '';
+        for (let i = 0; i < 3; i++) slots += teamSlot('A', i);
+        for (let i = 0; i < 3; i++) slots += teamSlot('B', i);
+
+        let holeOpts = '';
+        for (let h = 1; h <= 18; h++) holeOpts += `<option value="${h}" ${race.startingHole === h ? 'selected' : ''}>Hole ${h}</option>`;
+
+        return `<div class="hr-container">
+            <div class="hr-header">
+                <button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
+                <h2>${race.name} — Setup</h2>
+            </div>
+            <div class="hr-section">
+                <label class="hr-label">Starting Hole</label>
+                <select id="hr-starting-hole" class="hr-select-hole">${holeOpts}</select>
+            </div>
+            <div class="hr-section">
+                <div class="hr-section-title">Teams (3 per side, 6 total)</div>
+                ${slots}
+            </div>
+            <button class="hr-btn-primary hr-btn-full" onclick="hrSaveSetup()">Start Race →</button>
+        </div>`;
+    }
+
+    function renderHRScoring(race) {
+        const rn = race.currentRound;
+        const holeNum = hrActualHole(race, rn);
+        const holeInfo = getHoleInfo(holeNum);
+        const activeTeams = race.teams.filter(t => race.activeTeamIds.includes(t.id));
+        const roundNames = { 1: '1st Round', 2: '2nd Round', 3: 'Final Round' };
+        const elimAfter = rn < 3 ? `${activeTeams.length - (rn === 1 ? 4 : 2)} eliminated after this hole` : 'Winner earns the Smashters point';
+
+        let rows = '';
+        activeTeams.forEach(team => {
+            const color = team.smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            const name = hrTeamDisplayName(race, team.id);
+            const strokes = getStrokesOnHole(team.hcp, holeInfo.hcp);
+            const existing = race.rounds[rn].scores[team.id] ?? holeInfo.par;
+            rows += `<div class="hr-score-row">
+                <div class="hr-score-team">
+                    <span class="hr-team-dot" style="background:${color}"></span>
+                    <div>
+                        <div class="hr-score-team-name">${name}</div>
+                        <div class="hr-score-team-hcp">Hcp ${team.hcp}${strokes > 0 ? ` · ${strokes} stroke${strokes > 1 ? 's' : ''}` : ''}</div>
+                    </div>
+                </div>
+                <div class="hr-score-entry">
+                    <button class="hr-score-btn" onclick="hrAdjScore('${team.id}',-1)">−</button>
+                    <input class="hr-score-input" data-team-id="${team.id}" type="number" min="1" max="15" value="${existing}" inputmode="numeric">
+                    <button class="hr-score-btn" onclick="hrAdjScore('${team.id}',1)">+</button>
+                </div>
+            </div>`;
+        });
+
+        return `<div class="hr-container">
+            <div class="hr-header">
+                <button class="hr-back-btn" onclick="hrBackHome()">← Back</button>
+                <h2>${race.name}</h2>
+            </div>
+            <div class="hr-round-info">
+                <div class="hr-round-label">${roundNames[rn]}</div>
+                <div class="hr-hole-info">Hole ${holeNum} · Par ${holeInfo.par} · Hcp Rank ${holeInfo.hcp}</div>
+                <div class="hr-elim-info">${elimAfter}</div>
+            </div>
+            <div class="hr-scores-list">${rows}</div>
+            <button class="hr-btn-primary hr-btn-full" onclick="hrSubmitScores()">Complete Round →</button>
+        </div>`;
+    }
+
+    function renderHRChipoff(race) {
+        const rn = race.currentRound;
+        const chipData = race.rounds[rn]._chipoffData;
+        if (!chipData) return `<div class="hr-container">${renderHRHome()}</div>`;
+        const holeNum = hrActualHole(race, rn);
+        const roundNames = { 1: '1st Round', 2: '2nd Round', 3: 'Final Round' };
+
+        let clearHtml = '';
+        if (chipData.clearSurvivors.length > 0) {
+            clearHtml = `<div class="hr-clear-section">
+                <div class="hr-clear-label">Already through:</div>
+                ${chipData.clearSurvivors.map(tid => `<div class="hr-clear-team">${hrTeamDisplayName(race, tid)}</div>`).join('')}
+            </div>`;
+        }
+
+        let tiedHtml = '';
+        chipData.tiedTeams.forEach(teamId => {
+            const team = race.teams.find(t => t.id === teamId);
+            const color = team?.smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
+            tiedHtml += `<label class="hr-chipoff-option">
+                <input type="checkbox" class="hr-chipoff-check" value="${teamId}">
+                <span class="hr-team-dot" style="background:${color}"></span>
+                <span>${hrTeamDisplayName(race, teamId)}</span>
+            </label>`;
+        });
+
+        return `<div class="hr-container">
+            <div class="hr-header">
+                <h2>${race.name} — Chip-Off</h2>
+            </div>
+            <div class="hr-round-info">
+                <div class="hr-round-label">${roundNames[rn]} · Hole ${holeNum}</div>
+                <div class="hr-elim-info">Tie! Select ${chipData.spotsLeft} team${chipData.spotsLeft > 1 ? 's' : ''} to advance</div>
+            </div>
+            ${clearHtml}
+            <div class="hr-chipoff-list">${tiedHtml}</div>
+            <button class="hr-btn-primary hr-btn-full" onclick="hrSubmitChipoff()">Confirm →</button>
+        </div>`;
+    }
 
     init();
     </script>
