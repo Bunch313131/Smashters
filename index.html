@@ -4082,7 +4082,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.7.0';
+    const APP_VERSION = '2.7.1';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -9872,18 +9872,20 @@
             if (progress >= 0.5 && !audioFading) {
                 audioFading = true;
                 SplashAudio.fadeOut(2000);
-                // Fade fire sound over 1.2s so it's gone by the time the burn finishes
+                // Fade fire sound via setInterval (more reliable than rAF on iOS PWA)
                 if (fireAudio) {
-                    const fadeDur = 1200;
-                    const fadeStart = performance.now();
+                    const steps = 24;
+                    const stepMs = 50; // 24 steps × 50ms = 1200ms total
                     const startVol = fireAudio.volume;
-                    const fadeFireAudio = (now) => {
-                        const p = Math.min((now - fadeStart) / fadeDur, 1);
-                        fireAudio.volume = Math.max(0, startVol * (1 - p));
-                        if (p < 1) requestAnimationFrame(fadeFireAudio);
-                        else { try { fireAudio.pause(); } catch(e) {} }
-                    };
-                    requestAnimationFrame(fadeFireAudio);
+                    let step = 0;
+                    const fadeTimer = setInterval(() => {
+                        step++;
+                        fireAudio.volume = Math.max(0, startVol * (1 - step / steps));
+                        if (step >= steps) {
+                            clearInterval(fadeTimer);
+                            try { fireAudio.pause(); } catch(e) {}
+                        }
+                    }, stepMs);
                 }
             }
 
