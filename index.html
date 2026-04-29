@@ -6563,7 +6563,16 @@
 
                 ${canEdit ? `<button class="scoring-clear-btn" onclick="clearHoleScores(${hole})">Clear Hole ${hole} Scores</button>` : ''}
 
-                    ${status.isComplete ? '<div style="padding:12px;text-align:center;color:var(--masters-green);font-weight:bold;">Match Complete &mdash; ' + status.text + '</div>' : ''}
+                    ${status.isComplete ? (() => {
+                        const winTeam = status.leader;
+                        const winName = winTeam === 'A' ? S.config.teamA.name : winTeam === 'B' ? S.config.teamB.name : null;
+                        const winColor = winTeam === 'A' ? S.config.teamA.color : winTeam === 'B' ? S.config.teamB.color : null;
+                        const bgStyle = winColor
+                            ? `background:linear-gradient(to ${winTeam === 'A' ? 'left' : 'right'},${winColor} 0%,color-mix(in srgb,${winColor} 70%,#000) 100%);color:#fff;`
+                            : 'background:var(--masters-green);color:#fff;';
+                        const label = winName ? `${winName} wins &mdash; ${status.text}` : `Tied &mdash; ${status.text}`;
+                        return `<div style="padding:12px;text-align:center;font-weight:bold;border-radius:6px;margin:4px 0;${bgStyle}">Match Complete &mdash; ${label}</div>`;
+                    })() : ''}
                 </div>`;
         } catch (error) {
             console.error('Scoring interface render error:', error);
@@ -9624,6 +9633,11 @@
     }
 
     function startBurnEffect(phase2El) {
+        // Play fire crackling sound for the burn effect
+        const fireAudio = new Audio('assets/audio/soundreality-fire-sound-334130.mp3');
+        fireAudio.volume = 0.7;
+        fireAudio.play().catch(() => {});
+
         const canvas = document.getElementById('burnCanvas');
         const ctx = canvas.getContext('2d');
         const W = window.innerWidth;
@@ -9843,6 +9857,17 @@
             if (progress >= 0.8 && !audioFading) {
                 audioFading = true;
                 SplashAudio.fadeOut(2000);
+                // Fade out fire sound too
+                const fadeDur = 2000;
+                const fadeStart = performance.now();
+                const startVol = fireAudio.volume;
+                const fadeFireAudio = (now) => {
+                    const p = Math.min((now - fadeStart) / fadeDur, 1);
+                    fireAudio.volume = Math.max(0, startVol * (1 - p));
+                    if (p < 1) requestAnimationFrame(fadeFireAudio);
+                    else { try { fireAudio.pause(); } catch(e) {} }
+                };
+                requestAnimationFrame(fadeFireAudio);
             }
 
             if (progress < 1 || embers.length > 0 || flames.length > 0) {
@@ -9853,6 +9878,7 @@
                 ctx.clearRect(0, 0, W, H);
                 canvas.width = 0;
                 SplashAudio.stop();
+                try { fireAudio.pause(); } catch(e) {}
                 canvas.height = 0;
             }
         }
