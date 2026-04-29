@@ -4152,7 +4152,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.8.6';
+    const APP_VERSION = '2.8.7';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -12549,9 +12549,11 @@
 
     function hrDeleteRace(raceId) {
         if (!requireAdmin('delete this race')) return;
+        const race = (S.horseRaces || []).find(r => r.id === raceId);
+        if (race?.bonusEventId) delete S.bonusEvents[race.bonusEventId];
         S.horseRaces = (S.horseRaces || []).filter(r => r.id !== raceId);
         if (S.ui.activeHorseRaceId === raceId) S.ui.activeHorseRaceId = null;
-        scheduleSave(true);
+        saveState();
         renderTab('horserace');
     }
 
@@ -12754,6 +12756,7 @@
             order: maxOrder + 1,
         };
         race.pointAwarded = true;
+        race.bonusEventId = id;
         saveState();
         renderTab('horserace');
         showToast('Point awarded and added to leaderboard!');
