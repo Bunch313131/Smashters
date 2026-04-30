@@ -3803,6 +3803,9 @@
         /* ── HORSE RACE MODULE ───────────────────────────── */
         /* Home list */
         .hr-home-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .hr-home-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .hr-logo-empty { position: relative; height: 220px; display: flex; align-items: center; justify-content: center; }
+        .hr-logo-bg { position: absolute; inset: 0; background: url('assets/images/Phone Size DFCG No Background.png') center/contain no-repeat; opacity: 0.18; }
         .hr-new-btn { background: var(--masters-green); color: var(--masters-white); border: none; border-radius: 6px; padding: 9px 16px; font-size: 0.9rem; font-weight: bold; cursor: pointer; letter-spacing: 0.02em; }
         .hr-empty { color: rgba(255,255,255,0.5); text-align: center; padding: 40px 20px; font-size: 0.95rem; }
         .hr-race-card { background: var(--masters-white); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-bottom: 12px; overflow: hidden; }
@@ -4152,7 +4155,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.8.9';
+    const APP_VERSION = '2.9.0';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -12909,12 +12912,14 @@
 
     function renderHRHome() {
         const races = S.horseRaces || [];
-        let html = `<h2 class="section-title">🏇 Horse Race</h2>
-            <div class="hr-home-actions">
+        let html = `<div class="hr-home-header">
+                <h2 class="section-title" style="margin:0">🏇 Horse Race</h2>
                 <button class="hr-new-btn" onclick="hrNewRace()">+ New Race</button>
             </div>`;
         if (races.length === 0) {
-            html += `<div class="hr-empty">No races yet. Tap "+ New Race" to begin.</div>`;
+            html += `<div class="hr-logo-empty">
+                <div class="hr-logo-bg"></div>
+            </div>`;
         } else {
             races.slice().reverse().forEach(race => {
                 const isComplete = race.status === 'complete';
