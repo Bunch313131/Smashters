@@ -4209,7 +4209,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.1.0';
+    const APP_VERSION = '3.1.1';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -4490,7 +4490,7 @@
         if (score <= par - 3)      { type = 'albatross';  icon = '🦅🦅'; text = 'ALBATROSS!!'; }
         else if (score === par - 2) { type = 'eagle';      icon = '🦅';   text = 'EAGLE!'; }
         else if (score === par - 1) { type = 'birdie';     icon = '🐦';   text = 'BIRDIE!'; }
-        else if (score === par + 2) { type = 'dbl_bogey';  icon = dfIcon; text = 'Double Bogey'; }
+        else if (score === 8)       { type = 'snowman';    icon = '⛄';   text = 'SNOWMAN!'; }
         else if (score >= par + 3)  { type = 'triple';     icon = dfIcon; text = 'Triple Bogey+'; }
         else return;
 
