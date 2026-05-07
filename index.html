@@ -811,85 +811,96 @@
             overflow: hidden;
         }
 
-        .scoring-header {
+        /* Match picker pill */
+        .scoring-match-pill-row {
+            display: flex;
+            justify-content: center;
+            margin: 4px 0 14px;
+        }
+        .scoring-match-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border: 1.5px solid var(--masters-green);
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--masters-green);
+            cursor: pointer;
+            max-width: 92%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .scoring-match-pill .caret { font-size: 0.8rem; opacity: 0.7; flex-shrink: 0; }
+
+        /* Combined scoring bar */
+        .scoring-combined-bar {
+            display: grid;
+            grid-template-columns: 40px 1fr 40px;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 10px;
             background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
             color: var(--masters-white);
-            padding: 6px 12px;
-            text-align: center;
+            border-bottom: 2px solid rgba(251,243,8,0.35);
             position: relative;
-            border-bottom: 1px solid rgba(251,243,8,0.3);
         }
+        .scoring-bar-center { text-align: center; }
+        .scoring-bar-eyebrow {
+            font-size: 0.66rem;
+            font-weight: 700;
+            color: var(--masters-gold);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+        .scoring-bar-primary {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--masters-white);
+            margin-top: 3px;
+        }
+        .scoring-bar-meta {
+            font-size: 0.64rem;
+            color: rgba(255,255,255,0.78);
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            margin-top: 3px;
+        }
+        .scoring-nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+            border: none;
+            color: var(--masters-white);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .scoring-nav-btn:hover { background: rgba(255,255,255,0.3); }
+        .scoring-nav-btn:disabled { opacity: 0.3; cursor: default; }
         .scoring-lock-btn {
             position: absolute;
-            right: 12px;
+            right: 50px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             color: rgba(255,255,255,0.6);
-            font-size: 1.1rem;
+            font-size: 1rem;
             cursor: pointer;
-            padding: 6px 8px;
+            padding: 4px 6px;
             border-radius: 6px;
             transition: color 0.2s, background 0.2s;
         }
         .scoring-lock-btn:hover { color:#fff; background:rgba(255,255,255,0.12); }
-
-        .scoring-header .match-label {
-            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 0.65rem;
-            color: var(--masters-gold);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .scoring-header .match-status-lg {
-            font-size: 0.95rem;
-            font-weight: bold;
-            margin: 1px 0;
-        }
-
-        .scoring-hole-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px 12px;
-            background: var(--masters-dark);
-            color: var(--masters-white);
-            gap: 16px;
-        }
-
-        .scoring-hole-nav .hole-info {
-            text-align: center;
-        }
-
-        .scoring-hole-nav .hole-num {
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-        .scoring-hole-nav .hole-details {
-            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 0.65rem;
-            color: var(--masters-gold);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .hole-nav-btn {
-            background: rgba(255,255,255,0.15);
-            border: none;
-            color: var(--masters-white);
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            font-size: 1.3rem;
-            cursor: pointer;
-            transition: var(--transition);
-            flex-shrink: 0;
-        }
-        .hole-nav-btn:hover { background: rgba(255,255,255,0.25); }
-        .hole-nav-btn:disabled { opacity: 0.3; cursor: default; }
 
         /* Score entry rows */
         .scoring-team-section {
@@ -4198,7 +4209,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.0.8';
+    const APP_VERSION = '3.0.9';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -4543,6 +4554,36 @@
 
     function closeModal() {
         document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    function openMatchPickerSheet() {
+        const allMatches = (LiveSync.isScorer && LiveSync.scorerMatchId !== null)
+            ? Object.values(S.matches).filter(m => m.id === LiveSync.scorerMatchId)
+            : Object.values(S.matches);
+        const sessions = S.config.sessions.slice().sort((a, b) => a.order - b.order);
+        const sessionsWithMatches = sessions.filter(s => allMatches.some(m => m.sessionId === s.id));
+        const matchesToShow = sessionsWithMatches.length > 1
+            ? allMatches.filter(m => m.sessionId === S.ui.scoringSessionFilter)
+            : allMatches;
+
+        let body = '<div style="display:flex;flex-direction:column;gap:8px;">';
+        matchesToShow.forEach(m => {
+            const status = getMatchPlayStatus(m);
+            const nameA = m.teamA.map(id => getPlayerName(id)).join(' / ');
+            const nameB = m.teamB.map(id => getPlayerName(id)).join(' / ');
+            const isSelected = S.ui.activeMatchId === m.id;
+            const statusLabel = status.isComplete ? status.text : status.holesPlayed > 0 ? `${status.text} · Thru ${status.holesPlayed}` : m.teeTime || 'Not started';
+            body += `<button onclick="selectScoringMatch('${m.id}');closeModal();"
+                style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:8px;border:1.5px solid ${isSelected ? 'var(--masters-green)' : '#eee'};background:${isSelected ? 'rgba(0,103,71,0.06)' : '#fff'};cursor:pointer;width:100%;text-align:left;gap:8px;">
+                <div style="min-width:0;">
+                    <div style="font-size:0.9rem;font-weight:700;color:var(--masters-black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nameA}</div>
+                    <div style="font-size:0.75rem;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">vs ${nameB}</div>
+                </div>
+                <div style="font-size:0.72rem;color:${isSelected ? 'var(--masters-green)' : '#999'};font-weight:600;white-space:nowrap;flex-shrink:0;">${statusLabel}</div>
+            </button>`;
+        });
+        body += '</div>';
+        openModal('Select Match', body);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -6443,18 +6484,18 @@
             saveState(true);
         }
 
-        // Match selector - compact initial buttons
-        html += '<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">';
-        matchesToShow.forEach(m => {
-            const getInitials = (name) => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-            const teamAInits = m.teamA.map(id => getInitials(getPlayerName(id))).join('/');
-            const teamBInits = m.teamB.map(id => getInitials(getPlayerName(id))).join('/');
-            const isSelected = S.ui.activeMatchId === m.id;
-            const status = getMatchPlayStatus(m);
-            const btnClass = isSelected ? 'btn-primary' : 'btn-outline';
-            html += `<button class="btn ${btnClass}" onclick="selectScoringMatch('${m.id}')" style="flex:1;min-width:0;padding:6px 8px;font-size:0.75rem;white-space:nowrap;">${teamAInits} v ${teamBInits}</button>`;
-        });
-        html += '</div>';
+        // Match selector pill
+        const activeMatch = matchesToShow.find(m => m.id === S.ui.activeMatchId);
+        const pillLabel = activeMatch
+            ? activeMatch.teamA.map(id => getPlayerName(id)).join(' / ') + ' vs ' + activeMatch.teamB.map(id => getPlayerName(id)).join(' / ')
+            : 'Select Match';
+        const showCaret = matchesToShow.length > 1;
+        html += `<div class="scoring-match-pill-row">
+            <button class="scoring-match-pill" onclick="${showCaret ? 'openMatchPickerSheet()' : ''}">
+                <span>${pillLabel}</span>
+                ${showCaret ? '<span class="caret">▾</span>' : ''}
+            </button>
+        </div>`;
 
             if (S.ui.activeMatchId && S.matches[S.ui.activeMatchId]) {
                 html += renderScoringInterface(S.matches[S.ui.activeMatchId]);
@@ -6671,20 +6712,24 @@
             holeStrip += `<div class="hole-dot ${cls}" onclick="jumpToHole(${h})">${h}</div>`;
         }
 
+        const session = S.config.sessions.find(s => s.id === match.sessionId);
+        const sessionName = session?.name || '';
+        const formatLabel = match.type === 'fourball' ? 'Four Ball' : match.type === 'foursomes' ? 'Foursomes' : 'Singles';
+        const eyebrow = `${formatLabel} &middot; ${sessionName}`;
+        const primary = `Hole ${hole} &middot; ${statusText}`;
+        const meta = `Par ${holeInfo.par} &middot; HCP ${holeInfo.hcp} &middot; Thru ${status.holesPlayed}`;
+
         return `
             <div class="scoring-interface">
-                <div class="scoring-header">
-                    <div class="match-label">${match.type === 'fourball' ? 'Four Ball' : match.type === 'foursomes' ? 'Foursomes' : 'Singles'} &middot; Day ${match.day}</div>
-                    <div class="match-status-lg">${statusText}</div>
-                    ${!canEdit ? '<button class="scoring-lock-btn" onclick="enableScoring()" title="Unlock scoring">&#x1F512;</button>' : ''}
-                </div>
-                <div class="scoring-hole-nav">
-                    <button class="hole-nav-btn" onclick="prevHole()" ${hole <= 1 ? 'disabled' : ''}>&larr;</button>
-                    <div class="hole-info">
-                        <div class="hole-num">Hole ${hole}</div>
-                        <div class="hole-details">Par ${holeInfo.par} &middot; HCP ${holeInfo.hcp}</div>
+                <div class="scoring-combined-bar">
+                    <button class="scoring-nav-btn" onclick="prevHole()" ${hole <= 1 ? 'disabled' : ''}>&larr;</button>
+                    <div class="scoring-bar-center">
+                        <div class="scoring-bar-eyebrow">${eyebrow}</div>
+                        <div class="scoring-bar-primary">${primary}</div>
+                        <div class="scoring-bar-meta">${meta}</div>
                     </div>
-                    <button class="hole-nav-btn" onclick="nextHole()" ${hole >= 18 ? 'disabled' : ''}>&rarr;</button>
+                    <button class="scoring-nav-btn" onclick="nextHole()" ${hole >= 18 ? 'disabled' : ''}>&rarr;</button>
+                    ${!canEdit ? '<button class="scoring-lock-btn" onclick="enableScoring()" title="Unlock scoring">&#x1F512;</button>' : ''}
                 </div>
 
                 <div class="scoring-team-section">
