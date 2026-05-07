@@ -4191,7 +4191,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.0.6';
+    const APP_VERSION = '3.0.7';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -10492,11 +10492,11 @@
                     const [th, tm] = m.teeTime.split(':').map(Number);
                     const hr = th % 12 || 12;
                     const mins = String(tm).padStart(2, '0');
-                    centerContent = `<span style="display:block;text-align:center;font-size:1.4em;font-weight:900;line-height:0.95;letter-spacing:-1px;color:rgba(255,255,255,0.75);">${hr}</span><span style="display:block;text-align:center;font-size:1.4em;font-weight:900;line-height:0.95;letter-spacing:-1px;color:rgba(255,255,255,0.75);">${mins}</span>`;
+                    centerContent = `<span style="font-size:1.1em;font-weight:900;letter-spacing:-0.5px;color:rgba(255,255,255,0.75);">${hr}:${mins}</span>`;
                 }
                 html += `<div class="broadcast-match-row${status.isComplete ? ' complete' : ''}">
                     <div class="broadcast-match-teamA ${cellAClass}">${namesA}</div>
-                    <div class="broadcast-match-status" style="${status.holesPlayed === 0 && m.teeTime ? 'flex-direction:column;gap:0;' : ''}">${centerContent}</div>
+                    <div class="broadcast-match-status">${centerContent}</div>
                     <div class="broadcast-match-teamB ${cellBClass}">${namesB}</div>
                 </div>`;
             });
