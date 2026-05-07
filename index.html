@@ -2563,6 +2563,9 @@
             border-radius: 8px 8px 0 0;
             text-shadow: 0 1px 3px rgba(0,0,0,0.4);
             border-bottom: 2px solid rgba(251,243,8,0.35);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         /* ── Match rows (leaderboard-style) ── */
@@ -2827,6 +2830,7 @@
             min-height: clamp(32px, 4vh, 44px);
             border-radius: 0 0 8px 8px;
             overflow: hidden;
+            border-top: 2px solid rgba(251,243,8,0.35);
         }
         .broadcast-subtotal-cell {
             display: flex;
@@ -2838,11 +2842,11 @@
         }
         .broadcast-subtotal-cell.team-a {
             justify-content: flex-end;
-            background: var(--team-a-color);
+            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 70%, #000) 100%);
         }
         .broadcast-subtotal-cell.team-b {
             justify-content: flex-start;
-            background: var(--team-b-color);
+            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 70%, #000) 100%);
         }
         .broadcast-subtotal-cell .sub-label {
             font-size: clamp(7px, 0.9vw, 11px);
@@ -2859,7 +2863,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #4a4a4a;
+            background: #2a2a2a;
             color: var(--masters-yellow);
             font-size: clamp(7px, 0.8vw, 10px);
             font-weight: 600;
@@ -4187,7 +4191,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.0.5';
+    const APP_VERSION = '3.0.6';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -10414,7 +10418,7 @@
 
         initBroadcastEmboss();
         const scores = getTeamScores();
-        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
+        const sessions = S.config.sessions.slice().sort((a, b) => b.order - a.order);
 
         // Header
         document.getElementById('broadcastEventName').textContent = S.config.eventName || 'Smashters';
@@ -10451,8 +10455,9 @@
             if (matches.length === 0 && sessionBonuses.length === 0) return;
 
             const formatLabel = { fourball: 'Four Ball', foursomes: 'Foursomes', singles: 'Singles', other: 'Other' }[session.format] || 'Match';
+            const sessionDayLabel = session.date ? `<span style="font-weight:400;letter-spacing:normal;text-transform:none;">${new Date(session.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' })}</span>` : '';
             html += `<div class="broadcast-session-group" data-group-index="${sessionGroupIndex++}">`;
-            html += `<div class="broadcast-session-label">${session.name} &mdash; ${formatLabel}</div>`;
+            html += `<div class="broadcast-session-label"><span>${session.name} &mdash; ${formatLabel}</span>${sessionDayLabel}</div>`;
             matches.forEach(m => {
                 allMatches.push(m);
                 const status = getMatchPlayStatus(m);
@@ -10482,9 +10487,16 @@
                     cellBClass = 'pending';
                 }
 
+                let centerContent = statusText;
+                if (status.holesPlayed === 0 && m.teeTime) {
+                    const [th, tm] = m.teeTime.split(':').map(Number);
+                    const hr = th % 12 || 12;
+                    const mins = String(tm).padStart(2, '0');
+                    centerContent = `<span style="display:block;text-align:center;font-size:1.4em;font-weight:900;line-height:0.95;letter-spacing:-1px;color:rgba(255,255,255,0.75);">${hr}</span><span style="display:block;text-align:center;font-size:1.4em;font-weight:900;line-height:0.95;letter-spacing:-1px;color:rgba(255,255,255,0.75);">${mins}</span>`;
+                }
                 html += `<div class="broadcast-match-row${status.isComplete ? ' complete' : ''}">
                     <div class="broadcast-match-teamA ${cellAClass}">${namesA}</div>
-                    <div class="broadcast-match-status">${statusText}</div>
+                    <div class="broadcast-match-status" style="${status.holesPlayed === 0 && m.teeTime ? 'flex-direction:column;gap:0;' : ''}">${centerContent}</div>
                     <div class="broadcast-match-teamB ${cellBClass}">${namesB}</div>
                 </div>`;
             });
@@ -10504,7 +10516,7 @@
                 html += `<div class="broadcast-bonus-label">${evt.name}</div>`;
                 html += `<div class="broadcast-match-row broadcast-bonus-row">
                     <div class="broadcast-match-teamA ${cellAClass}">${ptsA > 0 ? formatScore(ptsA) + ' pts' : ''}${noteA}</div>
-                    <div class="broadcast-match-status">&#9733;</div>
+                    <div class="broadcast-match-status" style="color:rgba(255,255,255,0.75);">&#9733;</div>
                     <div class="broadcast-match-teamB ${cellBClass}">${ptsB > 0 ? formatScore(ptsB) + ' pts' : ''}${noteB}</div>
                 </div>`;
             });
@@ -10546,7 +10558,7 @@
                 html += `<div class="broadcast-bonus-label">${evt.name}</div>`;
                 html += `<div class="broadcast-match-row broadcast-bonus-row">
                     <div class="broadcast-match-teamA ${cellAClass}">${ptsA > 0 ? formatScore(ptsA) + ' pts' : ''}${noteA}</div>
-                    <div class="broadcast-match-status">&#9733;</div>
+                    <div class="broadcast-match-status" style="color:rgba(255,255,255,0.75);">&#9733;</div>
                     <div class="broadcast-match-teamB ${cellBClass}">${ptsB > 0 ? formatScore(ptsB) + ' pts' : ''}${noteB}</div>
                 </div>`;
             });
