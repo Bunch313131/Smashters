@@ -4155,7 +4155,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.9.5';
+    const APP_VERSION = '2.9.6';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -5605,8 +5605,14 @@
         const isPending = status.holesPlayed === 0;
 
         // Thru / Final indicator for center column
-        const thru = isPending ? '' :
-            status.isComplete ? 'F' : status.holesPlayed;
+        let thru = '', thruStyle = '';
+        if (!isPending) {
+            thru = status.isComplete ? 'F' : status.holesPlayed;
+        } else if (match.teeTime) {
+            const [th, tm] = match.teeTime.split(':').map(Number);
+            thru = `${th % 12 || 12}:${String(tm).padStart(2,'0')}${th < 12 ? 'a' : 'p'}`;
+            thruStyle = 'font-size:0.6rem;letter-spacing:0;line-height:1.1;';
+        }
 
         // Cell state classes
         let cellAClass = 'pending', cellBClass = 'pending';
@@ -5645,7 +5651,7 @@
                             ${scoreA ? `<span class="lb-match-score">${scoreA}</span>` : ''}
                             <span class="lb-player-name">${teamANames}</span>
                         </div>
-                        <div class="lb-cell-thru">${thru}</div>
+                        <div class="lb-cell-thru"${thruStyle ? ` style="${thruStyle}"` : ''}>${thru}</div>
                         <div class="lb-cell-b ${cellBClass}">
                             <span class="lb-player-name">${teamBNames}</span>
                             ${scoreB ? `<span class="lb-match-score">${scoreB}</span>` : ''}
