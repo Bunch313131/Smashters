@@ -52,7 +52,7 @@
             --masters-black: #1a1a1a;
             --team-a-color: #CE1141;
             --team-b-color: #004F9E;
-            --center-column-width: 76px;
+            --center-column-width: 56px;
             --birdie-color: #CE1141;
             --eagle-color: #C8A951;
             --bogey-color: #006747;
@@ -518,18 +518,6 @@
             letter-spacing: 1px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
-        .tee-time-chip {
-            background: #f1ede0;
-            border: 1px solid #d8d2bd;
-            border-radius: 999px;
-            padding: 3px 8px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #2a2a2a;
-            font-variant-numeric: tabular-nums;
-            white-space: nowrap;
-        }
-
         /* ═══════════════════════════════════════════════════════
            EXPANDABLE MATCH DETAILS (SLIDE DOWN)
            ═══════════════════════════════════════════════════════ */
@@ -764,7 +752,7 @@
 
         @media (max-width: 600px) {
             :root {
-                --center-column-width: 76px;
+                --center-column-width: 56px;
             }
             .lb-match-row {
                 font-size: 0.85rem;
@@ -1102,7 +1090,7 @@
         @media (max-width: 768px) {
             body.has-bottom-nav .mobile-menu .tab-btn[data-tab="leaderboard"],
             body.has-bottom-nav .mobile-menu .tab-btn[data-tab="scoring"],
-            body.has-bottom-nav .mobile-menu .tab-btn[data-tab="matches"] { display:none; }
+            body.has-bottom-nav .mobile-menu .tab-btn[data-tab="individual"] { display:none; }
         }
 
         .best-ball-indicator {
@@ -4067,9 +4055,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Scoring
         </button>
-        <button class="bottom-nav-btn" data-tab="matches">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Matches
+        <button class="bottom-nav-btn" data-tab="individual">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Stats
         </button>
         <button class="bottom-nav-btn" id="bottomNavMore">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -5715,7 +5703,7 @@
             const [th, tm] = match.teeTime.split(':').map(Number);
             const hr = th % 12 || 12;
             const mins = String(tm).padStart(2, '0');
-            thru = `<div class="tee-time-chip">${hr}:${mins}</div>`;
+            thru = `${hr}:${mins}`;
         }
 
         // Cell state classes
