@@ -4156,7 +4156,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.9.8';
+    const APP_VERSION = '2.9.9';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -5691,7 +5691,7 @@
                         ${ptsA > 0 ? `<span class="lb-match-score">${formatScore(ptsA)}</span>` : ''}
                         <span class="lb-player-name">${S.config.teamA.name}${notesAHtml}</span>
                     </div>
-                    <div class="lb-cell-thru" style="font-size:0.6rem;">&#9733;</div>
+                    <div class="lb-cell-thru" style="font-size:0.6rem;color:rgba(255,255,255,0.55);">&#9733;</div>
                     <div class="lb-cell-b ${cellBClass}">
                         <span class="lb-player-name">${S.config.teamB.name}${notesBHtml}</span>
                         ${ptsB > 0 ? `<span class="lb-match-score">${formatScore(ptsB)}</span>` : ''}
