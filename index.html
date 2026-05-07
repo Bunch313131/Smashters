@@ -4156,7 +4156,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.0.1';
+    const APP_VERSION = '3.0.2';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -5613,8 +5613,8 @@
             const [th, tm] = match.teeTime.split(':').map(Number);
             const hr = th % 12 || 12;
             const mins = String(tm).padStart(2, '0');
-            thru = `<span style="font-size:1.9rem;font-weight:900;line-height:0.95;letter-spacing:-2px;color:rgba(255,255,255,0.25);">${hr}</span><span style="font-size:1.9rem;font-weight:900;line-height:0.95;letter-spacing:-2px;color:rgba(255,255,255,0.25);">${mins}</span>`;
-            thruStyle = 'flex-direction:column;gap:0;';
+            thru = `<span style="display:block;width:100%;text-align:center;font-size:1.5rem;font-weight:900;line-height:1;letter-spacing:-1px;color:rgba(255,255,255,0.5);">${hr}</span><span style="display:block;width:100%;text-align:center;font-size:1.5rem;font-weight:900;line-height:1;letter-spacing:-1px;color:rgba(255,255,255,0.5);">${mins}</span>`;
+            thruStyle = 'flex-direction:column;gap:0;padding:0;';
         }
 
         // Cell state classes
