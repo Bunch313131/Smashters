@@ -4155,7 +4155,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.9.2';
+    const APP_VERSION = '2.9.3';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -5325,11 +5325,78 @@
         }
 
         const scores = getTeamScores();
-        let html = '';
 
-        // Loop through sessions dynamically
-        const sessions = S.config.sessions.sort((a, b) => a.order - b.order);
-        sessions.forEach((session, index) => {
+        // Sessions sorted most-recent-first for display
+        const sessions = S.config.sessions.slice().sort((a, b) => b.order - a.order);
+
+        // Build breakdown strings (ascending order for readability)
+        let sessionBreakdownA = '', sessionBreakdownB = '';
+        let breakdownParts = 0;
+        S.config.sessions.slice().sort((a, b) => a.order - b.order).forEach(session => {
+            const sessionMatches = getMatchesBySession(session.id);
+            const sessionBonuses = Object.values(S.bonusEvents).filter(evt => evt.sessionId === session.id);
+            if (sessionMatches.length > 0 || sessionBonuses.length > 0) {
+                const sessionScores = getSessionScores(session.id);
+                sessionBreakdownA += `${breakdownParts > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.A)}`;
+                sessionBreakdownB += `${breakdownParts > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.B)}`;
+                breakdownParts++;
+            }
+        });
+        let standaloneA = 0, standaloneB = 0;
+        Object.values(S.bonusEvents).filter(e => !e.sessionId).forEach(e => {
+            standaloneA += (e.pointsA || 0);
+            standaloneB += (e.pointsB || 0);
+        });
+        if (standaloneA > 0 || standaloneB > 0) {
+            sessionBreakdownA += `${breakdownParts > 0 ? ' | ' : ''}Bonus: ${formatScore(standaloneA)}`;
+            sessionBreakdownB += `${breakdownParts > 0 ? ' | ' : ''}Bonus: ${formatScore(standaloneB)}`;
+        }
+
+        // Get projected scores
+        const projected = getProjectedTeamScores();
+        const showProjected = projected.hasProjections && (projected.A !== scores.A || projected.B !== scores.B);
+
+        // Leaderboard totals bar — always at the top
+        let html = `
+            <div class="lb-board">
+                <div class="lb-section-header" style="text-align:center;">Leaderboard</div>
+                <div class="lb-totals-row">
+                    <div class="lb-totals-a">
+                        <span class="lb-total-team-name">${S.config.teamA.name}</span>
+                        <span class="lb-total-pts" data-animate-score="${scores.A}" data-counter-id="total-a">${formatScore(scores.A)}</span>
+                    </div>
+                    <div class="lb-totals-center">
+                        <img src="assets/images/smashters-logo-green.png" alt="" style="filter:brightness(0) invert(1);">
+                    </div>
+                    <div class="lb-totals-b">
+                        <span class="lb-total-pts" data-animate-score="${scores.B}" data-counter-id="total-b">${formatScore(scores.B)}</span>
+                        <span class="lb-total-team-name">${S.config.teamB.name}</span>
+                    </div>
+                </div>`;
+        if (sessionBreakdownA && sessionBreakdownB) {
+            html += `
+                <div class="lb-breakdown-row">
+                    <div class="lb-breakdown-side">${sessionBreakdownA}</div>
+                    <div class="lb-breakdown-side">${sessionBreakdownB}</div>
+                </div>`;
+        }
+        if (showProjected) {
+            html += `
+                <div class="lb-projected-row">
+                    <div class="lb-projected-side">
+                        <span class="lb-projected-label">Projected:</span>
+                        <span class="lb-projected-value">${formatScore(projected.A)}</span>
+                    </div>
+                    <div class="lb-projected-side">
+                        <span class="lb-projected-value">${formatScore(projected.B)}</span>
+                        <span class="lb-projected-label">Projected:</span>
+                    </div>
+                </div>`;
+        }
+        html += `</div>`;
+
+        // Sessions — most recent first
+        sessions.forEach(session => {
             const matches = getMatchesBySession(session.id);
             const sessionBonuses = Object.values(S.bonusEvents)
                 .filter(evt => evt.sessionId === session.id)
@@ -5343,11 +5410,15 @@
                     other: 'Other'
                 }[session.format] || 'Match';
 
-                html += `<div class="lb-board" ${index > 0 ? 'style="margin-top:16px;"' : ''}>`;
-                html += `<div class="lb-section-header">${session.name} &mdash; ${formatLabel}</div>`;
+                const dateHtml = session.date
+                    ? `<span style="font-weight:400;letter-spacing:normal;text-transform:none;">${session.date}</span>`
+                    : '';
+
+                html += `<div class="lb-board" style="margin-top:16px;">`;
+                html += `<div class="lb-section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    <span>${session.name} &mdash; ${formatLabel}</span>${dateHtml}</div>`;
                 html += matches.map(m => renderLeaderboardMatch(m)).join('');
                 sessionBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
-                // Session subtotal row (mini totals bar)
                 const sessScores = getSessionScores(session.id);
                 html += `<div class="session-subtotal-row" style="display:grid;grid-template-columns:1fr var(--center-column-width) 1fr;min-height:38px;border-top:2px solid rgba(251,243,8,0.35);">
                     <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:linear-gradient(to left,${S.config.teamA.color} 0%,color-mix(in srgb,${S.config.teamA.color} 70%,#000) 100%);color:#fff;font-weight:700;">
@@ -5364,7 +5435,7 @@
             }
         });
 
-        // Standalone bonus events (no session tie)
+        // Standalone bonus events
         const standaloneBonuses = Object.values(S.bonusEvents)
             .filter(evt => !evt.sessionId)
             .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -5372,7 +5443,6 @@
             html += `<div class="lb-board" style="margin-top:16px;">`;
             html += `<div class="lb-section-header">Bonus Events</div>`;
             standaloneBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
-            // Bonus events subtotal
             let bonusA = 0, bonusB = 0;
             standaloneBonuses.forEach(e => { bonusA += (e.pointsA || 0); bonusB += (e.pointsB || 0); });
             html += `<div class="session-subtotal-row" style="display:grid;grid-template-columns:1fr var(--center-column-width) 1fr;min-height:38px;border-top:2px solid rgba(251,243,8,0.35);">
@@ -5388,79 +5458,6 @@
             </div>`;
             html += `</div>`;
         }
-
-        // Build session subtotals breakdown
-        let sessionBreakdownA = '';
-        let sessionBreakdownB = '';
-        let breakdownParts = 0;
-        sessions.forEach(session => {
-            const matches = getMatchesBySession(session.id);
-            const sessionBonuses = Object.values(S.bonusEvents).filter(evt => evt.sessionId === session.id);
-            if (matches.length > 0 || sessionBonuses.length > 0) {
-                const sessionScores = getSessionScores(session.id);
-                sessionBreakdownA += `${breakdownParts > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.A)}`;
-                sessionBreakdownB += `${breakdownParts > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.B)}`;
-                breakdownParts++;
-            }
-        });
-        // Add standalone bonus subtotal
-        let standaloneA = 0, standaloneB = 0;
-        Object.values(S.bonusEvents).filter(e => !e.sessionId).forEach(e => {
-            standaloneA += (e.pointsA || 0);
-            standaloneB += (e.pointsB || 0);
-        });
-        if (standaloneA > 0 || standaloneB > 0) {
-            sessionBreakdownA += `${breakdownParts > 0 ? ' | ' : ''}Bonus: ${formatScore(standaloneA)}`;
-            sessionBreakdownB += `${breakdownParts > 0 ? ' | ' : ''}Bonus: ${formatScore(standaloneB)}`;
-        }
-
-        // Get projected scores
-        const projected = getProjectedTeamScores();
-        const showProjected = projected.hasProjections && (projected.A !== scores.A || projected.B !== scores.B);
-
-        // Team totals bar with subtotals and projections
-        html += `
-            <div class="lb-board" style="margin-top:16px;">
-                <div class="lb-section-header">Event Totals</div>
-                <div class="lb-totals-row">
-                    <div class="lb-totals-a">
-                        <span class="lb-total-team-name">${S.config.teamA.name}</span>
-                        <span class="lb-total-pts" data-animate-score="${scores.A}" data-counter-id="total-a">${formatScore(scores.A)}</span>
-                    </div>
-                    <div class="lb-totals-center">
-                        <img src="assets/images/smashters-logo-green.png" alt="" style="filter:brightness(0) invert(1);">
-                    </div>
-                    <div class="lb-totals-b">
-                        <span class="lb-total-pts" data-animate-score="${scores.B}" data-counter-id="total-b">${formatScore(scores.B)}</span>
-                        <span class="lb-total-team-name">${S.config.teamB.name}</span>
-                    </div>
-                </div>`;
-
-        // Session breakdown row
-        if (sessionBreakdownA && sessionBreakdownB) {
-            html += `
-                <div class="lb-breakdown-row">
-                    <div class="lb-breakdown-side">${sessionBreakdownA}</div>
-                    <div class="lb-breakdown-side">${sessionBreakdownB}</div>
-                </div>`;
-        }
-
-        // Projected totals row (if matches in progress)
-        if (showProjected) {
-            html += `
-                <div class="lb-projected-row">
-                    <div class="lb-projected-side">
-                        <span class="lb-projected-label">Projected:</span>
-                        <span class="lb-projected-value">${formatScore(projected.A)}</span>
-                    </div>
-                    <div class="lb-projected-side">
-                        <span class="lb-projected-value">${formatScore(projected.B)}</span>
-                        <span class="lb-projected-label">Projected:</span>
-                    </div>
-                </div>`;
-        }
-
-        html += `</div>`;
 
         if (allMatches.length === 0) {
             html += `<div class="empty-state mt-16"><p>No matches set up yet. Head to the <strong>Matches</strong> tab to create pairings.</p></div>`;
