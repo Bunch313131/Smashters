@@ -1088,6 +1088,7 @@
 
         /* Hide bottom-nav tabs from hamburger menu on mobile */
         @media (max-width: 768px) {
+            body.has-bottom-nav .mobile-menu .tab-btn[data-tab="schedule"],
             body.has-bottom-nav .mobile-menu .tab-btn[data-tab="leaderboard"],
             body.has-bottom-nav .mobile-menu .tab-btn[data-tab="scoring"],
             body.has-bottom-nav .mobile-menu .tab-btn[data-tab="individual"] { display:none; }
@@ -1612,10 +1613,10 @@
         body.tv-mode .score-notif-sub { font-size: 1.35rem; margin-top: 10px; }
 
         /* Bottom Navigation Bar */
-        .bottom-nav { display: none; background: var(--masters-dark); border-top: 2px solid var(--masters-gold); flex-shrink: 0; padding: 0 4px calc(env(safe-area-inset-bottom, 8px)); }
-        .bottom-nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px 4px; background: none; border: none; color: rgba(255,255,255,0.5); font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer; transition: color 0.2s; }
+        .bottom-nav { display: none; background: var(--masters-dark); border-top: 2px solid var(--masters-gold); flex-shrink: 0; padding: 0 max(10px, env(safe-area-inset-right, 10px)) calc(env(safe-area-inset-bottom, 8px)) max(10px, env(safe-area-inset-left, 10px)); }
+        .bottom-nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 2px 4px; background: none; border: none; color: rgba(255,255,255,0.5); font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer; transition: color 0.2s; }
         .bottom-nav-btn.active { color: var(--masters-yellow); }
-        .bottom-nav-btn svg { width: 22px; height: 22px; }
+        .bottom-nav-btn svg { width: 20px; height: 20px; }
         @media (max-width: 768px) { .bottom-nav { display: flex; } }
 
         /* Slide-out Menu */
@@ -4047,6 +4048,10 @@
 
     <!-- Bottom Navigation Bar (mobile) -->
     <nav class="bottom-nav" id="bottomNav">
+        <button class="bottom-nav-btn" data-tab="schedule">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Schedule
+        </button>
         <button class="bottom-nav-btn active" data-tab="leaderboard">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="1"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="2" y1="12.5" x2="22" y2="12.5"/><line x1="2" y1="17" x2="22" y2="17"/><line x1="8" y1="3" x2="8" y2="21"/></svg>
             Leaderboard
