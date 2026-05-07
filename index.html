@@ -52,7 +52,7 @@
             --masters-black: #1a1a1a;
             --team-a-color: #CE1141;
             --team-b-color: #004F9E;
-            --center-column-width: 44px;
+            --center-column-width: 76px;
             --birdie-color: #CE1141;
             --eagle-color: #C8A951;
             --bogey-color: #006747;
@@ -513,10 +513,21 @@
             justify-content: center;
             background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
             color: var(--masters-white);
-            font-size: 0.75rem;
+            font-size: 0.95rem;
             font-weight: 700;
             letter-spacing: 1px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .tee-time-chip {
+            background: #f1ede0;
+            border: 1px solid #d8d2bd;
+            border-radius: 999px;
+            padding: 3px 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #2a2a2a;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -753,14 +764,14 @@
 
         @media (max-width: 600px) {
             :root {
-                --center-column-width: 48px;
+                --center-column-width: 76px;
             }
             .lb-match-row {
                 font-size: 0.85rem;
                 min-height: 58px;
             }
             .lb-cell-a, .lb-cell-b { padding: 12px 10px; }
-            .lb-cell-thru { font-size: 0.7rem; }
+            .lb-cell-thru { font-size: 0.95rem; }
             .lb-total-pts { font-size: 1.5rem; }
             .lb-total-team-name { font-size: 0.91rem; }
             .lb-breakdown-row { font-size: 0.7rem; padding: 12px 10px; }
@@ -904,20 +915,24 @@
 
         /* Score entry rows */
         .scoring-team-section {
-            padding: 8px 12px;
             border-bottom: 1px solid #eee;
         }
 
-        .scoring-team-label {
-            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+        .team-band {
+            padding: 8px 14px;
+            color: #fff;
             font-size: 0.7rem;
-            font-weight: bold;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 4px 4px 2px;
+            letter-spacing: 1.2px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .scoring-team-label.team-a { color: var(--team-a-color); }
-        .scoring-team-label.team-b { color: var(--team-b-color); }
+        .team-band .pts { font-size: 0.72rem; opacity: 0.92; letter-spacing: 1px; }
+
+        .team-rows { padding: 4px 12px; }
 
         .score-entry-row {
             display: flex;
@@ -4019,6 +4034,7 @@
             <button class="tab-btn" data-tab="draft">Draft</button>
             <button class="tab-btn" data-tab="settings">Settings</button>
             <button class="tab-btn" data-tab="horserace">🏇 Race</button>
+            <button class="tab-btn" data-tab="ledger">The Ledger</button>
             <button class="tab-btn tab-btn-tv" onclick="launchTvDisplay()">📺 TV</button>
         </nav>
     </header>
@@ -4039,6 +4055,7 @@
     <section class="tab-content" id="tab-draft"><div id="draft-content"></div></section>
     <section class="tab-content" id="tab-settings"><div id="settings-content"></div></section>
     <section class="tab-content" id="tab-horserace"><div id="horserace-content"></div></section>
+    <section class="tab-content" id="tab-ledger"><div id="ledger-content"></div></section>
 
     <!-- Bottom Navigation Bar (mobile) -->
     <nav class="bottom-nav" id="bottomNav">
@@ -4077,6 +4094,7 @@
         <button class="slide-menu-item" id="slideMenuTimer">Hole Timer</button>
         <button class="slide-menu-item" data-tab="settings">Settings</button>
         <button class="slide-menu-item" data-tab="horserace">🏇 Horse Race</button>
+        <button class="slide-menu-item" data-tab="ledger">📜 The Ledger</button>
         <button class="slide-menu-item slide-menu-tv" onclick="launchTvDisplay(); closeSlideMenu();">📺 TV Display</button>
     </div>
 
@@ -4209,7 +4227,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.1.1';
+    const APP_VERSION = '3.1.2';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -4714,7 +4732,7 @@
     function renderTab(tabId) {
         const r = { leaderboard: renderLeaderboard, individual: renderIndividual, scoring: renderScoring,
             schedule: renderSchedule, matches: renderMatches, players: renderPlayers, draft: renderDraft, settings: renderSettings,
-            horserace: renderHorseRace };
+            horserace: renderHorseRace, ledger: renderLedger };
         if (r[tabId]) r[tabId]();
     }
 
@@ -5681,8 +5699,9 @@
     function renderLeaderboardMatch(match) {
         const status = getMatchPlayStatus(match);
         // Wrap each name so first+last never split across lines
-        const teamANames = match.teamA.map(id => `<span style="white-space:nowrap">${getPlayerName(id)}</span>`).join(' / ');
-        const teamBNames = match.teamB.map(id => `<span style="white-space:nowrap">${getPlayerName(id)}</span>`).join(' / ');
+        const nameSep = match.teamA.length > 1 ? '<br>' : ' / ';
+        const teamANames = match.teamA.map(id => `<span style="white-space:nowrap">${getPlayerName(id)}</span>`).join(nameSep);
+        const teamBNames = match.teamB.map(id => `<span style="white-space:nowrap">${getPlayerName(id)}</span>`).join(nameSep);
         const isALeading = status.leader === 'A';
         const isBLeading = status.leader === 'B';
         const isTied = status.text === 'ALL SQUARE' || status.text === 'HALVED';
@@ -5696,8 +5715,7 @@
             const [th, tm] = match.teeTime.split(':').map(Number);
             const hr = th % 12 || 12;
             const mins = String(tm).padStart(2, '0');
-            thru = `<span style="display:block;width:100%;text-align:center;font-size:1.5rem;font-weight:900;line-height:1;letter-spacing:-1px;color:rgba(255,255,255,0.75);">${hr}</span><span style="display:block;width:100%;text-align:center;font-size:1.5rem;font-weight:900;line-height:1;letter-spacing:-1px;color:rgba(255,255,255,0.75);">${mins}</span>`;
-            thruStyle = 'flex-direction:column;gap:0;padding:0;';
+            thru = `<div class="tee-time-chip">${hr}:${mins}</div>`;
         }
 
         // Cell state classes
@@ -6717,8 +6735,27 @@
         const sessionName = session?.name || '';
         const formatLabel = match.type === 'fourball' ? 'Four Ball' : match.type === 'foursomes' ? 'Foursomes' : 'Singles';
         const eyebrow = `${formatLabel} &middot; ${sessionName}`;
-        const primary = `Hole ${hole} &middot; ${statusText}`;
-        const meta = `Par ${holeInfo.par} &middot; HCP ${holeInfo.hcp} &middot; Thru ${status.holesPlayed}`;
+        const primary = `Hole ${hole}`;
+        const meta = `Par ${holeInfo.par} &middot; HCP ${holeInfo.hcp}`;
+
+        // Determine which team band shows match status
+        let bandStatusA = '', bandStatusB = '';
+        if (status.isComplete) {
+            if (status.leader === 'A') bandStatusA = status.text;
+            else if (status.leader === 'B') bandStatusB = status.text;
+        } else if (status.leader === 'A') {
+            bandStatusA = status.text;
+        } else if (status.leader === 'B') {
+            bandStatusB = status.text;
+        } else {
+            bandStatusA = 'AS';
+            bandStatusB = 'AS';
+        }
+
+        const colorA = S.config.teamA.color || '#CE1141';
+        const colorB = S.config.teamB.color || '#004F9E';
+        const gradA = `linear-gradient(to right, ${colorA}, color-mix(in srgb, ${colorA} 70%, #000))`;
+        const gradB = `linear-gradient(to right, ${colorB}, color-mix(in srgb, ${colorB} 70%, #000))`;
 
         return `
             <div class="scoring-interface">
@@ -6734,13 +6771,19 @@
                 </div>
 
                 <div class="scoring-team-section">
-                    <div class="scoring-team-label team-a">${S.config.teamA.name}${bestBallA}</div>
-                    ${teamARows}
+                    <div class="team-band" style="background:${gradA}">
+                        <span>${S.config.teamA.name}${bestBallA}</span>
+                        ${bandStatusA ? `<span class="pts">${bandStatusA}</span>` : ''}
+                    </div>
+                    <div class="team-rows">${teamARows}</div>
                 </div>
 
                 <div class="scoring-team-section">
-                    <div class="scoring-team-label team-b">${S.config.teamB.name}${bestBallB}</div>
-                    ${teamBRows}
+                    <div class="team-band" style="background:${gradB}">
+                        <span>${S.config.teamB.name}${bestBallB}</span>
+                        ${bandStatusB ? `<span class="pts">${bandStatusB}</span>` : ''}
+                    </div>
+                    <div class="team-rows">${teamBRows}</div>
                 </div>
 
                 <div class="hole-result-banner ${bannerClass}">${bannerText}</div>
@@ -7678,6 +7721,69 @@
         if (S.draft.captainB === playerId) S.draft.captainB = null;
         saveState(); renderPlayers();
         showToast('Player removed');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // RENDER: THE LEDGER (historical results)
+    // ─────────────────────────────────────────────────────────
+    const SMASHTERS_HISTORY = [
+        { year: 2021, winner: 'Team Bolnik', loser: 'Team Donald', wScore: 5.5, lScore: 3.5 },
+        { year: 2022, winner: 'Team Donald', loser: 'Team Bolnik', wScore: 5.5, lScore: 3.5 },
+        { year: 2023, winner: 'Team Donald', loser: 'Team Bolnik', wScore: 6.5, lScore: 2.5 },
+        { year: 2024, winner: 'Team Donald', loser: 'Team Bolnik', wScore: 6.5, lScore: 2.5 },
+        { year: 2025, winner: 'Team Donald', loser: 'Team Bolnik', wScore: 5.5, lScore: 3.5 },
+    ];
+
+    // Canonical colors per team name — add new captains here as needed
+    const SMASHTERS_TEAM_COLORS = {
+        'Team Donald': '#CE1141',
+        'Team Bolnik': '#004F9E',
+    };
+
+    function renderLedger() {
+        const el = document.getElementById('ledger-content');
+        if (!el) return;
+
+        const fmtPts = n => n % 1 === 0.5 ? `${Math.floor(n)}&frac12;` : `${n}`;
+        const teamColor = name => SMASHTERS_TEAM_COLORS[name] || '#555';
+
+        // Collect all unique team names and their win counts
+        const winCounts = {};
+        SMASHTERS_HISTORY.forEach(h => { winCounts[h.winner] = (winCounts[h.winner] || 0) + 1; });
+        const teams = Object.keys(SMASHTERS_TEAM_COLORS);
+
+        let html = `<div class="lb-board">
+            <div class="lb-section-header" style="text-align:center;letter-spacing:2px;">The Ledger</div>
+
+            <div style="display:grid;grid-template-columns:${teams.map(() => '1fr').join(' ')};border-bottom:2px solid rgba(251,243,8,0.35);">
+                ${teams.map((name, i) => {
+                    const c = teamColor(name);
+                    const dir = i === 0 ? 'to right' : 'to left';
+                    return `<div style="padding:16px;text-align:center;background:linear-gradient(${dir},${c},color-mix(in srgb,${c} 70%,#000));">
+                        <div style="font-size:2.4rem;font-weight:900;color:#fff;line-height:1;">${winCounts[name] || 0}</div>
+                        <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1.2px;text-transform:uppercase;margin-top:4px;">${name}</div>
+                    </div>`;
+                }).join('')}
+            </div>`;
+
+        SMASHTERS_HISTORY.slice().reverse().forEach(h => {
+            const winColor = teamColor(h.winner);
+            const gradDir  = 'to right';
+            html += `
+            <div style="display:grid;grid-template-columns:56px 1fr auto;align-items:center;min-height:48px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">
+                <div style="padding:10px 0 10px 14px;font-size:0.78rem;font-weight:800;color:#888;">${h.year}</div>
+                <div style="padding:10px 8px;">
+                    <div style="font-size:0.9rem;font-weight:700;color:#111;white-space:nowrap;">${h.winner}</div>
+                    <div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${h.loser}</div>
+                </div>
+                <div style="padding:10px 14px;">
+                    <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(${gradDir},${winColor},color-mix(in srgb,${winColor} 70%,#000));color:#fff;font-size:0.82rem;font-weight:800;letter-spacing:0.5px;white-space:nowrap;">${fmtPts(h.wScore)}–${fmtPts(h.lScore)}</span>
+                </div>
+            </div>`;
+        });
+
+        html += `</div>`;
+        el.innerHTML = html;
     }
 
     // ─────────────────────────────────────────────────────────
@@ -10655,6 +10761,7 @@
         if (hhData && (hhData.surgeon || hhData.ace || hhData.coolHand)) spotlightPool.push({ type: 'hothand' });
         (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0)
             .forEach(race => spotlightPool.push({ type: 'horserace', race }));
+        spotlightPool.push({ type: 'history' });
         if (spotlightPool.length > 0) {
             broadcastSpotlightIndex = broadcastSpotlightIndex % spotlightPool.length;
             const slide = spotlightPool[broadcastSpotlightIndex];
@@ -10664,6 +10771,8 @@
                 renderBroadcastHotHand(hhData);
             } else if (slide.type === 'horserace') {
                 renderBroadcastHorseRace(slide.race);
+            } else if (slide.type === 'history') {
+                renderBroadcastHistory();
             } else {
                 renderBroadcastSpotlight(slide);
             }
@@ -10785,6 +10894,39 @@
                 broadcastProbResizeObserver.observe(canvas.parentElement);
             }
         });
+    }
+
+    function renderBroadcastHistory() {
+        broadcastProbMatch = null;
+        if (broadcastProbResizeObserver) { broadcastProbResizeObserver.disconnect(); broadcastProbResizeObserver = null; }
+        const el = document.getElementById('broadcastSpotlightContent');
+        if (!el) return;
+
+        const fmtPts = n => n % 1 === 0.5 ? `${Math.floor(n)}½` : `${n}`;
+        const teamColor = name => SMASHTERS_TEAM_COLORS[name] || '#555';
+
+        const winCounts = {};
+        SMASHTERS_HISTORY.forEach(h => { winCounts[h.winner] = (winCounts[h.winner] || 0) + 1; });
+        const teams = Object.keys(SMASHTERS_TEAM_COLORS);
+        const sorted = teams.slice().sort((a, b) => (winCounts[b] || 0) - (winCounts[a] || 0));
+        const seriesLeader = (winCounts[sorted[0]] || 0) > (winCounts[sorted[1]] || 0)
+            ? `${sorted[0]} leads ${winCounts[sorted[0]] || 0}–${winCounts[sorted[1]] || 0}`
+            : 'All Square';
+
+        const rowsHtml = SMASHTERS_HISTORY.slice().reverse().map(h => {
+            const winColor = teamColor(h.winner);
+            return `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:clamp(6px,0.8vw,10px) 0;border-bottom:1px solid rgba(255,255,255,0.1);">
+                <span style="font-size:clamp(11px,1.1vw,15px);font-weight:700;color:rgba(255,255,255,0.55);width:3em;">${h.year}</span>
+                <span style="flex:1;font-size:clamp(12px,1.2vw,16px);font-weight:700;color:#fff;padding:0 8px;">${h.winner}</span>
+                <span style="font-size:clamp(11px,1.1vw,14px);font-weight:800;padding:3px 10px;border-radius:5px;background:linear-gradient(to right,${winColor},color-mix(in srgb,${winColor} 70%,#000));color:#fff;white-space:nowrap;">${fmtPts(h.wScore)}–${fmtPts(h.lScore)}</span>
+            </div>`;
+        }).join('');
+
+        el.innerHTML = `
+            <div style="font-size:clamp(9px,0.9vw,12px);font-weight:800;letter-spacing:3px;color:#FBF308;text-transform:uppercase;margin-bottom:clamp(6px,0.8vw,10px);">The Ledger</div>
+            <div style="font-size:clamp(13px,1.35vw,18px);font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:clamp(10px,1.2vw,16px);">${seriesLeader}</div>
+            ${rowsHtml}`;
     }
 
     function renderBroadcastDumpsterFire(data) {
