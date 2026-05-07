@@ -4155,7 +4155,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '2.9.3';
+    const APP_VERSION = '2.9.4';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -5411,7 +5411,7 @@
                 }[session.format] || 'Match';
 
                 const dateHtml = session.date
-                    ? `<span style="font-weight:400;letter-spacing:normal;text-transform:none;">${session.date}</span>`
+                    ? `<span style="font-weight:400;letter-spacing:normal;text-transform:none;">${new Date(session.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' })}</span>`
                     : '';
 
                 html += `<div class="lb-board" style="margin-top:16px;">`;
