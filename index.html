@@ -2424,8 +2424,8 @@
             flex: 0.9;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            padding: 28px 32px;
+            justify-content: flex-start;
+            padding: clamp(28px, 14%, 120px) 32px 28px;
             background: linear-gradient(170deg, var(--masters-dark) 0%, var(--masters-green) 50%, var(--masters-dark) 100%);
             position: relative;
             overflow: hidden;
@@ -2554,6 +2554,9 @@
             letter-spacing: 1px;
         }
 
+        /* ── Spacer above matches — pairs with dfgc-fill to put content in top third ── */
+        .broadcast-spacer-top { flex: 0.33; }
+
         /* ── DFGC logo — fills space below matches ── */
         .broadcast-dfgc-fill {
             flex: 1;
@@ -2565,11 +2568,11 @@
             overflow: hidden;
         }
         .broadcast-dfgc-fill img {
-            width: 90%;
-            max-width: 400px;
-            max-height: 90%;
+            width: 96%;
+            max-width: 560px;
+            max-height: 95%;
             object-fit: contain;
-            opacity: 0.18;
+            opacity: 0.22;
         }
 
         /* ── Session group ── */
@@ -5956,7 +5959,7 @@
         const fireImg  = `<img src="assets/images/dumpster-fire.svg" style="width:18px;height:18px;">`;
         const hotEmoji = `<span style="font-size:1rem;line-height:1;">⭐</span>`;
 
-        let html = `<div style="font-size:0.7rem;color:#6a6a6a;text-transform:uppercase;letter-spacing:2.2px;font-weight:800;text-align:center;margin:4px 0 10px;">Individual Performance</div>`;
+        let html = `<h2 class="section-title" style="text-align:center;margin-bottom:12px;">Individual Performance</h2>`;
 
         html += `<div class="ind-toolbar-rail">
             ${btn('points',      'Points', trophySvg, 'v-points')}
@@ -5969,7 +5972,7 @@
         // Session filter — only for stats view
         if (selectedView === 'stats') {
             html += `<div style="margin-bottom:16px;">
-                <select class="form-input" onchange="setIndividualSession(this.value)" style="width:100%;height:32px;padding:0 8px;font-size:0.85rem;">
+                <select class="form-input" onchange="setIndividualSession(this.value)">
                     <option value="all" ${selectedSession === 'all' ? 'selected' : ''}>All Sessions</option>
                     ${sessions.map(s => `<option value="${s.id}" ${selectedSession === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
                 </select>
@@ -10613,6 +10616,7 @@
     let broadcastProbResizeObserver = null;
     let broadcastSessionCycleIndex = 0;
     let broadcastIsCycling = false;
+    let broadcastWeatherData = null;
 
     let broadcastEmbossInit = false;
     function initBroadcastEmboss() {
@@ -10658,6 +10662,8 @@
 
         // Scoreboard panel (white background, leaderboard-style)
         let html = '';
+
+        html += `<div class="broadcast-spacer-top"></div>`;
 
         // Team score bar — red | center | blue
         const leading = scores.A > scores.B ? 'A' : scores.B > scores.A ? 'B' : null;
@@ -10834,6 +10840,7 @@
         (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0)
             .forEach(race => spotlightPool.push({ type: 'horserace', race }));
         spotlightPool.push({ type: 'history' });
+        if (broadcastWeatherData) spotlightPool.push({ type: 'weather' });
         if (spotlightPool.length > 0) {
             broadcastSpotlightIndex = broadcastSpotlightIndex % spotlightPool.length;
             const slide = spotlightPool[broadcastSpotlightIndex];
@@ -10845,6 +10852,8 @@
                 renderBroadcastHorseRace(slide.race);
             } else if (slide.type === 'history') {
                 renderBroadcastHistory();
+            } else if (slide.type === 'weather') {
+                renderBroadcastWeather();
             } else {
                 renderBroadcastSpotlight(slide);
             }
@@ -11502,7 +11511,7 @@
         } catch(e) {}
 
         // Stop cycles
-        if (broadcastCycleTimer) { clearInterval(broadcastCycleTimer); broadcastCycleTimer = null; }
+        if (broadcastCycleTimer) { clearTimeout(broadcastCycleTimer); broadcastCycleTimer = null; }
         if (broadcastSessionCycleTimer) { clearInterval(broadcastSessionCycleTimer); broadcastSessionCycleTimer = null; }
         stopTvBackgroundMusic();
 
@@ -11511,40 +11520,126 @@
         document.getElementById('broadcastDisplay').style.display = 'none';
     }
 
-    function startBroadcastCycle() {
-        startTvBackgroundMusic();
-        if (broadcastCycleTimer) clearInterval(broadcastCycleTimer);
-        broadcastCycleTimer = setInterval(() => {
-            // In TV mode, always pull fresh data from Firebase before re-rendering
-            if (document.body.classList.contains('tv-mode') && LiveSync.eventRef) {
-                LiveSync.eventRef.once('value').then(snap => {
-                    const val = snap.val();
-                    if (val) {
-                        LiveSync.applyState(val);
-                    }
-                    const content = document.getElementById('broadcastSpotlightContent');
-                    if (content) content.style.opacity = '0';
-                    setTimeout(() => {
-                        broadcastSpotlightIndex++;
-                        renderBroadcast();
-                        if (content) content.style.opacity = '1';
-                    }, 500);
-                }).catch(() => {
-                    broadcastSpotlightIndex++;
-                    renderBroadcast();
-                });
-            } else {
+    function getBroadcastSlideInterval() {
+        // Count slides same way renderBroadcast does, then scale interval
+        // Target: ~72s total cycle; clamp 7s–18s per slide
+        const allMatches = Object.values(S.matches || {});
+        const matchPool = allMatches.filter(m => getMatchPlayStatus(m).holesPlayed > 0);
+        const dfData = IndividualStats.getDumpsterFireData();
+        const hhData = IndividualStats.getHotHandData();
+        let count = matchPool.length;
+        if (dfData.length > 0) count++;
+        if (hhData && (hhData.surgeon || hhData.ace || hhData.coolHand)) count++;
+        count += (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0).length;
+        count++; // history slide
+        if (broadcastWeatherData) count++;
+        count = Math.max(1, count);
+        return Math.max(7000, Math.min(18000, Math.round(72000 / count)));
+    }
+
+    function scheduleBroadcastTick() {
+        if (broadcastCycleTimer) clearTimeout(broadcastCycleTimer);
+        if (!document.body.classList.contains('tv-mode')) return;
+        const interval = getBroadcastSlideInterval();
+        broadcastCycleTimer = setTimeout(() => {
+            if (!document.body.classList.contains('tv-mode')) return;
+            const advance = () => {
                 const content = document.getElementById('broadcastSpotlightContent');
                 if (content) content.style.opacity = '0';
                 setTimeout(() => {
                     broadcastSpotlightIndex++;
                     renderBroadcast();
                     if (content) content.style.opacity = '1';
+                    scheduleBroadcastTick();
                 }, 500);
+            };
+            if (LiveSync.eventRef) {
+                LiveSync.eventRef.once('value').then(snap => {
+                    const val = snap.val();
+                    if (val) LiveSync.applyState(val);
+                    advance();
+                }).catch(advance);
+            } else {
+                advance();
             }
-        }, 12000);
+        }, interval);
+    }
+
+    function startBroadcastCycle() {
+        startTvBackgroundMusic();
+        // Fetch weather for event session dates (async — populates broadcastWeatherData for later slides)
+        fetchBroadcastWeather();
+        scheduleBroadcastTick();
         // Update clock every 30 seconds
         setInterval(updateBroadcastClock, 30000);
+    }
+
+    async function fetchBroadcastWeather() {
+        broadcastWeatherData = null;
+        const dates = (S.config.sessions || []).map(s => s.date).filter(Boolean).sort();
+        if (dates.length === 0) return;
+        const locationQuery = S.config.courseName || S.config.clubName || S.config.eventName;
+        if (!locationQuery) return;
+        try {
+            const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery)}&count=1&language=en&format=json`);
+            const geoData = await geoRes.json();
+            if (!geoData.results || geoData.results.length === 0) return;
+            const { latitude, longitude, name: geoName } = geoData.results[0];
+            const startDate = dates[0];
+            const endDate = dates[dates.length - 1];
+            const wxRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_mean,weathercode&temperature_unit=fahrenheit&timezone=auto&start_date=${startDate}&end_date=${endDate}`);
+            const wx = await wxRes.json();
+            if (!wx.daily) return;
+            const dailyMap = {};
+            wx.daily.time.forEach((date, i) => {
+                dailyMap[date] = {
+                    high: Math.round(wx.daily.temperature_2m_max[i]),
+                    low: Math.round(wx.daily.temperature_2m_min[i]),
+                    precip: Math.round(wx.daily.precipitation_probability_mean[i]),
+                    code: wx.daily.weathercode[i]
+                };
+            });
+            const days = dates.map(date => {
+                const session = (S.config.sessions || []).find(s => s.date === date);
+                return { date, sessionName: session ? session.name : '', ...(dailyMap[date] || {}) };
+            }).filter(d => d.high !== undefined);
+            if (days.length === 0) return;
+            broadcastWeatherData = { location: geoName, days };
+        } catch(e) {
+            console.warn('Weather fetch failed:', e);
+        }
+    }
+
+    function renderBroadcastWeather() {
+        if (broadcastProbResizeObserver) { broadcastProbResizeObserver.disconnect(); broadcastProbResizeObserver = null; }
+        broadcastProbMatch = null;
+        const el = document.getElementById('broadcastSpotlightContent');
+        if (!el || !broadcastWeatherData) return;
+        const wmoIcon = c => c === 0 ? '☀️' : c <= 2 ? '🌤️' : c === 3 ? '☁️' : c <= 48 ? '🌫️' : c <= 55 ? '🌦️' : c <= 67 ? '🌧️' : c <= 77 ? '❄️' : c <= 82 ? '🌧️' : c <= 86 ? '🌨️' : '⛈️';
+        const wmoDesc = c => c === 0 ? 'Clear Sky' : c <= 2 ? 'Partly Cloudy' : c === 3 ? 'Overcast' : c <= 48 ? 'Foggy' : c <= 55 ? 'Drizzle' : c <= 67 ? 'Rain' : c <= 77 ? 'Snow' : c <= 82 ? 'Showers' : c <= 86 ? 'Snow Showers' : 'Thunderstorm';
+        const daysHtml = broadcastWeatherData.days.map(d => {
+            const dayLabel = new Date(d.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            return `<div style="display:flex;align-items:center;gap:16px;padding:clamp(8px,1.2vw,14px) 0;border-bottom:1px solid rgba(255,255,255,0.12);">
+                <div style="font-size:clamp(28px,3.5vw,46px);line-height:1;flex-shrink:0;">${wmoIcon(d.code)}</div>
+                <div style="flex:1;min-width:0;">
+                    ${d.sessionName ? `<div style="font-size:clamp(9px,0.85vw,11px);letter-spacing:1.5px;text-transform:uppercase;color:var(--masters-yellow);font-weight:800;">${d.sessionName}</div>` : ''}
+                    <div style="font-size:clamp(10px,0.95vw,13px);color:rgba(255,255,255,0.65);margin-top:1px;">${dayLabel}</div>
+                    <div style="font-size:clamp(11px,1.0vw,14px);color:rgba(255,255,255,0.5);margin-top:2px;">${wmoDesc(d.code)}</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0;">
+                    <div style="font-size:clamp(20px,2.5vw,34px);font-weight:800;color:#fff;line-height:1;">${d.high}°<span style="font-size:0.55em;font-weight:400;color:rgba(255,255,255,0.45);">/${d.low}°</span></div>
+                    ${d.precip > 10 ? `<div style="font-size:clamp(9px,0.85vw,11px);color:rgba(255,255,255,0.55);margin-top:2px;">💧 ${d.precip}%</div>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+        el.innerHTML = `<div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:clamp(10px,1.5vw,18px);padding-bottom:clamp(8px,1.1vw,14px);border-bottom:2px solid rgba(251,243,8,0.4);">
+                <div style="font-size:clamp(20px,2.5vw,34px);line-height:1;">⛅</div>
+                <div class="broadcast-spotlight-label" style="margin-bottom:0;">Course Forecast</div>
+            </div>
+            <div style="font-size:clamp(9px,0.8vw,11px);color:rgba(255,255,255,0.35);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;">${broadcastWeatherData.location}</div>
+            ${daysHtml}
+        </div>`;
     }
 
     function detectBroadcastChanges(oldMatches, newMatches) {
@@ -11701,7 +11796,7 @@
     function switchLeaderboardToDraft() {
         if (leaderboardSwitchedToDraft) return;
         leaderboardSwitchedToDraft = true;
-        if (broadcastCycleTimer) { clearInterval(broadcastCycleTimer); broadcastCycleTimer = null; }
+        if (broadcastCycleTimer) { clearTimeout(broadcastCycleTimer); broadcastCycleTimer = null; }
         if (broadcastSessionCycleTimer) { clearInterval(broadcastSessionCycleTimer); broadcastSessionCycleTimer = null; }
         document.getElementById('broadcastDisplay').style.display = 'none';
         document.getElementById('draftBroadcast').style.display = '';
@@ -11728,7 +11823,7 @@
         if (leaderboardSwitchedToMatchup) return;
         leaderboardSwitchedToMatchup = true;
         // Stop leaderboard cycling
-        if (broadcastCycleTimer) { clearInterval(broadcastCycleTimer); broadcastCycleTimer = null; }
+        if (broadcastCycleTimer) { clearTimeout(broadcastCycleTimer); broadcastCycleTimer = null; }
         if (broadcastSessionCycleTimer) { clearInterval(broadcastSessionCycleTimer); broadcastSessionCycleTimer = null; }
         // Hide leaderboard, show matchup
         document.getElementById('broadcastDisplay').style.display = 'none';
