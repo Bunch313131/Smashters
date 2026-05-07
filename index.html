@@ -4156,7 +4156,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.0.3';
+    const APP_VERSION = '3.0.4';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -7295,11 +7295,11 @@
             teamANamesWithStrokes = match.teamA.map(id => {
                 const strokes = getMatchPlayStrokes(match, id);
                 return `<span style="white-space:nowrap;">${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}</span>`;
-            }).join(' & ');
+            }).join(' / ');
             teamBNamesWithStrokes = match.teamB.map(id => {
                 const strokes = getMatchPlayStrokes(match, id);
                 return `<span style="white-space:nowrap;">${getPlayerName(id)}${strokes > 0 ? ` (${strokes})` : ''}</span>`;
-            }).join(' & ');
+            }).join(' / ');
         }
 
         const label = {
@@ -10132,8 +10132,8 @@
                         <tbody>
                             ${matches.length > 0 ? matches.map(m => {
                                 const teeTime = m.teeTime || 'TBD';
-                                const teamANames = m.teamA.map(id => getPlayerName(id)).join(' & ');
-                                const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' & ');
+                                const teamANames = m.teamA.map(id => getPlayerName(id)).join(' / ');
+                                const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' / ');
                                 return `<tr style="border-bottom:1px solid #eee;">
                                     <td style="padding:10px;font-weight:600;">${teeTime}</td>
                                     <td style="padding:10px;">${teamANames}</td>
@@ -10185,8 +10185,8 @@
 
             matches.forEach(m => {
                 const status = getMatchPlayStatus(m);
-                const teamANames = m.teamA.map(id => getPlayerName(id)).join(' & ');
-                const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' & ');
+                const teamANames = m.teamA.map(id => getPlayerName(id)).join(' / ');
+                const teamBNames = m.teamB.map(id => getPlayerName(id)).join(' / ');
 
                 html += `<tr style="border-bottom:1px solid #eee;">
                     <td style="padding:12px;">
@@ -11876,8 +11876,8 @@
             return;
         }
         el.innerHTML = completed.map((cm, i) => {
-            const aNames = cm.teamA.map(id => getPlayerName(id)).join(' & ');
-            const bNames = cm.teamB.map(id => getPlayerName(id)).join(' & ');
+            const aNames = cm.teamA.map(id => getPlayerName(id)).join(' / ');
+            const bNames = cm.teamB.map(id => getPlayerName(id)).join(' / ');
             return `<span>${aNames} vs ${bNames}</span>`;
         }).join('<span style="color:var(--masters-yellow);margin:0 8px;">•</span>');
     }
@@ -12212,9 +12212,9 @@
             ${(mm.completedMatches || []).map((cm, i) => `<div style="padding:8px;margin-bottom:8px;background:rgba(0,0,0,0.04);border-radius:8px;text-align:left;">
                 <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Match ${i+1}</div>
                 <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="color:${S.config.teamA.color};font-weight:600;">${cm.teamA.map(id => getPlayerName(id)).join(' & ')}</span>
+                    <span style="color:${S.config.teamA.color};font-weight:600;">${cm.teamA.map(id => getPlayerName(id)).join(' / ')}</span>
                     <span style="color:#999;">vs</span>
-                    <span style="color:${S.config.teamB.color};font-weight:600;">${cm.teamB.map(id => getPlayerName(id)).join(' & ')}</span>
+                    <span style="color:${S.config.teamB.color};font-weight:600;">${cm.teamB.map(id => getPlayerName(id)).join(' / ')}</span>
                 </div>
             </div>`).join('')}
             <div class="matchup-wizard-actions" style="margin-top:20px;">
@@ -12607,7 +12607,7 @@
     function hrTeamDisplayName(race, teamId) {
         const team = race.teams.find(t => t.id === teamId);
         if (!team) return '?';
-        return team.playerIds.map(id => hrShortName(S.players[id])).join(' & ');
+        return team.playerIds.map(id => hrShortName(S.players[id])).join(' / ');
     }
 
     function hrCalcHcp(p1Id, p2Id) {
