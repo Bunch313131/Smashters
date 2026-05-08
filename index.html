@@ -483,12 +483,12 @@
 
         /* Leading team gets their color background */
         .lb-cell-a.leading {
-            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 75%, #000) 100%);
+            background: linear-gradient(to left, var(--team-a-color) 0%, var(--team-a-dark) 100%);
             color: var(--masters-white);
             box-shadow: inset -3px 0 0 rgba(255,255,255,0.2);
         }
         .lb-cell-b.leading {
-            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 75%, #000) 100%);
+            background: linear-gradient(to right, var(--team-b-color) 0%, var(--team-b-dark) 100%);
             color: var(--masters-white);
             box-shadow: inset 3px 0 0 rgba(255,255,255,0.2);
         }
@@ -629,13 +629,13 @@
         }
 
         .lb-totals-a {
-            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 70%, #000) 100%);
+            background: linear-gradient(to left, var(--team-a-color) 0%, var(--team-a-dark) 100%);
             justify-content: flex-end;
             text-align: right;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
         }
         .lb-totals-b {
-            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 70%, #000) 100%);
+            background: linear-gradient(to right, var(--team-b-color) 0%, var(--team-b-dark) 100%);
             justify-content: flex-start;
             text-align: left;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
@@ -1111,8 +1111,8 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
-        .hole-result-banner.team-a-win { background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 75%, #000) 100%); color: var(--masters-white); }
-        .hole-result-banner.team-b-win { background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 75%, #000) 100%); color: var(--masters-white); }
+        .hole-result-banner.team-a-win { background: linear-gradient(to left, var(--team-a-color) 0%, var(--team-a-dark) 100%); color: var(--masters-white); }
+        .hole-result-banner.team-b-win { background: linear-gradient(to right, var(--team-b-color) 0%, var(--team-b-dark) 100%); color: var(--masters-white); }
         .hole-result-banner.hole-halved { background: #f0f0e8; color: #666; }
         .hole-result-banner.hole-pending { background: #f9f9f5; color: #bbb; }
 
@@ -2516,13 +2516,13 @@
             color: #fff;
         }
         .broadcast-team-card.team-a {
-            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 70%, #000) 100%);
+            background: linear-gradient(to left, var(--team-a-color) 0%, var(--team-a-dark) 100%);
             justify-content: flex-end;
             text-align: right;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
         }
         .broadcast-team-card.team-b {
-            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 70%, #000) 100%);
+            background: linear-gradient(to right, var(--team-b-color) 0%, var(--team-b-dark) 100%);
             justify-content: flex-start;
             text-align: left;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
@@ -2627,12 +2627,12 @@
             color: var(--masters-black);
         }
         .broadcast-match-teamA.leading {
-            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 75%, #000) 100%);
+            background: linear-gradient(to left, var(--team-a-color) 0%, var(--team-a-dark) 100%);
             color: #fff;
             box-shadow: inset -3px 0 0 rgba(255,255,255,0.2);
         }
         .broadcast-match-teamB.leading {
-            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 75%, #000) 100%);
+            background: linear-gradient(to right, var(--team-b-color) 0%, var(--team-b-dark) 100%);
             color: #fff;
             box-shadow: inset 3px 0 0 rgba(255,255,255,0.2);
         }
@@ -2868,11 +2868,11 @@
         }
         .broadcast-subtotal-cell.team-a {
             justify-content: flex-end;
-            background: linear-gradient(to left, var(--team-a-color) 0%, color-mix(in srgb, var(--team-a-color) 70%, #000) 100%);
+            background: linear-gradient(to left, var(--team-a-color) 0%, var(--team-a-dark) 100%);
         }
         .broadcast-subtotal-cell.team-b {
             justify-content: flex-start;
-            background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 70%, #000) 100%);
+            background: linear-gradient(to right, var(--team-b-color) 0%, var(--team-b-dark) 100%);
         }
         .broadcast-subtotal-cell .sub-label {
             font-size: clamp(10px, 1.2vw, 38px);
@@ -5585,12 +5585,12 @@
                 sessionBonuses.forEach(evt => { html += renderLeaderboardBonusEvent(evt); });
                 const sessScores = getSessionScores(session.id);
                 html += `<div class="session-subtotal-row" style="display:grid;grid-template-columns:1fr var(--center-column-width) 1fr;min-height:38px;border-top:2px solid rgba(251,243,8,0.35);">
-                    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:linear-gradient(to left,${S.config.teamA.color} 0%,color-mix(in srgb,${S.config.teamA.color} 70%,#000) 100%);color:#fff;font-weight:700;">
+                    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:linear-gradient(to left,${S.config.teamA.color} 0%,${darkenColor(S.config.teamA.color)} 100%);color:#fff;font-weight:700;">
                         <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamA.name}</span>
                         <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;" data-animate-score="${sessScores.A}" data-counter-id="session-${session.id}-a">${formatScore(sessScores.A)}</span>
                     </div>
                     <div style="display:flex;align-items:center;justify-content:center;background:#2a2a2a;color:var(--masters-yellow);font-size:0.55rem;font-weight:600;">PTS</div>
-                    <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 12px;background:linear-gradient(to right,${S.config.teamB.color} 0%,color-mix(in srgb,${S.config.teamB.color} 70%,#000) 100%);color:#fff;font-weight:700;">
+                    <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 12px;background:linear-gradient(to right,${S.config.teamB.color} 0%,${darkenColor(S.config.teamB.color)} 100%);color:#fff;font-weight:700;">
                         <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;" data-animate-score="${sessScores.B}" data-counter-id="session-${session.id}-b">${formatScore(sessScores.B)}</span>
                         <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamB.name}</span>
                     </div>
@@ -5610,12 +5610,12 @@
             let bonusA = 0, bonusB = 0;
             standaloneBonuses.forEach(e => { bonusA += (e.pointsA || 0); bonusB += (e.pointsB || 0); });
             html += `<div class="session-subtotal-row" style="display:grid;grid-template-columns:1fr var(--center-column-width) 1fr;min-height:38px;border-top:2px solid rgba(251,243,8,0.35);">
-                <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:linear-gradient(to left,${S.config.teamA.color} 0%,color-mix(in srgb,${S.config.teamA.color} 70%,#000) 100%);color:#fff;font-weight:700;">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 12px;background:linear-gradient(to left,${S.config.teamA.color} 0%,${darkenColor(S.config.teamA.color)} 100%);color:#fff;font-weight:700;">
                     <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamA.name}</span>
                     <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;">${formatScore(bonusA)}</span>
                 </div>
                 <div style="display:flex;align-items:center;justify-content:center;background:#2a2a2a;color:var(--masters-yellow);font-size:0.55rem;font-weight:600;">PTS</div>
-                <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 12px;background:linear-gradient(to right,${S.config.teamB.color} 0%,color-mix(in srgb,${S.config.teamB.color} 70%,#000) 100%);color:#fff;font-weight:700;">
+                <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 12px;background:linear-gradient(to right,${S.config.teamB.color} 0%,${darkenColor(S.config.teamB.color)} 100%);color:#fff;font-weight:700;">
                     <span style="font-size:1.15rem;font-family:'Trebuchet MS',sans-serif;font-weight:bold;">${formatScore(bonusB)}</span>
                     <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;">${S.config.teamB.name}</span>
                 </div>
@@ -6838,8 +6838,8 @@
 
         const colorA = S.config.teamA.color || '#CE1141';
         const colorB = S.config.teamB.color || '#004F9E';
-        const gradA = `linear-gradient(to right, ${colorA}, color-mix(in srgb, ${colorA} 70%, #000))`;
-        const gradB = `linear-gradient(to right, ${colorB}, color-mix(in srgb, ${colorB} 70%, #000))`;
+        const gradA = `linear-gradient(to right, ${colorA}, ${darkenColor(colorA)})`;
+        const gradB = `linear-gradient(to right, ${colorB}, ${darkenColor(colorB)})`;
 
         return `
             <div class="scoring-interface">
@@ -6881,7 +6881,7 @@
                         const winName = winTeam === 'A' ? S.config.teamA.name : winTeam === 'B' ? S.config.teamB.name : null;
                         const winColor = winTeam === 'A' ? S.config.teamA.color : winTeam === 'B' ? S.config.teamB.color : null;
                         const bgStyle = winColor
-                            ? `background:linear-gradient(to ${winTeam === 'A' ? 'left' : 'right'},${winColor} 0%,color-mix(in srgb,${winColor} 70%,#000) 100%);color:#fff;`
+                            ? `background:linear-gradient(to ${winTeam === 'A' ? 'left' : 'right'},${winColor} 0%,${darkenColor(winColor)} 100%);color:#fff;`
                             : 'background:var(--masters-green);color:#fff;';
                         const label = winName ? `${winName} wins &mdash; ${status.text}` : `Tied &mdash; ${status.text}`;
                         return `<div style="padding:12px;text-align:center;font-weight:bold;border-radius:6px;margin:4px 0;${bgStyle}">Match Complete &mdash; ${label}</div>`;
@@ -7843,7 +7843,7 @@
                 ${teams.map((name, i) => {
                     const c = teamColor(name);
                     const dir = i === 0 ? 'to right' : 'to left';
-                    return `<div style="padding:16px;text-align:center;background:linear-gradient(${dir},${c},color-mix(in srgb,${c} 70%,#000));">
+                    return `<div style="padding:16px;text-align:center;background:linear-gradient(${dir},${c},${darkenColor(c)});">
                         <div style="font-size:2.4rem;font-weight:900;color:#fff;line-height:1;">${winCounts[name] || 0}</div>
                         <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1.2px;text-transform:uppercase;margin-top:4px;">${name}</div>
                     </div>`;
@@ -7861,7 +7861,7 @@
                     <div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${h.loser}</div>
                 </div>
                 <div style="padding:10px 14px;">
-                    <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(${gradDir},${winColor},color-mix(in srgb,${winColor} 70%,#000));color:#fff;font-size:0.82rem;font-weight:800;letter-spacing:0.5px;white-space:nowrap;">${fmtPts(h.wScore)}–${fmtPts(h.lScore)}</span>
+                    <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(${gradDir},${winColor},${darkenColor(winColor)});color:#fff;font-size:0.82rem;font-weight:800;letter-spacing:0.5px;white-space:nowrap;">${fmtPts(h.wScore)}–${fmtPts(h.lScore)}</span>
                 </div>
             </div>`;
         });
@@ -8536,8 +8536,7 @@
             };
         }
 
-        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
-        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        setTeamColorVars();
         saveState();
         showToast('Settings saved');
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
@@ -11027,7 +11026,7 @@
             <div style="display:flex;align-items:center;justify-content:space-between;padding:clamp(6px,0.9vw,34px) 0;border-bottom:1px solid rgba(255,255,255,0.1);">
                 <span style="font-size:clamp(13px,1.3vw,50px);font-weight:700;color:rgba(255,255,255,0.55);width:3.2em;">${h.year}</span>
                 <span style="flex:1;font-size:clamp(15px,1.6vw,60px);font-weight:700;color:#fff;padding:0 8px;">${h.winner}</span>
-                <span style="font-size:clamp(13px,1.3vw,50px);font-weight:800;padding:clamp(3px,0.4vw,14px) clamp(8px,1vw,36px);border-radius:5px;background:linear-gradient(to right,${winColor},color-mix(in srgb,${winColor} 70%,#000));color:#fff;white-space:nowrap;">${fmtPts(h.wScore)}–${fmtPts(h.lScore)}</span>
+                <span style="font-size:clamp(13px,1.3vw,50px);font-weight:800;padding:clamp(3px,0.4vw,14px) clamp(8px,1vw,36px);border-radius:5px;background:linear-gradient(to right,${winColor},${darkenColor(winColor)});color:#fff;white-space:nowrap;">${fmtPts(h.wScore)}–${fmtPts(h.lScore)}</span>
             </div>`;
         }).join('');
 
@@ -11858,8 +11857,7 @@
         document.getElementById('matchupBroadcast').style.display = '';
         document.body.classList.remove('tv-draft-mode');
         document.body.classList.add('tv-matchup-mode');
-        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
-        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        setTeamColorVars();
         matchupBcCelebrationShown = false;
         startMatchupBroadcast();
     }
@@ -11878,8 +11876,7 @@
         document.getElementById('draftBroadcast').style.display = '';
         document.body.classList.remove('tv-mode');
         document.body.classList.add('tv-draft-mode');
-        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
-        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        setTeamColorVars();
         startDraftBroadcast();
     }
 
@@ -11906,8 +11903,7 @@
         document.getElementById('matchupBroadcast').style.display = '';
         document.body.classList.remove('tv-mode');
         document.body.classList.add('tv-matchup-mode');
-        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
-        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        setTeamColorVars();
         matchupBcCelebrationShown = false;
         startMatchupBroadcast();
     }
@@ -12265,6 +12261,25 @@
         const g = parseInt(hex.slice(3,5), 16);
         const b = parseInt(hex.slice(5,7), 16);
         return `${r},${g},${b}`;
+    }
+
+    // Darken a hex color by multiplying channels — replaces color-mix() for broad browser support
+    function darkenColor(hex, factor = 0.7) {
+        if (!hex || !hex.startsWith('#')) return hex;
+        const r = Math.round(parseInt(hex.slice(1,3), 16) * factor);
+        const g = Math.round(parseInt(hex.slice(3,5), 16) * factor);
+        const b = Math.round(parseInt(hex.slice(5,7), 16) * factor);
+        return `rgb(${r},${g},${b})`;
+    }
+
+    // Set all team color CSS variables including darkened variants
+    function setTeamColorVars() {
+        const a = S.config.teamA.color || '#cc0000';
+        const b = S.config.teamB.color || '#0000cc';
+        document.documentElement.style.setProperty('--team-a-color', a);
+        document.documentElement.style.setProperty('--team-b-color', b);
+        document.documentElement.style.setProperty('--team-a-dark', darkenColor(a));
+        document.documentElement.style.setProperty('--team-b-dark', darkenColor(b));
     }
 
     function renderMatchupBcRoster(containerId, team, usedIds, pendingIds) {
@@ -13029,8 +13044,7 @@
             return;
         }
 
-        document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
-        document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
+        setTeamColorVars();
         document.querySelector('.header-titles h1').textContent = S.config.eventName;
         document.querySelector('.header-titles .subtitle').textContent = S.config.clubName;
 
