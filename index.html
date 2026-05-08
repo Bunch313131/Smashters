@@ -3519,9 +3519,11 @@
         .matchup-bc-logo { width: clamp(36px, 4vw, 152px); height: auto; filter: brightness(0) invert(1); }
         .matchup-bc-title {
             font-family: 'Azalea', 'Georgia', serif;
-            font-size: clamp(22px, 3vw, 115px);
+            font-size: clamp(44px, 6vw, 68px);
             color: var(--masters-yellow);
             letter-spacing: 2px;
+            line-height: 1;
+            transform: translateY(0.12em);
         }
         .matchup-bc-badge {
             background: var(--masters-yellow); color: var(--masters-dark);
@@ -12241,20 +12243,23 @@
         if (mm.status === 'complete' && !matchupBcCelebrationShown) {
             matchupBcCelebrationShown = true;
             matchupBcCelebration();
-            // If we came from leaderboard, return after 5 minutes
+            // If we came from leaderboard, return after 30 seconds
             if (leaderboardSwitchedToMatchup && !matchupReturnTimer) {
                 matchupReturnTimer = setTimeout(() => {
                     // Reset matchMaking so leaderboard doesn't re-trigger the switch
                     S.matchMaking.status = 'idle';
                     saveState();
                     switchMatchupBackToLeaderboard();
-                }, 5 * 60 * 1000);
+                }, 30 * 1000);
             }
         }
-        // Reset flag if status goes back to non-complete (e.g. new session)
+        // Auto-return if status went back to idle (e.g. wizard cancelled)
+        if (mm.status === 'idle' && leaderboardSwitchedToMatchup && !matchupReturnTimer) {
+            matchupReturnTimer = setTimeout(switchMatchupBackToLeaderboard, 3000);
+        }
+        // Reset celebration flag if status goes back to non-complete (e.g. new session)
         if (mm.status !== 'complete') {
             matchupBcCelebrationShown = false;
-            if (matchupReturnTimer) { clearTimeout(matchupReturnTimer); matchupReturnTimer = null; }
         }
     }
 
