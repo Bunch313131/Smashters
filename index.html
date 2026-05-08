@@ -8101,7 +8101,9 @@
                         <div style="font-weight:700;font-size:0.95rem;margin-bottom:2px;">${evt.event}</div>
                         ${evt.location ? `<div style="color:#777;font-size:0.82rem;">${evt.location}</div>` : ''}
                     </div>
-                    ${canEdit ? `<div style="width:50px;flex-shrink:0;display:flex;gap:4px;justify-content:flex-end;">
+                    ${canEdit ? `<div style="flex-shrink:0;display:flex;gap:2px;justify-content:flex-end;">
+                        <button style="background:none;border:none;cursor:pointer;font-size:0.85rem;padding:2px;opacity:${i === 0 ? '0.2' : '0.7'};" ${i === 0 ? 'disabled' : `onclick="moveScheduleEventUp('${evt.id}')"`}>▲</button>
+                        <button style="background:none;border:none;cursor:pointer;font-size:0.85rem;padding:2px;opacity:${i === events.length - 1 ? '0.2' : '0.7'};" ${i === events.length - 1 ? 'disabled' : `onclick="moveScheduleEventDown('${evt.id}')"`}>▼</button>
                         <button style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px;" onclick="openScheduleEventModal('${evt.id}')">✏️</button>
                         <button style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px;" onclick="deleteScheduleEvent('${evt.id}')">🗑️</button>
                     </div>` : ''}
@@ -8196,6 +8198,30 @@
         saveState();
         renderSchedule();
         showToast('Event removed');
+    }
+
+    function moveScheduleEventUp(id) {
+        const items = (S.config.schedule || []).sort((a, b) => a.order - b.order);
+        const evt = items.find(e => e.id === id);
+        if (!evt) return;
+        const dayItems = items.filter(e => e.day === evt.day);
+        const idx = dayItems.findIndex(e => e.id === id);
+        if (idx <= 0) return;
+        [dayItems[idx].order, dayItems[idx - 1].order] = [dayItems[idx - 1].order, dayItems[idx].order];
+        saveState();
+        renderSchedule();
+    }
+
+    function moveScheduleEventDown(id) {
+        const items = (S.config.schedule || []).sort((a, b) => a.order - b.order);
+        const evt = items.find(e => e.id === id);
+        if (!evt) return;
+        const dayItems = items.filter(e => e.day === evt.day);
+        const idx = dayItems.findIndex(e => e.id === id);
+        if (idx < 0 || idx >= dayItems.length - 1) return;
+        [dayItems[idx].order, dayItems[idx + 1].order] = [dayItems[idx + 1].order, dayItems[idx].order];
+        saveState();
+        renderSchedule();
     }
 
     function renameScheduleDay(oldName) {
