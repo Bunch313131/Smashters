@@ -12243,23 +12243,20 @@
         if (mm.status === 'complete' && !matchupBcCelebrationShown) {
             matchupBcCelebrationShown = true;
             matchupBcCelebration();
-            // If we came from leaderboard, return after 30 seconds
+            // If we came from leaderboard, return after 5 minutes
             if (leaderboardSwitchedToMatchup && !matchupReturnTimer) {
                 matchupReturnTimer = setTimeout(() => {
                     // Reset matchMaking so leaderboard doesn't re-trigger the switch
                     S.matchMaking.status = 'idle';
                     saveState();
                     switchMatchupBackToLeaderboard();
-                }, 30 * 1000);
+                }, 5 * 60 * 1000);
             }
-        }
-        // Auto-return if status went back to idle (e.g. wizard cancelled)
-        if (mm.status === 'idle' && leaderboardSwitchedToMatchup && !matchupReturnTimer) {
-            matchupReturnTimer = setTimeout(switchMatchupBackToLeaderboard, 3000);
         }
         // Reset celebration flag if status goes back to non-complete (e.g. new session)
         if (mm.status !== 'complete') {
             matchupBcCelebrationShown = false;
+            if (matchupReturnTimer) { clearTimeout(matchupReturnTimer); matchupReturnTimer = null; }
         }
     }
 
