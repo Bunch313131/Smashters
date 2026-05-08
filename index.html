@@ -11594,13 +11594,20 @@
             return;
         }
         try {
-            const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery)}&count=1&language=en&format=json`);
-            const geoData = await geoRes.json();
-            if (!geoData.results || geoData.results.length === 0) {
+            // Geocoding doesn't understand "City, ST" format — try progressively simpler queries
+            const geoQueries = [locationQuery];
+            if (locationQuery.includes(',')) geoQueries.push(locationQuery.split(',')[0].trim());
+            let geoResult = null;
+            for (const q of geoQueries) {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`);
+                const data = await res.json();
+                if (data.results && data.results.length > 0) { geoResult = data.results[0]; break; }
+            }
+            if (!geoResult) {
                 broadcastWeatherData = { status: 'error', reason: `Location not found: "${locationQuery}"`, location: '', days: [] };
                 return;
             }
-            const { latitude, longitude, name: geoName } = geoData.results[0];
+            const { latitude, longitude, name: geoName } = geoResult;
             const today = new Date().toISOString().slice(0, 10);
             const startDate = dates[0];
             const endDate = dates[dates.length - 1];
