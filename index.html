@@ -3960,6 +3960,100 @@
         .hr-clear-team { color: #2a6049; font-size: 0.88rem; }
 
         /* ═══════════════════════════════════════════════════════
+           BRACKET TRACKER
+           ═══════════════════════════════════════════════════════ */
+        /* Home list */
+        .bt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .bt-title { font-size: 1rem; font-weight: bold; color: #fff; letter-spacing: 0.03em; }
+        .bt-new-btn { background: var(--masters-green); color: var(--masters-white); border: none; border-radius: 6px; padding: 9px 16px; font-size: 0.9rem; font-weight: bold; cursor: pointer; letter-spacing: 0.02em; }
+        .bt-empty { color: rgba(255,255,255,0.5); text-align: center; padding: 40px 20px; font-size: 0.95rem; }
+        .bt-card { background: var(--masters-white); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-bottom: 12px; overflow: hidden; }
+        .bt-card-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--masters-green); }
+        .bt-card-name { font-weight: bold; color: var(--masters-yellow); font-size: 0.95rem; letter-spacing: 0.02em; }
+        .bt-status-badge { font-size: 0.72rem; color: rgba(255,255,255,0.75); background: rgba(0,0,0,0.2); border-radius: 4px; padding: 2px 8px; }
+        .bt-card-body { padding: 12px 14px; }
+        .bt-card-meta { font-size: 0.8rem; color: #666; margin-bottom: 8px; }
+        .bt-winner-badge { border-radius: 6px; padding: 8px 12px; text-align: center; font-weight: bold; color: #fff; font-size: 0.9rem; margin-bottom: 10px; }
+        .bt-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .bt-btn { border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .bt-btn-view { background: var(--masters-green); color: #fff; }
+        .bt-btn-delete { background: #fff; color: #CE1141; border: 1px solid #CE1141; }
+        .bt-btn-finish { background: var(--masters-green); color: #fff; }
+        .bt-btn-award { background: var(--masters-yellow); color: #222; }
+        .bt-point-awarded { font-size: 0.82rem; color: var(--masters-green); font-weight: bold; align-self: center; }
+
+        /* Setup screen */
+        .bt-back-btn { background: none; border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; }
+        .bt-setup-section { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-bottom: 10px; overflow: hidden; }
+        .bt-setup-head { padding: 8px 12px; font-size: 0.78rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; background: #f5f5f5; color: #555; }
+        .bt-setup-body { padding: 10px 12px 12px; }
+        .bt-field-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .bt-field-row:last-child { margin-bottom: 0; }
+        .bt-field-row label { font-size: 0.85rem; color: #444; min-width: 80px; }
+        .bt-input { flex: 1; background: #fff; color: #222; border: 1px solid #ccc; border-radius: 6px; padding: 7px 10px; font-size: 0.9rem; }
+        .bt-select { flex: 1; background: #fff; color: #222; border: 1px solid #ccc; border-radius: 6px; padding: 7px 8px; font-size: 0.9rem; }
+        .bt-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+        .bt-toggle-row label { font-size: 0.9rem; color: #333; }
+        .bt-pair-row { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+        .bt-pair-row:last-child { border-bottom: none; }
+        .bt-pair-num { font-size: 0.72rem; color: #aaa; width: 16px; flex-shrink: 0; text-align: center; }
+        .bt-pair-select { flex: 1; background: #f8f8f8; color: #222; border: 1px solid #ddd; border-radius: 5px; padding: 5px 4px; font-size: 0.82rem; min-width: 0; }
+        .bt-pair-vs { font-size: 0.72rem; color: #aaa; flex-shrink: 0; }
+        .bt-btn-start { width: 100%; background: var(--masters-green); color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 4px; }
+
+        /* Bracket tree (detail view) */
+        .bt-detail-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .bt-detail-title { font-size: 1.05rem; font-weight: bold; color: #fff; flex: 1; }
+        .bt-bracket-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+        .bt-bracket-tree { display: flex; gap: 0; align-items: stretch; min-width: max-content; }
+        .bt-round-col { display: flex; flex-direction: column; min-width: 116px; padding: 0 5px; }
+        .bt-round-label { text-align: center; font-size: 0.68rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.5); padding: 4px 0 8px; flex-shrink: 0; }
+        .bt-match-slot { display: flex; flex-direction: column; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); overflow: hidden; flex-shrink: 0; }
+        .bt-match-spacer { flex: 2; min-height: 6px; }
+        .bt-match-half-spacer { flex: 1; min-height: 3px; }
+        .bt-match-player { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; min-height: 34px; }
+        .bt-match-player:last-child { border-bottom: none; }
+        .bt-match-player:hover { background: #f5fdf0; }
+        .bt-match-player.bt-winner { background: #e8f5ee; }
+        .bt-match-player.bt-winner .bt-player-name { font-weight: bold; color: var(--masters-green); }
+        .bt-match-player.bt-loser { opacity: 0.4; }
+        .bt-match-player.bt-bye { cursor: default; background: #f8f8f8; }
+        .bt-match-player.bt-bye .bt-player-name { color: #bbb; font-style: italic; font-size: 0.72rem; }
+        .bt-match-player.bt-tbd { cursor: default; background: #fafafa; }
+        .bt-match-player.bt-tbd .bt-player-name { color: #ccc; font-style: italic; font-size: 0.72rem; }
+        .bt-player-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .bt-player-name { font-size: 0.78rem; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+        .bt-player-check { font-size: 0.75rem; color: var(--masters-green); margin-left: auto; flex-shrink: 0; }
+        .bt-match-connector { width: 12px; display: flex; align-items: center; justify-content: center; }
+        .bt-connector-line { width: 2px; height: 100%; background: rgba(255,255,255,0.15); }
+
+        /* Award section in detail */
+        .bt-award-section { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-top: 14px; padding: 12px 14px; }
+        .bt-award-section-title { font-size: 0.78rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+
+        /* TV broadcast bracket */
+        .bc-bracket-slide { padding: clamp(16px,2vw,48px); }
+        .bc-bracket-title { text-align: center; font-size: clamp(18px,2.5vw,72px); font-weight: bold; color: var(--masters-yellow); margin-bottom: clamp(8px,1vw,28px); letter-spacing: 2px; font-family: 'Azalea','Georgia',serif; }
+        .bc-bracket-wrap { overflow-x: auto; display: flex; justify-content: center; }
+        .bc-bracket-tree { display: flex; gap: 0; align-items: stretch; min-width: max-content; }
+        .bc-round-col { display: flex; flex-direction: column; min-width: clamp(90px,10vw,280px); padding: 0 clamp(4px,0.5vw,14px); }
+        .bc-round-label { text-align: center; font-size: clamp(8px,0.8vw,28px); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.5); padding: 4px 0 clamp(6px,0.8vw,20px); flex-shrink: 0; }
+        .bc-match-slot { display: flex; flex-direction: column; background: rgba(255,255,255,0.1); border-radius: clamp(4px,0.5vw,12px); overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.15); }
+        .bc-match-spacer { flex: 2; min-height: clamp(4px,0.5vw,16px); }
+        .bc-match-half-spacer { flex: 1; min-height: clamp(2px,0.3vw,8px); }
+        .bc-match-player { display: flex; align-items: center; gap: clamp(4px,0.5vw,12px); padding: clamp(4px,0.5vw,14px) clamp(6px,0.7vw,18px); border-bottom: 1px solid rgba(255,255,255,0.1); min-height: clamp(28px,3vw,80px); }
+        .bc-match-player:last-child { border-bottom: none; }
+        .bc-match-player.bc-winner { background: rgba(255,255,255,0.15); }
+        .bc-match-player.bc-winner .bc-player-name { font-weight: bold; color: var(--masters-yellow); }
+        .bc-match-player.bc-loser { opacity: 0.4; }
+        .bc-match-player.bc-bye { background: rgba(255,255,255,0.05); }
+        .bc-match-player.bc-bye .bc-player-name { color: rgba(255,255,255,0.3); font-style: italic; }
+        .bc-match-player.bc-tbd .bc-player-name { color: rgba(255,255,255,0.3); font-style: italic; }
+        .bc-player-dot { width: clamp(6px,0.7vw,18px); height: clamp(6px,0.7vw,18px); border-radius: 50%; flex-shrink: 0; }
+        .bc-player-name { font-size: clamp(9px,1vw,32px); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+        .bc-player-check { font-size: clamp(8px,0.9vw,28px); color: var(--masters-yellow); margin-left: auto; flex-shrink: 0; }
+
+        /* ═══════════════════════════════════════════════════════
            INDIVIDUAL STATS — REFRESHED CHROME
            ═══════════════════════════════════════════════════════ */
         .board { background:#fff; border-radius:12px; overflow:hidden;
@@ -4108,6 +4202,7 @@
             <button class="tab-btn" data-tab="draft">Draft</button>
             <button class="tab-btn" data-tab="settings">Settings</button>
             <button class="tab-btn" data-tab="horserace">🏇 Race</button>
+            <button class="tab-btn" data-tab="brackets">🏆 Brackets</button>
             <button class="tab-btn" data-tab="ledger">The Ledger</button>
             <button class="tab-btn tab-btn-tv" onclick="launchTvDisplay()">📺 TV</button>
         </nav>
@@ -4129,6 +4224,7 @@
     <section class="tab-content" id="tab-draft"><div id="draft-content"></div></section>
     <section class="tab-content" id="tab-settings"><div id="settings-content"></div></section>
     <section class="tab-content" id="tab-horserace"><div id="horserace-content"></div></section>
+    <section class="tab-content" id="tab-brackets"><div id="brackets-content"></div></section>
     <section class="tab-content" id="tab-ledger"><div id="ledger-content"></div></section>
 
     <!-- Bottom Navigation Bar (mobile) -->
@@ -4172,6 +4268,7 @@
         <button class="slide-menu-item" id="slideMenuTimer">Hole Timer</button>
         <button class="slide-menu-item" data-tab="settings">Settings</button>
         <button class="slide-menu-item" data-tab="horserace">🏇 Horse Race</button>
+        <button class="slide-menu-item" data-tab="brackets">🏆 Brackets</button>
         <button class="slide-menu-item" data-tab="ledger">📜 The Ledger</button>
         <button class="slide-menu-item slide-menu-tv" onclick="launchTvDisplay(); closeSlideMenu();">📺 TV Display</button>
     </div>
@@ -4305,7 +4402,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.1.4';
+    const APP_VERSION = '3.1.7';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -4385,6 +4482,7 @@
         bonusEvents: {},
         holeTimes: [],
         horseRaces: [],
+        brackets: [],
         ui: {
             activeTab: 'schedule',
             activeMatchId: null,
@@ -4395,6 +4493,7 @@
             individualSession: 'all',
             dailySort: 'gross',
             activeHorseRaceId: null,
+            activeBracketId: null,
         },
     });
 
@@ -4434,6 +4533,7 @@
                     bonusEvents: parsed.bonusEvents || {},
                     holeTimes: parsed.holeTimes || [],
                     horseRaces: parsed.horseRaces || [],
+                    brackets: parsed.brackets || [],
                     ui: { ...base.ui, ...parsed.ui, settingsUnlocked: false },
                     _lastSync: parsed._lastSync || 0,
                 };
@@ -4823,7 +4923,7 @@
     function renderTab(tabId) {
         const r = { leaderboard: renderLeaderboard, individual: renderIndividual, scoring: renderScoring,
             schedule: renderSchedule, matches: renderMatches, players: renderPlayers, draft: renderDraft, settings: renderSettings,
-            horserace: renderHorseRace, ledger: renderLedger };
+            horserace: renderHorseRace, brackets: renderBrackets, ledger: renderLedger };
         if (r[tabId]) r[tabId]();
     }
 
@@ -10893,6 +10993,8 @@
         if (hhData && (hhData.surgeon || hhData.ace || hhData.coolHand)) spotlightPool.push({ type: 'hothand' });
         (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0)
             .forEach(race => spotlightPool.push({ type: 'horserace', race }));
+        (S.brackets || []).filter(b => b.awardPoint && b.status !== 'setup')
+            .forEach(bracket => spotlightPool.push({ type: 'bracket', bracket }));
         spotlightPool.push({ type: 'history' });
         spotlightPool.push({ type: 'weather' }); // always in pool; render handles loading/error
         if (spotlightPool.length > 0) {
@@ -10904,6 +11006,8 @@
                 renderBroadcastHotHand(hhData);
             } else if (slide.type === 'horserace') {
                 renderBroadcastHorseRace(slide.race);
+            } else if (slide.type === 'bracket') {
+                renderBroadcastBracket(slide.bracket);
             } else if (slide.type === 'history') {
                 renderBroadcastHistory();
             } else if (slide.type === 'weather') {
@@ -11585,6 +11689,7 @@
         if (dfData.length > 0) count++;
         if (hhData && (hhData.surgeon || hhData.ace || hhData.coolHand)) count++;
         count += (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0).length;
+        count += (S.brackets || []).filter(b => b.awardPoint && b.status !== 'setup').length;
         count++; // history slide
         if (broadcastWeatherData) count++;
         count = Math.max(1, count);
@@ -13636,6 +13741,743 @@
             ${clearHtml}
             <div class="hr-chipoff-card">${tiedHtml}</div>
             <button class="hr-btn-submit" onclick="hrSubmitChipoff()">Confirm →</button>`;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // BRACKET TRACKER
+    // ─────────────────────────────────────────────────────────
+
+    // ── Helpers ──
+    function btNextPow2(n) { let p = 1; while (p < n) p <<= 1; return p; }
+
+    // Format name: First initial + last name (e.g. "B. Bunch")
+    function btFmtName(name) {
+        if (!name) return '?';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0];
+        return parts[0][0].toUpperCase() + '. ' + parts.slice(1).join(' ');
+    }
+
+    // Get team ('A'|'B') for a slot entry
+    // Slot types: 'BYE' | { playerId, name, team } | { name, team, players:[id1,id2] }
+    function btSlotTeam(slot) {
+        if (!slot || slot === 'BYE') return null;
+        return slot.team || null;
+    }
+
+    function btSlotColor(slot) {
+        const t = btSlotTeam(slot);
+        if (t === 'A') return S.config.teamA.color || '#cc0000';
+        if (t === 'B') return S.config.teamB.color || '#0000cc';
+        return '#999';
+    }
+
+    function btSlotName(slot) {
+        if (!slot || slot === 'BYE') return 'BYE';
+        // 2-man: name already formatted as "F. Last / F. Last"
+        // Individual: format first initial + last
+        if (slot.players) return slot.name || '?';
+        return slot.name ? btFmtName(slot.name) : '?';
+    }
+
+    // Total matches in an n-slot bracket = n-1
+    // First R1 match index = n/2 - 1
+    // R1 match i (i >= n/2-1): left slot = slots[2*(i-(n/2-1))], right slot = slots[2*(i-(n/2-1))+1]
+    function btMatchParticipants(bracket, matchIdx) {
+        const n = bracket.bracketSize;
+        const firstR1 = n / 2 - 1;
+        if (matchIdx >= firstR1) {
+            // R1: read from slots array
+            const k = matchIdx - firstR1;
+            return { left: bracket.slots[2 * k] || null, right: bracket.slots[2 * k + 1] || null };
+        }
+        // Later round: winners of children matches
+        const leftChildIdx = 2 * matchIdx + 1;
+        const rightChildIdx = 2 * matchIdx + 2;
+        const left = btGetWinner(bracket, leftChildIdx);
+        const right = btGetWinner(bracket, rightChildIdx);
+        return { left, right };
+    }
+
+    function btGetWinner(bracket, matchIdx) {
+        const winner = bracket.results[matchIdx];
+        if (!winner) return null;
+        // winner is stored as the slot object
+        return winner;
+    }
+
+    function btGetRoundMatchIndices(bracketSize, roundFromLeaf) {
+        // roundFromLeaf=0 → R1, 1 → Semis, etc.
+        const totalMatches = bracketSize - 1;
+        const firstR1 = bracketSize / 2 - 1;
+        const roundSize = bracketSize / 2 / Math.pow(2, roundFromLeaf);
+        const startIdx = roundSize - 1;
+        const endIdx = startIdx + roundSize - 1;
+        return Array.from({ length: roundSize }, (_, i) => startIdx + i);
+    }
+
+    function btNumRounds(bracketSize) {
+        return Math.log2(bracketSize);
+    }
+
+    function btRoundLabel(roundFromLeaf, bracketSize) {
+        const nr = btNumRounds(bracketSize);
+        if (roundFromLeaf === nr - 1) return 'Final';
+        if (roundFromLeaf === nr - 2 && bracketSize >= 4) return 'Semis';
+        if (roundFromLeaf === nr - 3 && bracketSize >= 8) return 'Quarters';
+        return `Round ${roundFromLeaf + 1}`;
+    }
+
+    function btSlotsEqual(a, b) {
+        if (!a || !b) return false;
+        if (a === 'BYE' || b === 'BYE') return false;
+        // 2-man team slots: compare by first playerId in players array
+        if (a.players && b.players) return a.players[0] === b.players[0];
+        // Individual: compare playerId
+        if (a.playerId && b.playerId) return a.playerId === b.playerId;
+        // Fall back to name comparison
+        return a.name === b.name;
+    }
+
+    // ── Seeding ──
+    // R1 cross-team (A vs B) where possible; byes spread evenly across bracket quarters
+    function btSeedSlots(participants, bracketSize) {
+        const shuffle = arr => {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        };
+
+        const sA = shuffle(participants.filter(p => p.team === 'A'));
+        const sB = shuffle(participants.filter(p => p.team === 'B'));
+        const totalByes = bracketSize - participants.length;
+
+        // Distribute byes proportionally between teams; cap at team size
+        let byesA = Math.min(Math.round(totalByes * sA.length / participants.length), sA.length);
+        let byesB = totalByes - byesA;
+        if (byesB > sB.length) { byesA += byesB - sB.length; byesB = sB.length; }
+        byesA = Math.min(byesA, sA.length);
+
+        // Pop bye-recipients from front of each shuffled list
+        const byeA = sA.splice(0, byesA);
+        const byeB = sB.splice(0, byesB);
+
+        // Build cross-team R1 pairs from remaining players
+        const realPairs = [];
+        while (sA.length > 0 && sB.length > 0) {
+            realPairs.push([sA.shift(), sB.shift()]);
+        }
+        // Leftover same-team players when split is uneven — pair together
+        while (sA.length >= 2) realPairs.push([sA.shift(), sA.shift()]);
+        while (sB.length >= 2) realPairs.push([sB.shift(), sB.shift()]);
+        // Single orphan gets a bonus bye
+        if (sA.length === 1) byeA.push(sA.shift());
+        if (sB.length === 1) byeB.push(sB.shift());
+
+        // Build bye pairs alternating A and B for balanced bracket quarters
+        const byePairs = [];
+        for (let i = 0; i < Math.max(byeA.length, byeB.length); i++) {
+            if (i < byeA.length) byePairs.push([byeA[i], 'BYE']);
+            if (i < byeB.length) byePairs.push(['BYE', byeB[i]]);
+        }
+
+        // Interleave bye pairs evenly across real pairs
+        // Position bye pairs at evenly-spaced bracket slots so bye-winners face cross-team opponents in R2
+        const totalPairs = bracketSize / 2;
+        const ordered = [];
+        if (byePairs.length === 0) {
+            ordered.push(...realPairs);
+        } else {
+            const byePositions = new Set(byePairs.map((_, i) => Math.floor(i * totalPairs / byePairs.length)));
+            let bIdx = 0, rIdx = 0;
+            for (let pos = 0; pos < totalPairs; pos++) {
+                if (byePositions.has(pos) && bIdx < byePairs.length) {
+                    ordered.push(byePairs[bIdx++]);
+                } else if (rIdx < realPairs.length) {
+                    ordered.push(realPairs[rIdx++]);
+                } else if (bIdx < byePairs.length) {
+                    ordered.push(byePairs[bIdx++]);
+                }
+            }
+        }
+
+        const slots = [];
+        ordered.forEach(([l, r]) => {
+            slots.push(l === 'BYE' ? 'BYE' : l);
+            slots.push(r === 'BYE' ? 'BYE' : r);
+        });
+        return slots;
+    }
+
+    // Auto-advance byes in R1 and record winners
+    function btAutoAdvanceByes(bracket) {
+        const n = bracket.bracketSize;
+        const firstR1 = n / 2 - 1;
+        const totalMatches = n - 1;
+        for (let i = firstR1; i < totalMatches; i++) {
+            const { left, right } = btMatchParticipants(bracket, i);
+            if (!bracket.results[i]) {
+                if (left === 'BYE' && right && right !== 'BYE') {
+                    bracket.results[i] = right;
+                } else if (right === 'BYE' && left && left !== 'BYE') {
+                    bracket.results[i] = left;
+                }
+            }
+        }
+    }
+
+    // ── State helpers ──
+    function btGetBracket() {
+        return (S.brackets || []).find(b => b.id === S.ui.activeBracketId) || null;
+    }
+
+    // ── Operations ──
+    function btNewBracket() {
+        if (!requireAdmin('create a bracket')) return;
+        const id = 'bracket-' + Date.now();
+        const bracket = {
+            id,
+            name: 'New Bracket',
+            type: 'individual',
+            awardPoint: false,
+            pointAwarded: false,
+            bonusEventId: null,
+            status: 'setup',
+            bracketSize: 16,
+            slots: [],
+            results: {},
+            winnerTeam: null,
+            winnerName: null,
+        };
+        if (!S.brackets) S.brackets = [];
+        S.brackets.unshift(bracket);
+        S.ui.activeBracketId = id;
+        saveState();
+        renderTab('brackets');
+    }
+
+    function btViewBracket(id) {
+        S.ui.activeBracketId = id;
+        renderTab('brackets');
+    }
+
+    function btBackToHome() {
+        S.ui.activeBracketId = null;
+        renderTab('brackets');
+    }
+
+    function btDeleteBracket(id) {
+        if (!requireAdmin('delete a bracket')) return;
+        const bracket = (S.brackets || []).find(b => b.id === id);
+        if (bracket && bracket.bonusEventId && S.bonusEvents) {
+            delete S.bonusEvents[bracket.bonusEventId];
+        }
+        S.brackets = (S.brackets || []).filter(b => b.id !== id);
+        if (S.ui.activeBracketId === id) S.ui.activeBracketId = null;
+        saveState();
+        renderTab('brackets');
+    }
+
+    function btFinishBracket(id) {
+        if (!requireAdmin('finish a bracket')) return;
+        const bracket = (S.brackets || []).find(b => b.id === id);
+        if (!bracket) return;
+        // Determine winner from final match (index 0)
+        const finalWinner = bracket.results[0];
+        if (finalWinner) {
+            bracket.winnerName = btSlotName(finalWinner);
+            bracket.winnerTeam = finalWinner.team || null;
+        }
+        bracket.status = 'complete';
+        S.ui.activeBracketId = null;
+        saveState();
+        renderTab('brackets');
+    }
+
+    function btStartBracket() {
+        const bracket = btGetBracket();
+        if (!bracket) return;
+        const nameEl = document.getElementById('bt-name-input');
+        const typeEl = document.getElementById('bt-type-select');
+        const awardEl = document.getElementById('bt-award-toggle');
+        if (nameEl) bracket.name = nameEl.value.trim() || bracket.name;
+        if (typeEl) bracket.type = typeEl.value;
+        if (awardEl) bracket.awardPoint = awardEl.checked;
+
+        const participants = btGetSetupParticipants(bracket.type);
+        if (participants.length < 2) { showToast('Add at least 2 participants'); return; }
+
+        bracket.bracketSize = btNextPow2(participants.length);
+        bracket.slots = btSeedSlots(participants, bracket.bracketSize);
+        bracket.results = {};
+        btAutoAdvanceByes(bracket);
+        bracket.status = 'active';
+
+        saveState();
+        renderTab('brackets');
+    }
+
+    function btGetSetupParticipants(type) {
+        if (type === '2man') {
+            const parts = [];
+            // Read Team A pairs from #bt-pairs-A, Team B from #bt-pairs-B
+            [['A', 'bt-pairs-A'], ['B', 'bt-pairs-B']].forEach(([smTeam, containerId]) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.querySelectorAll('.bt-pair-row').forEach(row => {
+                    const selects = row.querySelectorAll('.bt-pair-select');
+                    if (selects.length < 2) return;
+                    const p1Id = selects[0].value;
+                    const p2Id = selects[1].value;
+                    if (!p1Id || !p2Id) return;
+                    const p1 = S.players[p1Id];
+                    const p2 = S.players[p2Id];
+                    if (!p1 || !p2) return;
+                    parts.push({ name: `${btFmtName(p1.name)} / ${btFmtName(p2.name)}`, team: smTeam, players: [p1Id, p2Id] });
+                });
+            });
+            return parts;
+        } else {
+            const checkboxes = document.querySelectorAll('.bt-player-checkbox:checked');
+            const parts = [];
+            checkboxes.forEach(cb => {
+                const pid = cb.value;
+                const p = S.players[pid];
+                if (!p) return;
+                parts.push({ playerId: pid, name: p.name, team: p.team || 'A' });
+            });
+            return parts;
+        }
+    }
+
+    function btRecordWinner(bracketId, matchIdx, winnerSide) {
+        if (!requireAdmin('record a match result')) return;
+        const bracket = (S.brackets || []).find(b => b.id === bracketId);
+        if (!bracket) return;
+        const { left, right } = btMatchParticipants(bracket, matchIdx);
+        const winner = winnerSide === 'left' ? left : right;
+        if (!winner || winner === 'BYE') return;
+        bracket.results[matchIdx] = winner;
+
+        // Check if final match (match 0) decided
+        if (matchIdx === 0 && winner) {
+            bracket.status = 'complete';
+            bracket.winnerTeam = btSlotTeam(winner);
+            bracket.winnerName = btSlotName(winner);
+        }
+
+        saveState();
+        renderTab('brackets');
+    }
+
+    function btClearWinner(bracketId, matchIdx) {
+        if (!requireAdmin('clear a match result')) return;
+        const bracket = (S.brackets || []).find(b => b.id === bracketId);
+        if (!bracket) return;
+        // Clear this match and all ancestor matches that depend on it
+        function clearUp(idx) {
+            const wasWinner = bracket.results[idx];
+            delete bracket.results[idx];
+            if (idx === 0 || !wasWinner) return;
+            const parentIdx = Math.floor((idx - 1) / 2);
+            const parentWinner = bracket.results[parentIdx];
+            if (parentWinner && btSlotsEqual(parentWinner, wasWinner)) {
+                clearUp(parentIdx);
+            }
+        }
+        clearUp(matchIdx);
+        bracket.status = 'active';
+        bracket.winnerTeam = null;
+        bracket.winnerName = null;
+        saveState();
+        renderTab('brackets');
+    }
+
+    function btAwardPoint(bracketId) {
+        if (!requireAdmin('award a bracket point')) return;
+        const bracket = (S.brackets || []).find(b => b.id === bracketId);
+        if (!bracket || bracket.status !== 'complete' || !bracket.winnerTeam) return;
+        if (!bracket.awardPoint) { showToast('This bracket is not set to award a point'); return; }
+        if (bracket.pointAwarded) { showToast('Point already awarded'); return; }
+
+        const id = 'bonus-' + Date.now();
+        const maxOrder = Math.max(...Object.values(S.bonusEvents).map(e => e.order || 0), 0);
+        const smTeam = bracket.winnerTeam;
+        S.bonusEvents[id] = {
+            id,
+            name: `🏆 ${bracket.name}`,
+            sessionId: null,
+            pointsA: smTeam === 'A' ? 1 : 0,
+            pointsB: smTeam === 'B' ? 1 : 0,
+            notesA: smTeam === 'A' ? bracket.winnerName : '',
+            notesB: smTeam === 'B' ? bracket.winnerName : '',
+            order: maxOrder + 1,
+        };
+        bracket.pointAwarded = true;
+        bracket.bonusEventId = id;
+        saveState();
+        renderTab('brackets');
+        showToast('Point awarded and added to leaderboard!');
+    }
+
+    function btAddPairRowTeam(smTeam) {
+        const containerId = smTeam === 'A' ? 'bt-pairs-A' : 'bt-pairs-B';
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const idx = container.querySelectorAll('.bt-pair-row').length + 1;
+        const color = smTeam === 'A' ? (S.config.teamA.color || '#cc0000') : (S.config.teamB.color || '#0000cc');
+        const teamPlayers = Object.values(S.players).filter(p => p.team === smTeam).sort((a,b) => (a.name||'').localeCompare(b.name||''));
+        const opts = `<option value="">-- Player --</option>${teamPlayers.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}`;
+        const row = document.createElement('div');
+        row.className = 'bt-pair-row';
+        row.innerHTML = `<span class="bt-pair-num">${idx}</span>
+            <select class="bt-pair-select" style="border-left:3px solid ${color}">${opts}</select>
+            <span class="bt-pair-vs">+</span>
+            <select class="bt-pair-select" style="border-left:3px solid ${color}">${opts}</select>`;
+        container.appendChild(row);
+    }
+
+    // ── Render ──
+    function renderBrackets() {
+        const el = document.getElementById('brackets-content');
+        if (!el) return;
+        if (!S.brackets) S.brackets = [];
+        const bracket = btGetBracket();
+        // Complete brackets go back to home list (like horse race)
+        if (bracket && bracket.status === 'setup') {
+            el.innerHTML = renderBracketSetup(bracket);
+        } else if (bracket && bracket.status !== 'complete') {
+            el.innerHTML = renderBracketDetail(bracket);
+        } else {
+            if (bracket && bracket.status === 'complete') S.ui.activeBracketId = null;
+            el.innerHTML = renderBracketHome();
+        }
+    }
+
+    function renderBracketHome() {
+        const brackets = S.brackets || [];
+        const isAdmin = S.ui.settingsUnlocked;
+        const completeBrackets = brackets.filter(b => b.status === 'complete');
+        const activeBrackets = brackets.filter(b => b.status !== 'complete');
+
+        let html = `<div class="bt-header">
+            <h2 class="section-title" style="margin:0">🏆 Brackets</h2>
+            ${isAdmin ? `<button class="bt-new-btn" onclick="btNewBracket()">+ New Bracket</button>` : ''}
+        </div>`;
+
+        if (brackets.length === 0) {
+            html += `<div class="bt-empty">No brackets yet${isAdmin ? '.<br>Tap + New Bracket to create one.' : '.'}</div>`;
+        } else {
+            // Completed brackets first
+            if (completeBrackets.length > 0) {
+                completeBrackets.slice().reverse().forEach(b => {
+                    const color = b.winnerTeam === 'A' ? (S.config.teamA.color || '#cc0000') : (S.config.teamB.color || '#0000cc');
+                    const winnerHtml = b.winnerName
+                        ? `<div class="bt-winner-badge" style="background:${color}">🏆 ${b.winnerName} wins!</div>`
+                        : '';
+                    let awardBtn = '';
+                    if (isAdmin && b.awardPoint) {
+                        awardBtn = b.pointAwarded
+                            ? `<span class="bt-point-awarded">✓ Point on Leaderboard</span>`
+                            : `<button class="bt-btn bt-btn-award" onclick="btAwardPoint('${b.id}')">+ Award Point</button>`;
+                    } else if (!isAdmin && b.awardPoint && b.pointAwarded) {
+                        awardBtn = `<span class="bt-point-awarded">✓ Point on Leaderboard</span>`;
+                    }
+                    html += `<div class="bt-card">
+                        <div class="bt-card-head">
+                            <span class="bt-card-name">${b.name}</span>
+                            <span class="bt-status-badge">Complete</span>
+                        </div>
+                        <div class="bt-card-body">
+                            ${winnerHtml}
+                            <div class="bt-card-actions">
+                                <button class="bt-btn bt-btn-view" onclick="btViewBracket('${b.id}')">View Results</button>
+                                ${awardBtn}
+                                ${isAdmin ? `<button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${b.id}')">Delete</button>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            // Active/setup brackets — admin only
+            if (isAdmin && activeBrackets.length > 0) {
+                activeBrackets.slice().reverse().forEach(b => {
+                    const statusLabel = b.status === 'setup' ? 'Setup' : 'In Progress';
+                    html += `<div class="bt-card">
+                        <div class="bt-card-head">
+                            <span class="bt-card-name">${b.name}</span>
+                            <span class="bt-status-badge">${statusLabel}</span>
+                        </div>
+                        <div class="bt-card-body">
+                            <div class="bt-card-meta">${b.type === '2man' ? '2-Man Teams' : 'Individual'}${b.awardPoint ? ' · Awards Point' : ''}</div>
+                            <div class="bt-card-actions">
+                                <button class="bt-btn bt-btn-view" onclick="btViewBracket('${b.id}')">Open</button>
+                                <button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${b.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            }
+        }
+        return html;
+    }
+
+    function renderBracketSetup(bracket) {
+        const players = Object.values(S.players).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        // Group players by team for optgroups in 2-man selects
+        const teamAPlayers = players.filter(p => p.team === 'A');
+        const teamBPlayers = players.filter(p => p.team === 'B');
+        const colorA = S.config.teamA.color || '#cc0000';
+        const colorB = S.config.teamB.color || '#0000cc';
+        const playerOptsGrouped = `<optgroup label="── ${S.config.teamA.name || 'Team A'} ──">${teamAPlayers.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}</optgroup><optgroup label="── ${S.config.teamB.name || 'Team B'} ──">${teamBPlayers.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}</optgroup>`;
+
+        const mkPairRow = (idx, teamSel, color) => {
+            const opts = `<option value="">-- Player --</option>${teamSel.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}`;
+            return `<div class="bt-pair-row">
+                <span class="bt-pair-num">${idx}</span>
+                <select class="bt-pair-select" style="border-left:3px solid ${color}">${opts}</select>
+                <span class="bt-pair-vs">+</span>
+                <select class="bt-pair-select" style="border-left:3px solid ${color}">${opts}</select>
+            </div>`;
+        };
+
+        let participantHtml = '';
+        if (bracket.type === '2man') {
+            const numDefaultA = Math.min(3, teamAPlayers.length);
+            const numDefaultB = Math.min(3, teamBPlayers.length);
+            participantHtml = `
+            <div class="bt-setup-section">
+                <div class="bt-setup-head" style="background:${colorA};color:#fff;">● ${S.config.teamA.name||'Team A'} — 2-Man Teams</div>
+                <div class="bt-setup-body" id="bt-pairs-A">
+                    ${Array.from({length:numDefaultA},(_,i)=>mkPairRow(i+1,teamAPlayers,colorA)).join('')}
+                </div>
+                <div style="padding:0 12px 10px;">
+                    <button class="bt-btn" style="background:#eee;color:#333;width:100%;" onclick="btAddPairRowTeam('A')">+ Add ${S.config.teamA.name||'Team A'} Team</button>
+                </div>
+            </div>
+            <div class="bt-setup-section">
+                <div class="bt-setup-head" style="background:${colorB};color:#fff;">● ${S.config.teamB.name||'Team B'} — 2-Man Teams</div>
+                <div class="bt-setup-body" id="bt-pairs-B">
+                    ${Array.from({length:numDefaultB},(_,i)=>mkPairRow(i+1,teamBPlayers,colorB)).join('')}
+                </div>
+                <div style="padding:0 12px 10px;">
+                    <button class="bt-btn" style="background:#eee;color:#333;width:100%;" onclick="btAddPairRowTeam('B')">+ Add ${S.config.teamB.name||'Team B'} Team</button>
+                </div>
+            </div>`;
+        } else {
+            participantHtml = `<div class="bt-setup-section">
+                <div class="bt-setup-head" style="display:flex;justify-content:space-between;align-items:center;">
+                    <span>Participants (Individual)</span>
+                    <button onclick="btSelectAll()" id="bt-select-all-btn" style="background:none;border:1px solid #aaa;color:#555;border-radius:5px;padding:2px 10px;font-size:0.75rem;cursor:pointer;">Select All</button>
+                </div>
+                <div class="bt-setup-body" id="bt-players-container">
+                    ${players.map(p => `<div class="bt-field-row" style="margin-bottom:4px;">
+                        <input type="checkbox" class="bt-player-checkbox" id="btp-${p.id}" value="${p.id}" onchange="btUpdateSelectAllBtn()" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
+                        <label for="btp-${p.id}" style="cursor:pointer;flex:1;font-size:0.88rem;">
+                            <span class="bt-player-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.team==='A'?colorA:colorB};margin-right:4px;vertical-align:middle;"></span>
+                            ${p.name} <span style="color:#999;font-size:0.78rem;">(${p.team==='A'?(S.config.teamA.name||'A'):(S.config.teamB.name||'B')})</span>
+                        </label>
+                    </div>`).join('')}
+                </div>
+            </div>`;
+        }
+
+        return `<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+            <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
+            <h2 class="section-title" style="margin:0;flex:1;">New Bracket</h2>
+        </div>
+        <div class="bt-setup-section">
+            <div class="bt-setup-head">Settings</div>
+            <div class="bt-setup-body">
+                <div class="bt-field-row">
+                    <label>Name</label>
+                    <input class="bt-input" id="bt-name-input" value="${bracket.name}" placeholder="e.g. Putting Contest">
+                </div>
+                <div class="bt-field-row">
+                    <label>Format</label>
+                    <select class="bt-select" id="bt-type-select" onchange="btRefreshSetupType()">
+                        <option value="individual" ${bracket.type==='individual'?'selected':''}>Individual</option>
+                        <option value="2man" ${bracket.type==='2man'?'selected':''}>2-Man Teams</option>
+                    </select>
+                </div>
+                <div class="bt-toggle-row">
+                    <label for="bt-award-toggle">Award team point to winner?</label>
+                    <input type="checkbox" id="bt-award-toggle" ${bracket.awardPoint?'checked':''} style="width:20px;height:20px;cursor:pointer;">
+                </div>
+            </div>
+        </div>
+        ${participantHtml}
+        <button class="bt-btn-start" onclick="btStartBracket()">Generate Bracket →</button>`;
+    }
+
+    function btRefreshSetupType() {
+        const typeEl = document.getElementById('bt-type-select');
+        if (!typeEl) return;
+        const bracket = btGetBracket();
+        if (!bracket) return;
+        bracket.type = typeEl.value;
+        // Re-render setup to swap participant section
+        const el = document.getElementById('brackets-content');
+        if (el) el.innerHTML = renderBracketSetup(bracket);
+    }
+
+    function btSelectAll() {
+        const checkboxes = document.querySelectorAll('.bt-player-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+        btUpdateSelectAllBtn();
+    }
+
+    function btUpdateSelectAllBtn() {
+        const btn = document.getElementById('bt-select-all-btn');
+        if (!btn) return;
+        const checkboxes = document.querySelectorAll('.bt-player-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        btn.textContent = allChecked ? 'Deselect All' : 'Select All';
+    }
+
+    function btTogglePlayer(playerId) {
+        btUpdateSelectAllBtn();
+    }
+
+    function renderBracketDetail(bracket) {
+        const isComplete = bracket.status === 'complete';
+        const isAdmin = S.ui.settingsUnlocked;
+        let winnerHtml = '';
+        if (isComplete && bracket.winnerName) {
+            const color = bracket.winnerTeam === 'A' ? (S.config.teamA.color || '#cc0000') : (S.config.teamB.color || '#0000cc');
+            winnerHtml = `<div class="bt-winner-badge" style="background:${color};margin-bottom:12px;">🏆 ${bracket.winnerName} wins!</div>`;
+        }
+
+        let awardHtml = '';
+        if (isComplete && bracket.awardPoint && isAdmin) {
+            awardHtml = bracket.pointAwarded
+                ? `<div class="bt-award-section"><div class="bt-award-section-title">Leaderboard</div><span class="bt-point-awarded">✓ Point on Leaderboard</span></div>`
+                : `<div class="bt-award-section"><div class="bt-award-section-title">Leaderboard</div><button class="bt-btn bt-btn-award" onclick="btAwardPoint('${bracket.id}')">+ Award Point to Winner</button></div>`;
+        }
+
+        const finishBtn = (!isComplete && isAdmin)
+            ? `<button class="bt-btn bt-btn-finish" onclick="btFinishBracket('${bracket.id}')">Finish Bracket</button>`
+            : '';
+        const deleteBtn = isAdmin
+            ? `<button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${bracket.id}')">Delete Bracket</button>`
+            : '';
+
+        return `<div class="bt-detail-header">
+            <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
+            <span class="bt-detail-title">${bracket.name}</span>
+        </div>
+        ${winnerHtml}
+        <div class="bt-bracket-scroll">
+            ${renderBracketTree(bracket, false)}
+        </div>
+        ${awardHtml}
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="bt-back-btn" onclick="btBackToHome()">← Back to Brackets</button>
+            ${finishBtn}
+            ${deleteBtn}
+        </div>`;
+    }
+
+    function renderBracketTree(bracket, tvMode) {
+        const n = bracket.bracketSize;
+        if (!n || n < 2) return '';
+        const numRounds = btNumRounds(n);
+        // Render rounds from R1 → Final (left to right)
+        let html = tvMode
+            ? `<div class="bc-bracket-tree">`
+            : `<div class="bt-bracket-tree">`;
+
+        for (let r = 0; r < numRounds; r++) {
+            const roundIndices = btGetRoundMatchIndices(n, r);
+            const label = btRoundLabel(r, n);
+            if (tvMode) {
+                html += `<div class="bc-round-col">
+                    <div class="bc-round-label">${label}</div>`;
+            } else {
+                html += `<div class="bt-round-col">
+                    <div class="bt-round-label">${label}</div>`;
+            }
+
+            roundIndices.forEach((matchIdx, i) => {
+                const { left, right } = btMatchParticipants(bracket, matchIdx);
+                const winner = bracket.results[matchIdx];
+
+                const renderPlayer = (slot, side) => {
+                    if (!slot) {
+                        return tvMode
+                            ? `<div class="bc-match-player bc-tbd"><span class="bc-player-name">TBD</span></div>`
+                            : `<div class="bt-match-player bt-tbd"><span class="bt-player-name">TBD</span></div>`;
+                    }
+                    if (slot === 'BYE') {
+                        return tvMode
+                            ? `<div class="bc-match-player bc-bye"><span class="bc-player-name">BYE</span></div>`
+                            : `<div class="bt-match-player bt-bye"><span class="bt-player-name">BYE</span></div>`;
+                    }
+                    const isWinner = winner && btSlotsEqual(winner, slot);
+                    const isLoser = winner && !btSlotsEqual(winner, slot);
+                    const color = btSlotColor(slot);
+                    const name = btSlotName(slot);
+                    const check = isWinner ? (tvMode ? `<span class="bc-player-check">✓</span>` : `<span class="bt-player-check">✓</span>`) : '';
+                    const isBye = slot === 'BYE';
+                    if (tvMode) {
+                        return `<div class="bc-match-player${isWinner?' bc-winner':''}${isLoser?' bc-loser':''}">
+                            <span class="bc-player-dot" style="background:${color}"></span>
+                            <span class="bc-player-name">${name}</span>
+                            ${check}
+                        </div>`;
+                    } else {
+                        const canClick = !winner && slot && slot !== 'BYE' && left && right && left !== 'BYE' && right !== 'BYE';
+                        const clickAttr = canClick ? `onclick="btRecordWinner('${bracket.id}',${matchIdx},'${side}')"` : '';
+                        const clearAttr = isWinner ? `onclick="btClearWinner('${bracket.id}',${matchIdx})"` : '';
+                        return `<div class="bt-match-player${isWinner?' bt-winner':''}${isLoser?' bt-loser':''}" ${isWinner ? clearAttr : clickAttr}>
+                            <span class="bt-player-dot" style="background:${color}"></span>
+                            <span class="bt-player-name">${name}</span>
+                            ${check}
+                        </div>`;
+                    }
+                };
+
+                // Half-spacer before first match, full spacer between subsequent matches
+                if (tvMode) {
+                    if (i === 0) html += `<div class="bc-match-half-spacer"></div>`;
+                    else html += `<div class="bc-match-spacer"></div>`;
+                    html += `<div class="bc-match-slot">
+                        ${renderPlayer(left, 'left')}
+                        ${renderPlayer(right, 'right')}
+                    </div>`;
+                } else {
+                    if (i === 0) html += `<div class="bt-match-half-spacer"></div>`;
+                    else html += `<div class="bt-match-spacer"></div>`;
+                    html += `<div class="bt-match-slot">
+                        ${renderPlayer(left, 'left')}
+                        ${renderPlayer(right, 'right')}
+                    </div>`;
+                }
+            });
+
+            // Bottom half-spacer lets column stretch to fill alignment height
+            html += tvMode ? `<div class="bc-match-half-spacer"></div>` : `<div class="bt-match-half-spacer"></div>`;
+            html += `</div>`; // close round col
+        }
+        html += `</div>`; // close tree
+        return html;
+    }
+
+    // ── TV Slide ──
+    function renderBroadcastBracket(bracket) {
+        const el = document.getElementById('broadcastSpotlightContent');
+        if (!el) return;
+        el.innerHTML = `<div class="bc-bracket-slide">
+            <div class="bc-bracket-title">${bracket.name}</div>
+            <div class="bc-bracket-wrap">
+                ${renderBracketTree(bracket, true)}
+            </div>
+        </div>`;
     }
 
     init();
