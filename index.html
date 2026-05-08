@@ -3516,44 +3516,44 @@
         }
         .matchup-bc-header-left { display: flex; align-items: center; gap: 14px; }
         .matchup-bc-header-right { display: flex; align-items: center; gap: 16px; }
-        .matchup-bc-logo { width: clamp(36px, 4vw, 56px); height: auto; filter: brightness(0) invert(1); }
+        .matchup-bc-logo { width: clamp(36px, 4vw, 152px); height: auto; filter: brightness(0) invert(1); }
         .matchup-bc-title {
             font-family: 'Azalea', 'Georgia', serif;
-            font-size: clamp(22px, 3vw, 44px);
+            font-size: clamp(22px, 3vw, 115px);
             color: var(--masters-yellow);
             letter-spacing: 2px;
         }
         .matchup-bc-badge {
             background: var(--masters-yellow); color: var(--masters-dark);
-            font-weight: 900; font-size: clamp(11px, 1.4vw, 18px);
+            font-weight: 900; font-size: clamp(11px, 1.4vw, 54px);
             padding: 4px 14px; border-radius: 4px; letter-spacing: 3px;
             text-transform: uppercase;
         }
         .matchup-bc-live {
             display: flex; align-items: center; gap: 6px;
-            font-size: clamp(11px, 1.2vw, 16px); font-weight: bold;
+            font-size: clamp(11px, 1.2vw, 46px); font-weight: bold;
             color: #fff; letter-spacing: 2px;
         }
         .matchup-bc-live-dot {
-            width: 8px; height: 8px; background: #ff3b30; border-radius: 50%;
+            width: clamp(8px, 0.9vw, 34px); height: clamp(8px, 0.9vw, 34px); background: #ff3b30; border-radius: 50%;
             animation: livePulse 2s infinite;
             box-shadow: 0 0 6px #ff3b30;
         }
         .matchup-bc-clock {
-            font-size: clamp(12px, 1.3vw, 18px); color: rgba(255,255,255,0.7);
+            font-size: clamp(12px, 1.3vw, 50px); color: rgba(255,255,255,0.7);
             font-variant-numeric: tabular-nums;
         }
         .matchup-bc-dfgc-logo {
-            height: clamp(32px, 4vw, 52px); width: auto;
+            height: clamp(32px, 4vw, 152px); width: auto;
             margin-left: 8px; opacity: 0.85;
         }
 
         /* Status banner */
         .matchup-bc-status {
             flex-shrink: 0;
-            padding: clamp(6px, 0.8vw, 12px) clamp(16px, 2vw, 32px);
+            padding: clamp(6px, 0.8vw, 30px) clamp(16px, 2vw, 76px);
             display: flex; align-items: center; justify-content: center; gap: 16px;
-            font-size: clamp(14px, 1.5vw, 24px); font-weight: 700;
+            font-size: clamp(14px, 1.5vw, 58px); font-weight: 700;
             letter-spacing: 1px; text-transform: uppercase;
             transition: all 0.5s;
         }
@@ -3571,7 +3571,7 @@
             border-bottom: 2px solid var(--masters-yellow);
         }
         .matchup-bc-session-info {
-            font-size: clamp(11px, 1vw, 16px); color: rgba(255,255,255,0.5);
+            font-size: clamp(11px, 1vw, 38px); color: rgba(255,255,255,0.5);
             font-weight: 500; letter-spacing: 1px;
         }
 
@@ -3595,8 +3595,8 @@
             transform: rotate(-15deg) scale(1.5);
         }
         .matchup-bc-team-header {
-            padding: clamp(8px, 1vw, 14px) clamp(12px, 1.5vw, 20px);
-            font-size: clamp(14px, 1.5vw, 22px); font-weight: 800;
+            padding: clamp(8px, 1vw, 38px) clamp(12px, 1.5vw, 57px);
+            font-size: clamp(14px, 1.5vw, 58px); font-weight: 800;
             text-transform: uppercase; letter-spacing: 2px;
             color: #fff; position: relative; z-index: 1;
             display: flex; align-items: center; justify-content: space-between;
@@ -3609,10 +3609,10 @@
             position: relative; z-index: 1;
         }
         .matchup-bc-player-card {
-            padding: clamp(6px, 0.6vw, 10px) clamp(8px, 1vw, 14px);
+            padding: clamp(6px, 0.6vw, 23px) clamp(8px, 1vw, 38px);
             border-radius: 6px; margin-bottom: 4px;
             display: flex; align-items: center; justify-content: space-between;
-            font-size: clamp(12px, 1.2vw, 18px);
+            font-size: clamp(12px, 1.2vw, 46px);
             transition: all 0.3s;
             border-left: 3px solid transparent;
         }
@@ -3621,7 +3621,7 @@
         }
         .matchup-bc-player-card.matched {
             opacity: 0.4; color: #999; text-decoration: line-through;
-            font-size: clamp(10px, 1vw, 14px);
+            font-size: clamp(10px, 1vw, 38px);
         }
         .matchup-bc-player-card.pending-pick {
             background: var(--masters-yellow);
@@ -3635,7 +3635,7 @@
             50% { box-shadow: 0 0 8px 2px rgba(251,243,8,0.6); }
         }
         .matchup-bc-player-hcp {
-            font-size: clamp(10px, 0.9vw, 14px); color: rgba(0,0,0,0.35);
+            font-size: clamp(10px, 0.9vw, 34px); color: rgba(0,0,0,0.35);
             font-weight: 400;
         }
         .matchup-bc-player-card.pending-pick .matchup-bc-player-hcp { color: rgba(0,0,0,0.6); }
@@ -3648,8 +3648,8 @@
             border-right: 1px solid rgba(255,255,255,0.06);
         }
         .matchup-bc-matches-header {
-            padding: clamp(8px, 1vw, 14px) clamp(12px, 1.5vw, 20px);
-            font-size: clamp(13px, 1.3vw, 20px); font-weight: 700;
+            padding: clamp(8px, 1vw, 38px) clamp(12px, 1.5vw, 57px);
+            font-size: clamp(13px, 1.3vw, 50px); font-weight: 700;
             color: rgba(255,255,255,0.6); text-transform: uppercase;
             letter-spacing: 2px; text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -3689,7 +3689,7 @@
             box-shadow: 0 0 12px rgba(251,243,8,0.15);
         }
         .matchup-bc-match-num {
-            font-size: clamp(10px, 0.9vw, 14px); color: rgba(255,255,255,0.55);
+            font-size: clamp(10px, 0.9vw, 34px); color: rgba(255,255,255,0.55);
             text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
             font-weight: 700;
         }
@@ -3709,14 +3709,14 @@
             border-right: 4px solid rgba(var(--team-b-rgb), 1);
         }
         .matchup-bc-match-team-name {
-            font-size: clamp(12px, 1.3vw, 20px); color: #fff;
+            font-size: clamp(12px, 1.3vw, 50px); color: #fff;
             font-weight: 700;
         }
         .matchup-bc-match-team-hcp {
-            font-size: clamp(9px, 0.9vw, 13px); color: rgba(255,255,255,0.6);
+            font-size: clamp(9px, 0.9vw, 34px); color: rgba(255,255,255,0.6);
         }
         .matchup-bc-match-vs-label {
-            font-size: clamp(12px, 1.2vw, 18px); color: rgba(255,255,255,0.5);
+            font-size: clamp(12px, 1.2vw, 46px); color: rgba(255,255,255,0.5);
             font-weight: 800; flex-shrink: 0;
         }
         .matchup-bc-match-team.tbd {
@@ -3730,7 +3730,7 @@
         /* Bottom ticker */
         .matchup-bc-ticker {
             flex-shrink: 0;
-            height: clamp(36px, 4vw, 52px);
+            height: clamp(36px, 4vw, 152px);
             background: var(--masters-darkest);
             display: flex; align-items: stretch;
             border-top: 1px solid rgba(255,255,255,0.06);
@@ -3738,16 +3738,16 @@
         }
         .matchup-bc-ticker-label {
             display: flex; align-items: center;
-            padding: 0 clamp(12px, 1.5vw, 24px);
+            padding: 0 clamp(12px, 1.5vw, 57px);
             background: linear-gradient(135deg, var(--masters-yellow) 0%, #d4c800 100%);
-            font-weight: 800; font-size: clamp(10px, 1vw, 15px);
+            font-weight: 800; font-size: clamp(10px, 1vw, 38px);
             color: var(--masters-darkest); letter-spacing: 2px;
             white-space: nowrap;
         }
         .matchup-bc-ticker-track {
             flex: 1; overflow: hidden; display: flex; align-items: center;
             padding: 0 16px; gap: 24px;
-            font-size: clamp(11px, 1vw, 15px); color: rgba(255,255,255,0.6);
+            font-size: clamp(11px, 1vw, 38px); color: rgba(255,255,255,0.6);
         }
 
         /* Matchup celebration overlay */
@@ -3758,7 +3758,7 @@
         }
         .matchup-bc-celebration-text {
             font-family: 'Azalea', 'Georgia', serif;
-            font-size: clamp(36px, 5vw, 70px);
+            font-size: clamp(36px, 5vw, 192px);
             color: var(--masters-yellow);
             text-shadow: 0 0 30px rgba(251,243,8,0.6), 0 0 60px rgba(251,243,8,0.3), 0 4px 8px rgba(0,0,0,0.5);
             animation: celebrationPop 2s ease-out forwards;
