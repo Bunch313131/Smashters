@@ -10782,6 +10782,19 @@
                 </div>`;
             });
 
+            // Session subtotal row
+            const sessScores = getSessionScores(session.id);
+            html += `<div class="broadcast-subtotal-row">
+                <div class="broadcast-subtotal-cell team-a">
+                    <span class="sub-label">${S.config.teamA.name}</span>
+                    <span class="sub-score">${formatScore(sessScores.A)}</span>
+                </div>
+                <div class="broadcast-subtotal-center">PTS</div>
+                <div class="broadcast-subtotal-cell team-b">
+                    <span class="sub-score">${formatScore(sessScores.B)}</span>
+                    <span class="sub-label">${S.config.teamB.name}</span>
+                </div>
+            </div>`;
             html += `</div>`; // close broadcast-session-group
         });
 
@@ -10811,6 +10824,20 @@
                 </div>`;
             });
 
+            // Standalone bonus subtotal
+            let bonusA = 0, bonusB = 0;
+            standaloneBonuses.forEach(e => { bonusA += (e.pointsA || 0); bonusB += (e.pointsB || 0); });
+            html += `<div class="broadcast-subtotal-row">
+                <div class="broadcast-subtotal-cell team-a">
+                    <span class="sub-label">${S.config.teamA.name}</span>
+                    <span class="sub-score">${formatScore(bonusA)}</span>
+                </div>
+                <div class="broadcast-subtotal-center">PTS</div>
+                <div class="broadcast-subtotal-cell team-b">
+                    <span class="sub-score">${formatScore(bonusB)}</span>
+                    <span class="sub-label">${S.config.teamB.name}</span>
+                </div>
+            </div>`;
             html += `</div>`; // close broadcast-session-group
         }
 
