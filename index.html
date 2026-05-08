@@ -9704,6 +9704,8 @@
                 if (Date.now() - notif.timestamp > 90000) return;
                 // Don't show notifications we sent ourselves (scorer's own device)
                 if (notif.senderToken && notif.senderToken === LOCAL_SENDER_TOKEN) return;
+                // Don't show popup notifications on the TV broadcast screen
+                if (document.body.classList.contains('tv-mode')) return;
                 // Reconstruct icon from type so we don't store fragile HTML in Firebase
                 notif.icon = notifIconForType(notif.type);
                 queueScoreNotif(notif);
