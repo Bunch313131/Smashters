@@ -4316,6 +4316,7 @@
             teamSize: 6,
             courseName: '',
             eventDate: '',
+            weatherLocation: '',
             courseHoles: JSON.parse(JSON.stringify(DEFAULT_COURSE_HOLES)),
             useHandicaps: true,
             sessions: [
@@ -8335,6 +8336,8 @@
                         <div class="form-group"><label>Event Date</label>
                             <input class="form-input" id="cfgDate" type="date" value="${S.config.eventDate}"></div>
                     </div>
+                    <div class="form-group"><label>Weather Location <span style="font-weight:400;color:#999;">(City, State — for TV forecast slide)</span></label>
+                        <input class="form-input" id="cfgWeatherLocation" value="${S.config.weatherLocation || ''}" placeholder="e.g. Ponte Vedra Beach, FL"></div>
                     <div class="form-group"><label>Year</label>
                         <input class="form-input" id="cfgYear" type="number" value="${S.config.year}"></div>
                 </div>
@@ -8480,6 +8483,7 @@
         S.config.clubName = document.getElementById('cfgClubName').value.trim();
         S.config.courseName = document.getElementById('cfgCourse').value.trim();
         S.config.eventDate = document.getElementById('cfgDate').value;
+        S.config.weatherLocation = document.getElementById('cfgWeatherLocation').value.trim();
         S.config.year = parseInt(document.getElementById('cfgYear').value) || new Date().getFullYear();
         S.config.teamA.name = document.getElementById('cfgTeamAName').value.trim() || 'Team A';
         S.config.teamA.color = document.getElementById('cfgTeamAColor').value;
@@ -11576,9 +11580,12 @@
 
     async function fetchBroadcastWeather() {
         broadcastWeatherData = null;
-        const dates = (S.config.sessions || []).map(s => s.date).filter(Boolean).sort();
+        // Dates: prefer per-session dates, fall back to global eventDate
+        let dates = (S.config.sessions || []).map(s => s.date).filter(Boolean).sort();
+        if (dates.length === 0 && S.config.eventDate) dates = [S.config.eventDate];
         if (dates.length === 0) return;
-        const locationQuery = S.config.courseName || S.config.clubName || S.config.eventName;
+        // Location: weatherLocation field first (city, state), then course/club name
+        const locationQuery = (S.config.weatherLocation || S.config.courseName || S.config.clubName || '').trim();
         if (!locationQuery) return;
         try {
             const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery)}&count=1&language=en&format=json`);
