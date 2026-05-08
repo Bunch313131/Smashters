@@ -4522,6 +4522,13 @@
     // ─────────────────────────────────────────────────────────
     // SCORE NOTIFICATIONS
     // ─────────────────────────────────────────────────────────
+    const LOCAL_SENDER_TOKEN = Math.random().toString(36).slice(2); // unique per page session
+    let _saveStateTimer = null;
+    function debouncedSaveState() {
+        if (_saveStateTimer) clearTimeout(_saveStateTimer);
+        _saveStateTimer = setTimeout(() => { _saveStateTimer = null; saveState(); }, 400);
+    }
+
     const scoreNotifQueue = [];
     let scoreNotifShowing = false;
     const scoreNotifsSentLocal = new Set(); // tracks notifs we've already pushed to Firebase
@@ -4548,19 +4555,24 @@
         }, 3800);
     }
 
+    function notifIconForType(type) {
+        const dfIcon = '<img src="assets/images/dumpster-fire.svg" style="width:2.8em;height:2.8em;display:block;margin:0 auto;" alt="🔥">';
+        const icons = { albatross: '🦅🦅', eagle: '🦅', birdie: '🐦', snowman: '⛄', triple: dfIcon };
+        return icons[type] || '';
+    }
+
     function pushScoreNotif(matchId, playerId, holeNum, score) {
         if (!LiveSync.eventCode || !LiveSync.db) return;
         const par = getHoleInfo(holeNum).par;
         const player = S.players[playerId];
         const firstName = player ? player.name.split(' ')[0] : 'Player';
 
-        let icon, text, type;
-        const dfIcon = '<img src="assets/images/dumpster-fire.svg" style="width:2.8em;height:2.8em;display:block;margin:0 auto;" alt="🗑️🔥">';
-        if (score <= par - 3)      { type = 'albatross';  icon = '🦅🦅'; text = 'ALBATROSS!!'; }
-        else if (score === par - 2) { type = 'eagle';      icon = '🦅';   text = 'EAGLE!'; }
-        else if (score === par - 1) { type = 'birdie';     icon = '🐦';   text = 'BIRDIE!'; }
-        else if (score === 8)       { type = 'snowman';    icon = '⛄';   text = 'SNOWMAN!'; }
-        else if (score >= par + 3)  { type = 'triple';     icon = dfIcon; text = 'Triple Bogey+'; }
+        let text, type;
+        if (score <= par - 3)      { type = 'albatross'; text = 'ALBATROSS!!'; }
+        else if (score === par - 2) { type = 'eagle';     text = 'EAGLE!'; }
+        else if (score === par - 1) { type = 'birdie';    text = 'BIRDIE!'; }
+        else if (score === 8)       { type = 'snowman';   text = 'SNOWMAN!'; }
+        else if (score >= par + 3)  { type = 'triple';    text = 'Triple Bogey+'; }
         else return;
 
         const key = `${matchId}-${holeNum}-${playerId}-${type}`;
@@ -4572,9 +4584,9 @@
         newRef.set({
             id: newRef.key,
             type,
-            icon,
             text,
             sub: firstName + ' · Hole ' + holeNum,
+            senderToken: LOCAL_SENDER_TOKEN,
             timestamp: firebase.database.ServerValue.TIMESTAMP,
         });
 
@@ -7123,7 +7135,7 @@
         updateMatchStatus(match);
         const newStatus = getMatchPlayStatus(match);
         pushLeadChangeNotif(S.ui.activeMatchId, newStatus, prevStatus.leader);
-        saveState();
+        debouncedSaveState();
         renderScoring();
     }
 
@@ -7148,7 +7160,7 @@
         updateMatchStatus(match);
         const newStatusSet = getMatchPlayStatus(match);
         pushLeadChangeNotif(S.ui.activeMatchId, newStatusSet, prevStatusSet.leader);
-        saveState();
+        debouncedSaveState();
         renderScoring();
 
         // Wow factor: pulse the score drum center number
@@ -9692,6 +9704,10 @@
                 seenKeys.add(snap.key);
                 // Ignore stale notifications from before this session started
                 if (Date.now() - notif.timestamp > 90000) return;
+                // Don't show notifications we sent ourselves (scorer's own device)
+                if (notif.senderToken && notif.senderToken === LOCAL_SENDER_TOKEN) return;
+                // Reconstruct icon from type so we don't store fragile HTML in Firebase
+                notif.icon = notifIconForType(notif.type);
                 queueScoreNotif(notif);
             });
             this.listeners.push({ ref: notifRef, event: 'child_added', callback: listener });
