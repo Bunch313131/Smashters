@@ -5520,29 +5520,6 @@
         // Sessions sorted most-recent-first for display
         const sessions = S.config.sessions.slice().sort((a, b) => b.order - a.order);
 
-        // Build breakdown strings (ascending order for readability)
-        let sessionBreakdownA = '', sessionBreakdownB = '';
-        let breakdownParts = 0;
-        S.config.sessions.slice().sort((a, b) => a.order - b.order).forEach(session => {
-            const sessionMatches = getMatchesBySession(session.id);
-            const sessionBonuses = Object.values(S.bonusEvents).filter(evt => evt.sessionId === session.id);
-            if (sessionMatches.length > 0 || sessionBonuses.length > 0) {
-                const sessionScores = getSessionScores(session.id);
-                sessionBreakdownA += `${breakdownParts > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.A)}`;
-                sessionBreakdownB += `${breakdownParts > 0 ? ' | ' : ''}${session.name}: ${formatScore(sessionScores.B)}`;
-                breakdownParts++;
-            }
-        });
-        let standaloneA = 0, standaloneB = 0;
-        Object.values(S.bonusEvents).filter(e => !e.sessionId).forEach(e => {
-            standaloneA += (e.pointsA || 0);
-            standaloneB += (e.pointsB || 0);
-        });
-        if (standaloneA > 0 || standaloneB > 0) {
-            sessionBreakdownA += `${breakdownParts > 0 ? ' | ' : ''}Bonus: ${formatScore(standaloneA)}`;
-            sessionBreakdownB += `${breakdownParts > 0 ? ' | ' : ''}Bonus: ${formatScore(standaloneB)}`;
-        }
-
         // Get projected scores
         const projected = getProjectedTeamScores();
         const showProjected = projected.hasProjections && (projected.A !== scores.A || projected.B !== scores.B);
@@ -5564,13 +5541,6 @@
                         <span class="lb-total-team-name">${S.config.teamB.name}</span>
                     </div>
                 </div>`;
-        if (sessionBreakdownA && sessionBreakdownB) {
-            html += `
-                <div class="lb-breakdown-row">
-                    <div class="lb-breakdown-side">${sessionBreakdownA}</div>
-                    <div class="lb-breakdown-side">${sessionBreakdownB}</div>
-                </div>`;
-        }
         if (showProjected) {
             html += `
                 <div class="lb-projected-row">
