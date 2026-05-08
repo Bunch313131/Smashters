@@ -4277,7 +4277,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.1.3';
+    const APP_VERSION = '3.1.4';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -5375,8 +5375,8 @@
         getDumpsterFireData() {
             const allPlayers = Object.keys(S.players);
             const data = allPlayers.map(playerId => {
-                let netRelToPar = 0, holesPlayed = 0, doubleBogeysNet = 0;
-                let worstHoleNet = null;
+                let grossRelToPar = 0, holesPlayed = 0, doubleBogeysGross = 0;
+                let worstHoleGross = null;
 
                 Object.values(S.matches)
                     .filter(m => m.type !== 'foursomes' &&
@@ -5387,13 +5387,12 @@
                             const gross = match.holes[holeNum][playerId];
                             if (gross === undefined || gross === null) return;
                             const par = getHoleInfo(holeNum).par;
-                            const net = getNetScore(playerId, holeNum, gross);
-                            const netDiff = net - par;
-                            netRelToPar += netDiff;
+                            const grossDiff = gross - par;
+                            grossRelToPar += grossDiff;
                             holesPlayed++;
-                            if (netDiff > 1) doubleBogeysNet++;
-                            if (worstHoleNet === null || netDiff > worstHoleNet.diff)
-                                worstHoleNet = { hole: holeNum, diff: netDiff, gross };
+                            if (grossDiff > 1) doubleBogeysGross++;
+                            if (worstHoleGross === null || grossDiff > worstHoleGross.diff)
+                                worstHoleGross = { hole: holeNum, diff: grossDiff, gross };
                         });
                     });
 
@@ -5401,19 +5400,19 @@
                     playerId,
                     playerName: getPlayerName(playerId),
                     team: S.players[playerId]?.team,
-                    netRelToPar, holesPlayed, doubleBogeysNet, worstHoleNet,
+                    grossRelToPar, holesPlayed, doubleBogeysGross, worstHoleGross,
                 };
             }).filter(p => p.holesPlayed > 0);
 
-            data.sort((a, b) => b.netRelToPar - a.netRelToPar);
+            data.sort((a, b) => b.grossRelToPar - a.grossRelToPar);
             return data;
         },
 
         getHotHandData() {
             const allPlayers = Object.keys(S.players);
             const playerStats = allPlayers.map(playerId => {
-                let birdiePlusNet = 0, netTotal = 0, holesPlayed = 0;
-                let bestHoleNet = null; // { hole, diff, net }
+                let birdiePlusGross = 0, grossTotal = 0, holesPlayed = 0;
+                let bestHoleGross = null; // { hole, diff, gross }
                 Object.values(S.matches)
                     .filter(m => m.type !== 'foursomes' &&
                         (m.teamA.includes(playerId) || m.teamB.includes(playerId)))
@@ -5423,27 +5422,26 @@
                             const gross = match.holes[holeNum][playerId];
                             if (gross === undefined || gross === null) return;
                             const par = getHoleInfo(holeNum).par;
-                            const net = getNetScore(playerId, holeNum, gross);
-                            const diff = net - par;
-                            netTotal += net;
+                            const diff = gross - par;
+                            grossTotal += gross;
                             holesPlayed++;
-                            if (diff <= -1) birdiePlusNet++;
-                            if (bestHoleNet === null || diff < bestHoleNet.diff)
-                                bestHoleNet = { hole: holeNum, diff, net };
+                            if (diff <= -1) birdiePlusGross++;
+                            if (bestHoleGross === null || diff < bestHoleGross.diff)
+                                bestHoleGross = { hole: holeNum, diff, gross };
                         });
                     });
-                return { playerId, playerName: getPlayerName(playerId), team: S.players[playerId]?.team, birdiePlusNet, netTotal, holesPlayed, bestHoleNet };
+                return { playerId, playerName: getPlayerName(playerId), team: S.players[playerId]?.team, birdiePlusGross, grossTotal, holesPlayed, bestHoleGross };
             }).filter(p => p.holesPlayed > 0);
 
             if (playerStats.length === 0) return null;
 
-            const surgeon = [...playerStats].sort((a, b) => b.birdiePlusNet - a.birdiePlusNet)[0];
-            const ace = [...playerStats].filter(p => p.bestHoleNet && p.bestHoleNet.diff <= -1)
-                .sort((a, b) => a.bestHoleNet.diff - b.bestHoleNet.diff)[0];
+            const surgeon = [...playerStats].sort((a, b) => b.birdiePlusGross - a.birdiePlusGross)[0];
+            const ace = [...playerStats].filter(p => p.bestHoleGross && p.bestHoleGross.diff <= -1)
+                .sort((a, b) => a.bestHoleGross.diff - b.bestHoleGross.diff)[0];
             const coolHand = [...playerStats].filter(p => p.holesPlayed >= 9)
-                .sort((a, b) => a.netTotal - b.netTotal)[0];
+                .sort((a, b) => a.grossTotal - b.grossTotal)[0];
             return {
-                surgeon: surgeon?.birdiePlusNet > 0 ? surgeon : null,
+                surgeon: surgeon?.birdiePlusGross > 0 ? surgeon : null,
                 ace: ace || null,
                 coolHand: coolHand || null,
             };
@@ -11039,28 +11037,28 @@
         // Build awards
         const awards = [];
 
-        // THE INFERNO — most over par total (net)
+        // THE INFERNO — most over par total (gross)
         const worst = data[0];
         if (worst) {
             const tc = worst.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const rel = worst.netRelToPar > 0 ? `+${worst.netRelToPar} net` : worst.netRelToPar === 0 ? 'E net' : `${worst.netRelToPar} net`;
+            const rel = worst.grossRelToPar > 0 ? `+${worst.grossRelToPar}` : worst.grossRelToPar === 0 ? 'E' : `${worst.grossRelToPar}`;
             awards.push({ title: 'THE INFERNO', sub: 'Most over par overall', name: worst.playerName, detail: rel, teamColor: tc });
         }
 
-        // TRASH HAULER — most double bogeys or worse (net)
-        const mostDbl = [...data].sort((a, b) => b.doubleBogeysNet - a.doubleBogeysNet)[0];
-        if (mostDbl && mostDbl.doubleBogeysNet > 0) {
+        // TRASH HAULER — most double bogeys or worse (gross)
+        const mostDbl = [...data].sort((a, b) => b.doubleBogeysGross - a.doubleBogeysGross)[0];
+        if (mostDbl && mostDbl.doubleBogeysGross > 0) {
             const tc = mostDbl.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const cnt = mostDbl.doubleBogeysNet;
+            const cnt = mostDbl.doubleBogeysGross;
             awards.push({ title: 'TRASH HAULER', sub: 'Most double bogeys or worse', name: mostDbl.playerName, detail: `${cnt} double bogey${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
         }
 
         // THE BIG ONE — worst single hole (gross score)
-        const byWorstHole = data.filter(p => p.worstHoleNet && p.worstHoleNet.gross != null).sort((a, b) => b.worstHoleNet.diff - a.worstHoleNet.diff);
+        const byWorstHole = data.filter(p => p.worstHoleGross && p.worstHoleGross.gross != null).sort((a, b) => b.worstHoleGross.diff - a.worstHoleGross.diff);
         if (byWorstHole.length > 0) {
             const p = byWorstHole[0];
             const tc = p.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            awards.push({ title: 'THE BIG ONE', sub: 'Worst single hole (gross)', name: p.playerName, detail: `${p.worstHoleNet.gross} on Hole ${p.worstHoleNet.hole}`, teamColor: tc });
+            awards.push({ title: 'THE BIG ONE', sub: 'Worst single hole (gross)', name: p.playerName, detail: `${p.worstHoleGross.gross} on Hole ${p.worstHoleGross.hole}`, teamColor: tc });
         }
 
         // Each award: no dark cards — sits directly on the green bg like the match spotlight
@@ -11098,18 +11096,18 @@
         const awards = [];
         if (data.surgeon) {
             const tc = data.surgeon.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const cnt = data.surgeon.birdiePlusNet;
-            awards.push({ title: 'BIRD MACHINE', sub: 'Most birdies or better (net)', name: data.surgeon.playerName, detail: `${cnt} birdie${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
+            const cnt = data.surgeon.birdiePlusGross;
+            awards.push({ title: 'BIRD MACHINE', sub: 'Most birdies or better', name: data.surgeon.playerName, detail: `${cnt} birdie${cnt !== 1 ? 's' : ''}+`, teamColor: tc });
         }
         if (data.ace) {
             const tc = data.ace.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            const d = data.ace.bestHoleNet;
+            const d = data.ace.bestHoleGross;
             const label = d.diff <= -2 ? 'Eagle' : 'Birdie';
-            awards.push({ title: 'HIGHLIGHT REEL', sub: 'Best single hole (net)', name: data.ace.playerName, detail: `${label} on Hole ${d.hole}`, teamColor: tc });
+            awards.push({ title: 'HIGHLIGHT REEL', sub: 'Best single hole', name: data.ace.playerName, detail: `${label} on Hole ${d.hole}`, teamColor: tc });
         }
         if (data.coolHand) {
             const tc = data.coolHand.team === 'A' ? S.config.teamA.color : S.config.teamB.color;
-            awards.push({ title: 'THE GRINDER', sub: 'Lowest net total (9+ holes)', name: data.coolHand.playerName, detail: `${data.coolHand.netTotal} net`, teamColor: tc });
+            awards.push({ title: 'THE GRINDER', sub: 'Lowest gross total (9+ holes)', name: data.coolHand.playerName, detail: `${data.coolHand.grossTotal} gross`, teamColor: tc });
         }
 
         const awardBlocksHtml = awards.map((a, i) => `
