@@ -5509,6 +5509,7 @@
     // RENDER: LEADERBOARD
     // ─────────────────────────────────────────────────────────
     function renderLeaderboard() {
+        setTeamColorVars();
         const el = document.getElementById('leaderboard-content');
         const allMatches = Object.values(S.matches);
 
@@ -10668,6 +10669,7 @@
             return;
         }
 
+        setTeamColorVars();
         initBroadcastEmboss();
         const scores = getTeamScores();
         const sessions = S.config.sessions.slice().sort((a, b) => b.order - a.order);
