@@ -2374,21 +2374,21 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: clamp(9px, 1.1vw, 14px);
+            font-size: clamp(12px, 1.5vw, 22px);
             font-weight: 700;
             color: rgba(255,255,255,0.7);
             letter-spacing: 1.5px;
         }
         .broadcast-live-dot {
-            width: 8px;
-            height: 8px;
+            width: clamp(8px, 1vw, 14px);
+            height: clamp(8px, 1vw, 14px);
             border-radius: 50%;
             background: #ff3333;
             box-shadow: 0 0 6px rgba(255,51,51,0.5);
             animation: livePulse 2s infinite;
         }
         .broadcast-clock {
-            font-size: clamp(10px, 1.1vw, 14px);
+            font-size: clamp(13px, 1.5vw, 22px);
             color: rgba(255,255,255,0.4);
         }
 
@@ -2501,7 +2501,7 @@
         /* ── Team score bar (leaderboard-style) ── */
         .broadcast-teams {
             display: grid;
-            grid-template-columns: 1fr clamp(80px, 12vw, 130px) 1fr;
+            grid-template-columns: 1fr clamp(100px, 14vw, 200px) 1fr;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,0.12);
@@ -2527,7 +2527,7 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.2);
         }
         .broadcast-team-name {
-            font-size: clamp(10px, 1.3vw, 15px);
+            font-size: clamp(13px, 1.7vw, 26px);
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.5px;
@@ -2535,7 +2535,7 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         .broadcast-team-score {
-            font-size: clamp(28px, 5vw, 56px);
+            font-size: clamp(34px, 5.5vw, 80px);
             font-weight: 900;
             line-height: 1;
             font-family: 'Trebuchet MS', sans-serif;
@@ -2548,7 +2548,7 @@
             justify-content: center;
             background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
             color: var(--masters-yellow);
-            font-size: 0.6rem;
+            font-size: clamp(10px, 1.2vw, 18px);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -2577,12 +2577,12 @@
 
         /* ── Session group ── */
         .broadcast-session-label {
-            font-size: clamp(10px, 1.1vw, 13px);
+            font-size: clamp(13px, 1.6vw, 26px);
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: 800;
             margin: 14px 0 0 0;
-            padding: 8px 12px;
+            padding: 10px 14px;
             background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
             color: var(--masters-yellow);
             border-radius: 8px 8px 0 0;
@@ -2596,10 +2596,10 @@
         /* ── Match rows (leaderboard-style) ── */
         .broadcast-match-row {
             display: grid;
-            grid-template-columns: 1fr clamp(80px, 12vw, 130px) 1fr;
-            min-height: 48px;
+            grid-template-columns: 1fr clamp(100px, 14vw, 200px) 1fr;
+            min-height: clamp(52px, 6vh, 80px);
             border-bottom: 1px solid rgba(0,0,0,0.06);
-            font-size: clamp(14px, 2vw, 22px);
+            font-size: clamp(18px, 2.5vw, 40px);
         }
         .broadcast-match-row:last-child { border-bottom: none; }
         .broadcast-match-row.complete { opacity: 0.55; }
@@ -2652,7 +2652,7 @@
             background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
             color: #fff;
             font-weight: 700;
-            font-size: clamp(9px, 1.1vw, 13px);
+            font-size: clamp(12px, 1.4vw, 52px);
             letter-spacing: 0.5px;
             text-align: center;
             white-space: nowrap;
@@ -2664,7 +2664,7 @@
             margin: 12px 0;
         }
         .broadcast-highlight-item {
-            font-size: clamp(11px, 1.4vw, 16px);
+            font-size: clamp(14px, 1.8vw, 52px);
             color: rgba(255,255,255,0.8);
             padding: 2px 0;
             display: flex;
@@ -2731,7 +2731,7 @@
 
         /* ── Spotlight panel ── */
         .broadcast-spotlight-label {
-            font-size: clamp(10px, 1.1vw, 13px);
+            font-size: clamp(14px, 1.6vw, 52px);
             color: var(--masters-yellow);
             text-transform: uppercase;
             letter-spacing: 3px;
@@ -2739,7 +2739,7 @@
             margin-bottom: 16px;
         }
         .broadcast-spotlight-players {
-            font-size: clamp(20px, 3vw, 38px);
+            font-size: clamp(24px, 3.5vw, 100px);
             font-weight: 700;
             margin-bottom: 8px;
             line-height: 1.3;
@@ -2758,13 +2758,13 @@
             flex-shrink: 0;
         }
         .broadcast-spotlight-vs {
-            font-size: clamp(14px, 1.8vw, 22px);
+            font-size: clamp(18px, 2.2vw, 72px);
             color: rgba(255,255,255,0.45);
             font-weight: 400;
             font-style: italic;
         }
         .broadcast-spotlight-status {
-            font-size: clamp(18px, 2.8vw, 36px);
+            font-size: clamp(22px, 3.2vw, 96px);
             font-weight: 800;
             margin: 16px 0;
             letter-spacing: 1px;
@@ -2780,13 +2780,13 @@
             gap: 6px;
         }
         .broadcast-hole-dot {
-            width: clamp(20px, 2.8vw, 36px);
-            height: clamp(20px, 2.8vw, 36px);
+            width: clamp(26px, 3.2vw, 96px);
+            height: clamp(26px, 3.2vw, 96px);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(9px, 1.2vw, 14px);
+            font-size: clamp(12px, 1.5vw, 48px);
             font-weight: 700;
             border: 2px solid rgba(255,255,255,0.15);
             color: rgba(255,255,255,0.35);
@@ -2803,7 +2803,7 @@
 
         .broadcast-spotlight-event {
             margin-top: 16px;
-            font-size: clamp(12px, 1.5vw, 18px);
+            font-size: clamp(16px, 2vw, 60px);
             color: var(--masters-yellow);
             font-style: italic;
         }
@@ -2813,14 +2813,14 @@
             background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
             color: var(--masters-yellow);
             padding: 5px 16px;
-            font-size: clamp(9px, 1.1vw, 13px);
+            font-size: clamp(12px, 1.4vw, 44px);
             font-weight: 800;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             text-shadow: 0 1px 2px rgba(0,0,0,0.4);
         }
         .broadcast-bonus-notes {
-            font-size: clamp(8px, 1vw, 12px);
+            font-size: clamp(10px, 1.2vw, 36px);
             font-weight: 400;
             opacity: 0.7;
             display: block;
@@ -2828,13 +2828,13 @@
         }
         .broadcast-bonus-row {
             display: grid;
-            grid-template-columns: 1fr clamp(80px, 12vw, 130px) 1fr;
+            grid-template-columns: 1fr clamp(100px, 14vw, 200px) 1fr;
             min-height: clamp(28px, 3.5vh, 38px);
             border-bottom: 1px solid rgba(0,0,0,0.06);
         }
         .broadcast-bonus-row .broadcast-match-teamA,
         .broadcast-bonus-row .broadcast-match-teamB {
-            font-size: clamp(10px, 1.3vw, 15px);
+            font-size: clamp(14px, 1.7vw, 52px);
             flex-direction: column;
             gap: 0;
         }
@@ -2845,13 +2845,13 @@
             align-items: flex-start;
         }
         .broadcast-bonus-row .broadcast-match-status {
-            font-size: clamp(8px, 1vw, 12px);
+            font-size: clamp(10px, 1.2vw, 38px);
         }
 
         /* ── Session subtotal rows ── */
         .broadcast-subtotal-row {
             display: grid;
-            grid-template-columns: 1fr clamp(80px, 12vw, 130px) 1fr;
+            grid-template-columns: 1fr clamp(100px, 14vw, 200px) 1fr;
             min-height: clamp(32px, 4vh, 44px);
             border-radius: 0 0 8px 8px;
             overflow: hidden;
@@ -2874,13 +2874,13 @@
             background: linear-gradient(to right, var(--team-b-color) 0%, color-mix(in srgb, var(--team-b-color) 70%, #000) 100%);
         }
         .broadcast-subtotal-cell .sub-label {
-            font-size: clamp(7px, 0.9vw, 11px);
+            font-size: clamp(10px, 1.2vw, 38px);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             opacity: 0.9;
         }
         .broadcast-subtotal-cell .sub-score {
-            font-size: clamp(12px, 1.6vw, 20px);
+            font-size: clamp(16px, 2vw, 60px);
             font-family: 'Trebuchet MS', sans-serif;
             font-weight: bold;
         }
@@ -2890,7 +2890,7 @@
             justify-content: center;
             background: #2a2a2a;
             color: var(--masters-yellow);
-            font-size: clamp(7px, 0.8vw, 10px);
+            font-size: clamp(10px, 1.1vw, 34px);
             font-weight: 600;
         }
 
@@ -10844,7 +10844,7 @@
         (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0)
             .forEach(race => spotlightPool.push({ type: 'horserace', race }));
         spotlightPool.push({ type: 'history' });
-        if (broadcastWeatherData) spotlightPool.push({ type: 'weather' });
+        spotlightPool.push({ type: 'weather' }); // always in pool; render handles loading/error
         if (spotlightPool.length > 0) {
             broadcastSpotlightIndex = broadcastSpotlightIndex % spotlightPool.length;
             const slide = spotlightPool[broadcastSpotlightIndex];
@@ -11579,41 +11579,65 @@
     }
 
     async function fetchBroadcastWeather() {
-        broadcastWeatherData = null;
+        broadcastWeatherData = { status: 'loading', location: '', days: [] };
         // Dates: prefer per-session dates, fall back to global eventDate
         let dates = (S.config.sessions || []).map(s => s.date).filter(Boolean).sort();
         if (dates.length === 0 && S.config.eventDate) dates = [S.config.eventDate];
-        if (dates.length === 0) return;
+        if (dates.length === 0) {
+            broadcastWeatherData = { status: 'error', reason: 'No session dates set', location: '', days: [] };
+            return;
+        }
         // Location: weatherLocation field first (city, state), then course/club name
         const locationQuery = (S.config.weatherLocation || S.config.courseName || S.config.clubName || '').trim();
-        if (!locationQuery) return;
+        if (!locationQuery) {
+            broadcastWeatherData = { status: 'error', reason: 'No location set', location: '', days: [] };
+            return;
+        }
         try {
             const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery)}&count=1&language=en&format=json`);
             const geoData = await geoRes.json();
-            if (!geoData.results || geoData.results.length === 0) return;
+            if (!geoData.results || geoData.results.length === 0) {
+                broadcastWeatherData = { status: 'error', reason: `Location not found: "${locationQuery}"`, location: '', days: [] };
+                return;
+            }
             const { latitude, longitude, name: geoName } = geoData.results[0];
+            const today = new Date().toISOString().slice(0, 10);
             const startDate = dates[0];
             const endDate = dates[dates.length - 1];
-            const wxRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_mean,weathercode&temperature_unit=fahrenheit&timezone=auto&start_date=${startDate}&end_date=${endDate}`);
-            const wx = await wxRes.json();
-            if (!wx.daily) return;
+            // Use archive API for past dates, forecast API for future, combine if needed
+            const fetchSegment = async (start, end, archive) => {
+                const base = archive
+                    ? `https://archive-api.open-meteo.com/v1/archive`
+                    : `https://api.open-meteo.com/v1/forecast`;
+                const r = await fetch(`${base}?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_mean,weathercode&temperature_unit=fahrenheit&timezone=auto&start_date=${start}&end_date=${end}`);
+                return r.json();
+            };
             const dailyMap = {};
-            wx.daily.time.forEach((date, i) => {
-                dailyMap[date] = {
-                    high: Math.round(wx.daily.temperature_2m_max[i]),
-                    low: Math.round(wx.daily.temperature_2m_min[i]),
-                    precip: Math.round(wx.daily.precipitation_probability_mean[i]),
-                    code: wx.daily.weathercode[i]
-                };
+            const pastDates = dates.filter(d => d < today);
+            const futureDates = dates.filter(d => d >= today);
+            const segments = [];
+            if (pastDates.length > 0) segments.push(fetchSegment(pastDates[0], pastDates[pastDates.length - 1], true));
+            if (futureDates.length > 0) segments.push(fetchSegment(futureDates[0], futureDates[futureDates.length - 1], false));
+            const results = await Promise.all(segments);
+            results.forEach(wx => {
+                if (!wx.daily) return;
+                wx.daily.time.forEach((date, i) => {
+                    dailyMap[date] = {
+                        high: Math.round(wx.daily.temperature_2m_max[i]),
+                        low: Math.round(wx.daily.temperature_2m_min[i]),
+                        precip: Math.round((wx.daily.precipitation_probability_mean || [])[i] ?? 0),
+                        code: wx.daily.weathercode[i]
+                    };
+                });
             });
             const days = dates.map(date => {
                 const session = (S.config.sessions || []).find(s => s.date === date);
                 return { date, sessionName: session ? session.name : '', ...(dailyMap[date] || {}) };
             }).filter(d => d.high !== undefined);
-            if (days.length === 0) return;
-            broadcastWeatherData = { location: geoName, days };
+            broadcastWeatherData = { status: days.length > 0 ? 'ok' : 'error', reason: days.length === 0 ? 'No forecast data for these dates' : '', location: geoName, days };
         } catch(e) {
             console.warn('Weather fetch failed:', e);
+            broadcastWeatherData = { status: 'error', reason: 'Network error', location: '', days: [] };
         }
     }
 
@@ -11621,7 +11645,28 @@
         if (broadcastProbResizeObserver) { broadcastProbResizeObserver.disconnect(); broadcastProbResizeObserver = null; }
         broadcastProbMatch = null;
         const el = document.getElementById('broadcastSpotlightContent');
-        if (!el || !broadcastWeatherData) return;
+        if (!el) return;
+        if (!broadcastWeatherData || broadcastWeatherData.status === 'loading') {
+            el.innerHTML = `<div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:clamp(10px,1.5vw,18px);padding-bottom:clamp(8px,1.1vw,14px);border-bottom:2px solid rgba(251,243,8,0.4);">
+                    <div style="font-size:clamp(20px,2.5vw,34px);line-height:1;">⛅</div>
+                    <div class="broadcast-spotlight-label" style="margin-bottom:0;">Course Forecast</div>
+                </div>
+                <div style="color:rgba(255,255,255,0.45);font-size:clamp(14px,1.8vw,48px);margin-top:16px;">Loading forecast…</div>
+            </div>`;
+            return;
+        }
+        if (broadcastWeatherData.status === 'error') {
+            el.innerHTML = `<div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:clamp(10px,1.5vw,18px);padding-bottom:clamp(8px,1.1vw,14px);border-bottom:2px solid rgba(251,243,8,0.4);">
+                    <div style="font-size:clamp(20px,2.5vw,34px);line-height:1;">⛅</div>
+                    <div class="broadcast-spotlight-label" style="margin-bottom:0;">Course Forecast</div>
+                </div>
+                <div style="color:rgba(255,255,255,0.35);font-size:clamp(12px,1.4vw,38px);margin-top:16px;">${broadcastWeatherData.reason || 'Forecast unavailable'}</div>
+                <div style="color:rgba(255,255,255,0.2);font-size:clamp(10px,1.1vw,28px);margin-top:8px;">Set Weather Location in Event Settings<br>(City, State)</div>
+            </div>`;
+            return;
+        }
         const wmoIcon = c => c === 0 ? '☀️' : c <= 2 ? '🌤️' : c === 3 ? '☁️' : c <= 48 ? '🌫️' : c <= 55 ? '🌦️' : c <= 67 ? '🌧️' : c <= 77 ? '❄️' : c <= 82 ? '🌧️' : c <= 86 ? '🌨️' : '⛈️';
         const wmoDesc = c => c === 0 ? 'Clear Sky' : c <= 2 ? 'Partly Cloudy' : c === 3 ? 'Overcast' : c <= 48 ? 'Foggy' : c <= 55 ? 'Drizzle' : c <= 67 ? 'Rain' : c <= 77 ? 'Snow' : c <= 82 ? 'Showers' : c <= 86 ? 'Snow Showers' : 'Thunderstorm';
         const daysHtml = broadcastWeatherData.days.map(d => {
