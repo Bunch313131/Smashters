@@ -1086,6 +1086,9 @@
         .score-drum-touch:active { cursor:grabbing; }
         .score-drum.no-score-yet { opacity:0.65; }
 
+        /* Hide admin-only tabs until unlocked */
+        body:not(.admin-unlocked) .admin-only-tab { display: none !important; }
+
         /* Hide bottom-nav tabs from hamburger menu on mobile */
         @media (max-width: 768px) {
             body.has-bottom-nav .mobile-menu .tab-btn[data-tab="schedule"],
@@ -4200,10 +4203,10 @@
             <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
             <button class="tab-btn" data-tab="individual">Individual</button>
             <button class="tab-btn" data-tab="scoring">Scoring</button>
-            <button class="tab-btn" data-tab="matches">Matches</button>
-            <button class="tab-btn" data-tab="players">Players</button>
-            <button class="tab-btn" data-tab="draft">Draft</button>
-            <button class="tab-btn" data-tab="settings">Settings</button>
+            <button class="tab-btn admin-only-tab" data-tab="matches">Matches</button>
+            <button class="tab-btn admin-only-tab" data-tab="players">Players</button>
+            <button class="tab-btn admin-only-tab" data-tab="draft">Draft</button>
+            <button class="tab-btn admin-only-tab" data-tab="settings">Settings</button>
             <button class="tab-btn" data-tab="horserace">🏇 Race</button>
             <button class="tab-btn" data-tab="brackets">🏆 Brackets</button>
             <button class="tab-btn" data-tab="ledger">The Ledger</button>
@@ -4265,9 +4268,9 @@
         <button class="slide-menu-item" data-tab="leaderboard">Leaderboard</button>
         <button class="slide-menu-item" data-tab="individual">Individual Stats</button>
         <button class="slide-menu-item" data-tab="scoring">Scoring</button>
-        <button class="slide-menu-item" data-tab="matches">Matches</button>
-        <button class="slide-menu-item" data-tab="players">Players</button>
-        <button class="slide-menu-item" data-tab="draft">Draft</button>
+        <button class="slide-menu-item admin-only-tab" data-tab="matches">Matches</button>
+        <button class="slide-menu-item admin-only-tab" data-tab="players">Players</button>
+        <button class="slide-menu-item admin-only-tab" data-tab="draft">Draft</button>
         <button class="slide-menu-item" id="slideMenuTimer">Hole Timer</button>
         <button class="slide-menu-item" data-tab="settings">Settings</button>
         <button class="slide-menu-item" data-tab="horserace">🏇 Horse Race</button>
@@ -4501,6 +4504,7 @@
     });
 
     let S = loadState();
+    updateAdminTabVisibility();
 
     function loadState() {
         try {
@@ -4562,6 +4566,10 @@
             }
         }
         return defaultState();
+    }
+
+    function updateAdminTabVisibility() {
+        document.body.classList.toggle('admin-unlocked', !!S.ui.settingsUnlocked);
     }
 
     function saveState(skipFirebaseSync = false) {
@@ -4630,6 +4638,7 @@
             LiveSync.isAdmin = true;
             LiveSync.isViewer = false;
             LiveSync.isScorer = false;
+            updateAdminTabVisibility();
             saveState();
             showToast('Admin access granted');
             return true;
@@ -4817,6 +4826,7 @@
             LiveSync.isAdmin = true;
             LiveSync.isViewer = false;
             LiveSync.isScorer = false;
+            updateAdminTabVisibility();
             saveState();
         }
 
