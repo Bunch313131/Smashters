@@ -11006,7 +11006,7 @@
         if (hhData && (hhData.surgeon || hhData.ace || hhData.coolHand)) spotlightPool.push({ type: 'hothand' });
         (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0)
             .forEach(race => spotlightPool.push({ type: 'horserace', race }));
-        (S.brackets || []).filter(b => b.awardPoint && b.status !== 'setup')
+        (S.brackets || []).filter(b => b.status !== 'setup')
             .forEach(bracket => spotlightPool.push({ type: 'bracket', bracket }));
         spotlightPool.push({ type: 'history' });
         spotlightPool.push({ type: 'weather' }); // always in pool; render handles loading/error
@@ -11702,7 +11702,7 @@
         if (dfData.length > 0) count++;
         if (hhData && (hhData.surgeon || hhData.ace || hhData.coolHand)) count++;
         count += (S.horseRaces || []).filter(r => r.status !== 'setup' && r.teams.length > 0).length;
-        count += (S.brackets || []).filter(b => b.awardPoint && b.status !== 'setup').length;
+        count += (S.brackets || []).filter(b => b.status !== 'setup').length;
         count++; // history slide
         if (broadcastWeatherData) count++;
         count = Math.max(1, count);
