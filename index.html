@@ -3966,6 +3966,8 @@
         .bt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .bt-title { font-size: 1rem; font-weight: bold; color: #fff; letter-spacing: 0.03em; }
         .bt-new-btn { background: var(--masters-green); color: var(--masters-white); border: none; border-radius: 6px; padding: 9px 16px; font-size: 0.9rem; font-weight: bold; cursor: pointer; letter-spacing: 0.02em; }
+        .bt-lock-btn { background: none; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.6); border-radius: 6px; padding: 7px 10px; font-size: 1rem; cursor: pointer; line-height: 1; }
+        .bt-lock-unlocked { color: var(--masters-yellow); border-color: var(--masters-yellow); }
         .bt-empty { color: rgba(255,255,255,0.5); text-align: center; padding: 40px 20px; font-size: 0.95rem; }
         .bt-card { background: var(--masters-white); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-bottom: 12px; overflow: hidden; }
         .bt-card-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--masters-green); }
@@ -4402,7 +4404,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.1.8';
+    const APP_VERSION = '3.1.9';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -13969,6 +13971,17 @@
         renderTab('brackets');
     }
 
+    function btUnlockAdmin() {
+        if (requireAdmin('access bracket admin')) {
+            renderTab('brackets');
+        }
+    }
+
+    function btLockAdmin() {
+        S.ui.settingsUnlocked = false;
+        renderTab('brackets');
+    }
+
     function btDeleteBracket(id) {
         if (!requireAdmin('delete a bracket')) return;
         const bracket = (S.brackets || []).find(b => b.id === id);
@@ -14163,9 +14176,15 @@
         const completeBrackets = brackets.filter(b => b.status === 'complete');
         const activeBrackets = brackets.filter(b => b.status !== 'complete');
 
+        const lockBtn = isAdmin
+            ? `<button class="bt-lock-btn bt-lock-unlocked" onclick="btLockAdmin()" title="Lock admin">🔓</button>`
+            : `<button class="bt-lock-btn" onclick="btUnlockAdmin()" title="Admin unlock">🔒</button>`;
         let html = `<div class="bt-header">
             <h2 class="section-title" style="margin:0">🏆 Brackets</h2>
-            ${isAdmin ? `<button class="bt-new-btn" onclick="btNewBracket()">+ New Bracket</button>` : ''}
+            <div style="display:flex;gap:8px;align-items:center;">
+                ${isAdmin ? `<button class="bt-new-btn" onclick="btNewBracket()">+ New Bracket</button>` : ''}
+                ${lockBtn}
+            </div>
         </div>`;
 
         if (completeBrackets.length === 0 && (!isAdmin || activeBrackets.length === 0)) {
