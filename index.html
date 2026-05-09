@@ -4112,9 +4112,11 @@
 <script>
 (function(){
   function setAppHeight(){
-    // Use innerHeight so body exactly fits the viewport on desktop.
-    // On mobile PWA (standalone), innerHeight is stable (no browser chrome).
-    document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+    // Touch devices (mobile): use screen.height for stable height that ignores browser chrome.
+    // Non-touch (desktop): use innerHeight to match the actual window size.
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    const h = isTouch ? screen.height : window.innerHeight;
+    document.documentElement.style.setProperty('--app-height', h + 'px');
   }
   setAppHeight();
   window.addEventListener('resize', setAppHeight);
