@@ -11748,21 +11748,19 @@
 
     async function fetchBroadcastWeather() {
         broadcastWeatherData = { status: 'loading', location: '', days: [] };
-        // Dates: prefer per-session dates, fall back to global eventDate
         let dates = (S.config.sessions || []).map(s => s.date).filter(Boolean).sort();
         if (dates.length === 0 && S.config.eventDate) dates = [S.config.eventDate];
         if (dates.length === 0) {
             broadcastWeatherData = { status: 'error', reason: 'No session dates set', location: '', days: [] };
             return;
         }
-        // Location: weatherLocation field first (city, state), then course/club name
         const locationQuery = (S.config.weatherLocation || S.config.courseName || S.config.clubName || '').trim();
         if (!locationQuery) {
             broadcastWeatherData = { status: 'error', reason: 'No location set', location: '', days: [] };
             return;
         }
         try {
-            // Geocoding doesn't understand "City, ST" format — try progressively simpler queries
+            // Geocode via Open-Meteo (free, no key)
             const geoQueries = [locationQuery];
             if (locationQuery.includes(',')) geoQueries.push(locationQuery.split(',')[0].trim());
             let geoResult = null;
@@ -11776,43 +11774,78 @@
                 return;
             }
             const { latitude, longitude, name: geoName } = geoResult;
-            const today = new Date().toISOString().slice(0, 10);
-            const startDate = dates[0];
-            const endDate = dates[dates.length - 1];
-            // Use archive API for past dates, forecast API for future, combine if needed
-            const fetchSegment = async (start, end, archive) => {
-                const base = archive
-                    ? `https://archive-api.open-meteo.com/v1/archive`
-                    : `https://api.open-meteo.com/v1/forecast`;
-                const r = await fetch(`${base}?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_mean,weathercode&temperature_unit=fahrenheit&timezone=auto&start_date=${start}&end_date=${end}`);
-                return r.json();
-            };
-            const dailyMap = {};
-            const pastDates = dates.filter(d => d < today);
-            const futureDates = dates.filter(d => d >= today);
-            const segments = [];
-            if (pastDates.length > 0) segments.push(fetchSegment(pastDates[0], pastDates[pastDates.length - 1], true));
-            if (futureDates.length > 0) segments.push(fetchSegment(futureDates[0], futureDates[futureDates.length - 1], false));
-            const results = await Promise.all(segments);
-            results.forEach(wx => {
-                if (!wx.daily) return;
-                wx.daily.time.forEach((date, i) => {
-                    dailyMap[date] = {
-                        high: Math.round(wx.daily.temperature_2m_max[i]),
-                        low: Math.round(wx.daily.temperature_2m_min[i]),
-                        precip: Math.round((wx.daily.precipitation_probability_mean || [])[i] ?? 0),
-                        code: wx.daily.weathercode[i]
+
+            // NWS points → forecast URL
+            const hdrs = { 'User-Agent': 'SmashtersGolfApp/1.0 (contact@smashters.app)' };
+            const ptRes = await fetch(`https://api.weather.gov/points/${latitude.toFixed(4)},${longitude.toFixed(4)}`, { headers: hdrs });
+            if (!ptRes.ok) throw new Error('NWS points API failed');
+            const ptData = await ptRes.json();
+            const forecastUrl = ptData.properties?.forecast;
+            if (!forecastUrl) throw new Error('No forecast URL');
+
+            const fcRes = await fetch(forecastUrl, { headers: hdrs });
+            if (!fcRes.ok) throw new Error('NWS forecast API failed');
+            const fcData = await fcRes.json();
+            const periods = fcData.properties?.periods || [];
+
+            // Map periods to dates
+            const forecastMap = {};
+            periods.forEach(p => {
+                const date = p.startTime.slice(0, 10);
+                if (p.isDaytime) {
+                    forecastMap[date] = {
+                        high: p.temperature,
+                        shortForecast: p.shortForecast,
+                        precip: p.probabilityOfPrecipitation?.value ?? 0,
+                        windSpeed: p.windSpeed,
+                        windDirection: p.windDirection,
                     };
-                });
+                } else {
+                    if (!forecastMap[date]) forecastMap[date] = {};
+                    forecastMap[date].low = p.temperature;
+                }
             });
+
+            const nwsIcon = f => {
+                f = (f || '').toLowerCase();
+                if (f.includes('thunder')) return '⛈️';
+                if (f.includes('snow')) return '❄️';
+                if (f.includes('sleet') || f.includes('ice')) return '🌨️';
+                if (f.includes('rain') || f.includes('shower')) return '🌧️';
+                if (f.includes('drizzle')) return '🌦️';
+                if (f.includes('fog')) return '🌫️';
+                if (f.includes('overcast') || f.includes('mostly cloudy')) return '☁️';
+                if (f.includes('partly cloudy') || f.includes('partly sunny')) return '🌤️';
+                if (f.includes('mostly sunny') || f.includes('mostly clear')) return '🌤️';
+                if (f.includes('sunny') || f.includes('clear')) return '☀️';
+                return '🌤️';
+            };
+
             const days = dates.map(date => {
                 const session = (S.config.sessions || []).find(s => s.date === date);
-                return { date, sessionName: session ? session.name : '', ...(dailyMap[date] || {}) };
-            }).filter(d => d.high !== undefined);
-            broadcastWeatherData = { status: days.length > 0 ? 'ok' : 'error', reason: days.length === 0 ? 'No forecast data for these dates' : '', location: geoName, days };
+                const wx = forecastMap[date];
+                if (!wx || wx.high === undefined) return null;
+                return {
+                    date,
+                    sessionName: session ? session.name : '',
+                    high: wx.high,
+                    low: wx.low ?? '--',
+                    precip: wx.precip || 0,
+                    desc: wx.shortForecast || '',
+                    icon: nwsIcon(wx.shortForecast),
+                    wind: wx.windSpeed ? `${wx.windDirection} ${wx.windSpeed}` : '',
+                };
+            }).filter(Boolean);
+
+            broadcastWeatherData = {
+                status: days.length > 0 ? 'ok' : 'error',
+                reason: days.length === 0 ? 'No NWS forecast for these dates' : '',
+                location: geoName,
+                days,
+            };
         } catch(e) {
             console.warn('Weather fetch failed:', e);
-            broadcastWeatherData = { status: 'error', reason: 'Network error', location: '', days: [] };
+            broadcastWeatherData = { status: 'error', reason: 'Forecast unavailable', location: '', days: [] };
         }
     }
 
@@ -11836,16 +11869,14 @@
             </div>`;
             return;
         }
-        const wmoIcon = c => c === 0 ? '☀️' : c <= 2 ? '🌤️' : c === 3 ? '☁️' : c <= 48 ? '🌫️' : c <= 55 ? '🌦️' : c <= 67 ? '🌧️' : c <= 77 ? '❄️' : c <= 82 ? '🌧️' : c <= 86 ? '🌨️' : '⛈️';
-        const wmoDesc = c => c === 0 ? 'Clear Sky' : c <= 2 ? 'Partly Cloudy' : c === 3 ? 'Overcast' : c <= 48 ? 'Foggy' : c <= 55 ? 'Drizzle' : c <= 67 ? 'Rain' : c <= 77 ? 'Snow' : c <= 82 ? 'Showers' : c <= 86 ? 'Snow Showers' : 'Thunderstorm';
         const daysHtml = broadcastWeatherData.days.map(d => {
             const dayLabel = new Date(d.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
             return `<div style="display:flex;align-items:center;gap:clamp(12px,1.4vw,48px);padding:clamp(8px,1.2vw,44px) 0;border-bottom:1px solid rgba(255,255,255,0.12);">
-                <div style="font-size:clamp(28px,3.5vw,120px);line-height:1;flex-shrink:0;">${wmoIcon(d.code)}</div>
+                <div style="font-size:clamp(28px,3.5vw,120px);line-height:1;flex-shrink:0;">${d.icon}</div>
                 <div style="flex:1;min-width:0;">
                     ${d.sessionName ? `<div style="font-size:clamp(12px,1.1vw,42px);letter-spacing:1.5px;text-transform:uppercase;color:var(--masters-yellow);font-weight:800;">${d.sessionName}</div>` : ''}
                     <div style="font-size:clamp(13px,1.2vw,46px);color:rgba(255,255,255,0.65);margin-top:1px;">${dayLabel}</div>
-                    <div style="font-size:clamp(12px,1.1vw,42px);color:rgba(255,255,255,0.5);margin-top:2px;">${wmoDesc(d.code)}</div>
+                    <div style="font-size:clamp(12px,1.1vw,42px);color:rgba(255,255,255,0.5);margin-top:2px;">${d.desc}${d.wind ? ` · ${d.wind}` : ''}</div>
                 </div>
                 <div style="text-align:right;flex-shrink:0;">
                     <div style="font-size:clamp(22px,2.5vw,96px);font-weight:800;color:#fff;line-height:1;">${d.high}°<span style="font-size:0.55em;font-weight:400;color:rgba(255,255,255,0.45);">/${d.low}°</span></div>
