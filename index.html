@@ -67,7 +67,7 @@
            BASE STYLES
            ═══════════════════════════════════════════════════════ */
         * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
-        html { overscroll-behavior: none; overflow: hidden; }
+        html { overscroll-behavior: none; }
 
         body {
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
@@ -4112,7 +4112,9 @@
 <script>
 (function(){
   function setAppHeight(){
-    document.documentElement.style.setProperty('--app-height', screen.height + 'px');
+    // Use innerHeight so body exactly fits the viewport on desktop.
+    // On mobile PWA (standalone), innerHeight is stable (no browser chrome).
+    document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
   }
   setAppHeight();
   window.addEventListener('resize', setAppHeight);
