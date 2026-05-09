@@ -67,7 +67,7 @@
            BASE STYLES
            ═══════════════════════════════════════════════════════ */
         * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
-        html { overscroll-behavior: none; }
+        html { overscroll-behavior: none; overflow: hidden; height: 100%; }
 
         body {
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
@@ -4404,7 +4404,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.1.9';
+    const APP_VERSION = '3.2.0';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -11682,7 +11682,7 @@
 
     function getBroadcastSlideInterval() {
         // Count slides same way renderBroadcast does, then scale interval
-        // Target: ~72s total cycle; clamp 7s–18s per slide
+        // Target: ~3min total cycle; clamp 9s–20s per slide
         const allMatches = Object.values(S.matches || {});
         const matchPool = allMatches.filter(m => getMatchPlayStatus(m).holesPlayed > 0);
         const dfData = IndividualStats.getDumpsterFireData();
@@ -11695,7 +11695,7 @@
         count++; // history slide
         if (broadcastWeatherData) count++;
         count = Math.max(1, count);
-        return Math.max(7000, Math.min(18000, Math.round(72000 / count)));
+        return Math.max(9000, Math.min(20000, Math.round(180000 / count)));
     }
 
     function scheduleBroadcastTick() {
