@@ -4805,11 +4805,12 @@
     const tabOrder = ['leaderboard', 'individual', 'scoring', 'schedule', 'players', 'matches', 'settings'];
 
     function switchTab(tabId, direction = null) {
-        // Password protect settings tab
-        if (tabId === 'settings' && !S.ui.settingsUnlocked) {
-            const password = prompt('Enter settings password:');
+        // Password protect admin-only tabs
+        const adminTabs = ['settings', 'players', 'matches', 'draft'];
+        if (adminTabs.includes(tabId) && !S.ui.settingsUnlocked) {
+            const password = prompt('Enter admin code:');
             if (password !== '1313') {
-                showToast('Incorrect password');
+                showToast('Incorrect code');
                 return;
             }
             S.ui.settingsUnlocked = true;
