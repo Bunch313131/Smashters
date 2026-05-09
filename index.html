@@ -3975,7 +3975,7 @@
         .bt-card-meta { font-size: 0.8rem; color: #666; margin-bottom: 8px; }
         .bt-winner-badge { border-radius: 6px; padding: 8px 12px; text-align: center; font-weight: bold; color: #fff; font-size: 0.9rem; margin-bottom: 10px; }
         .bt-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        .bt-btn { border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .bt-btn { border: none; border-radius: 6px; padding: 10px 14px; font-size: 0.85rem; font-weight: bold; cursor: pointer; flex: 1; min-width: 0; }
         .bt-btn-view { background: var(--masters-green); color: #fff; }
         .bt-btn-delete { background: #fff; color: #CE1141; border: 1px solid #CE1141; }
         .bt-btn-finish { background: var(--masters-green); color: #fff; }
@@ -4402,7 +4402,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.1.7';
+    const APP_VERSION = '3.1.8';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -14168,9 +14168,14 @@
             ${isAdmin ? `<button class="bt-new-btn" onclick="btNewBracket()">+ New Bracket</button>` : ''}
         </div>`;
 
-        if (brackets.length === 0) {
-            html += `<div class="bt-empty">No brackets yet${isAdmin ? '.<br>Tap + New Bracket to create one.' : '.'}</div>`;
-        } else {
+        if (completeBrackets.length === 0 && (!isAdmin || activeBrackets.length === 0)) {
+            const msg = isAdmin
+                ? 'No brackets yet.<br>Tap + New Bracket to create one.'
+                : 'No completed brackets yet.<br>Check back soon!';
+            html += `<div class="bt-empty">${msg}</div>`;
+        }
+
+        if (brackets.length > 0) {
             // Completed brackets first
             if (completeBrackets.length > 0) {
                 completeBrackets.slice().reverse().forEach(b => {
@@ -14376,11 +14381,10 @@
             ${renderBracketTree(bracket, false)}
         </div>
         ${awardHtml}
-        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <button class="bt-back-btn" onclick="btBackToHome()">← Back to Brackets</button>
+        ${(finishBtn || deleteBtn) ? `<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
             ${finishBtn}
             ${deleteBtn}
-        </div>`;
+        </div>` : ''}`;
     }
 
     function renderBracketTree(bracket, tvMode) {
