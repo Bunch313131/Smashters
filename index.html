@@ -6704,8 +6704,12 @@
         // Match selector pill
         const activeMatch = matchesToShow.find(m => m.id === S.ui.activeMatchId);
         const lastName = name => name.trim().split(' ').slice(-1)[0];
+        const hasPlayers = activeMatch && (activeMatch.teamA.length > 0 || activeMatch.teamB.length > 0);
+        const matchIndex = activeMatch ? matchesToShow.indexOf(activeMatch) + 1 : 0;
         const pillLabel = activeMatch
-            ? activeMatch.teamA.map(id => lastName(getPlayerName(id))).join(' / ') + ' vs ' + activeMatch.teamB.map(id => lastName(getPlayerName(id))).join(' / ')
+            ? hasPlayers
+                ? activeMatch.teamA.map(id => lastName(getPlayerName(id))).join(' / ') + ' vs ' + activeMatch.teamB.map(id => lastName(getPlayerName(id))).join(' / ')
+                : `Match ${matchIndex} — No players set`
             : 'Select Match';
         const showCaret = matchesToShow.length > 1;
         html += `<div class="scoring-match-pill-row">
