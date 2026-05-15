@@ -4415,7 +4415,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.5';
+    const APP_VERSION = '3.2.6';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -14260,7 +14260,7 @@
             <button class="bt-new-btn" onclick="btNewBracket()">+ New Bracket</button>
         </div>`;
 
-        const hasVisibleContent = completeBrackets.length > 0 || (isAdmin && activeBrackets.length > 0);
+        const hasVisibleContent = completeBrackets.length > 0 || activeBrackets.length > 0;
         if (!hasVisibleContent) {
             html += `<div class="hr-logo-empty"><div class="hr-logo-bg"></div></div>`;
         }
@@ -14298,8 +14298,8 @@
                 });
             }
 
-            // Active/setup brackets — admin only
-            if (isAdmin && activeBrackets.length > 0) {
+            // Active/setup brackets — visible to all, admin controls shown only to admin
+            if (activeBrackets.length > 0) {
                 activeBrackets.slice().reverse().forEach(b => {
                     const statusLabel = b.status === 'setup' ? 'Setup' : 'In Progress';
                     html += `<div class="bt-card">
@@ -14311,7 +14311,7 @@
                             <div class="bt-card-meta">${b.type === '2man' ? '2-Man Teams' : 'Individual'}${b.awardPoint ? ' · Awards Point' : ''}</div>
                             <div class="bt-card-actions">
                                 <button class="bt-btn bt-btn-view" onclick="btViewBracket('${b.id}')">Open</button>
-                                <button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${b.id}')">Delete</button>
+                                ${isAdmin ? `<button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${b.id}')">Delete</button>` : ''}
                             </div>
                         </div>
                     </div>`;
