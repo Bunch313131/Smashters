@@ -4415,7 +4415,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.8';
+    const APP_VERSION = '3.2.9';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -13945,58 +13945,65 @@
             return a;
         };
 
-        const sA = shuffle(participants.filter(p => p.team === 'A'));
-        const sB = shuffle(participants.filter(p => p.team === 'B'));
+        let poolA = shuffle(participants.filter(p => p.team === 'A'));
+        let poolB = shuffle(participants.filter(p => p.team === 'B'));
         const totalByes = bracketSize - participants.length;
 
-        // Distribute byes proportionally between teams; cap at team size
-        let byesA = Math.min(Math.round(totalByes * sA.length / participants.length), sA.length);
+        if (totalByes === 0) {
+            // No byes: pair cross-team for R1 — best we can do
+            const pairs = [];
+            while (poolA.length > 0 && poolB.length > 0) pairs.push([poolA.shift(), poolB.shift()]);
+            while (poolA.length >= 2) pairs.push([poolA.shift(), poolA.shift()]);
+            while (poolB.length >= 2) pairs.push([poolB.shift(), poolB.shift()]);
+            const slots = [];
+            pairs.forEach(([l, r]) => { slots.push(l); slots.push(r); });
+            return slots;
+        }
+
+        // With byes: prioritize R2 cross-team matchups.
+        // Each bye recipient is seated adjacent to an opposite-team R1 match so
+        // their R2 (semi/quarter) opponent is guaranteed to be from the other team.
+        // byeA player + [B vs B] adjacent → Semi: A vs B guaranteed
+        // byeB player + [A vs A] adjacent → Semi: B vs A guaranteed
+
+        let byesA = Math.min(Math.round(totalByes * poolA.length / participants.length), poolA.length);
         let byesB = totalByes - byesA;
-        if (byesB > sB.length) { byesA += byesB - sB.length; byesB = sB.length; }
-        byesA = Math.min(byesA, sA.length);
+        if (byesB > poolB.length) { byesA += byesB - poolB.length; byesB = poolB.length; }
+        byesA = Math.min(byesA, poolA.length);
 
-        // Pop bye-recipients from front of each shuffled list
-        const byeA = sA.splice(0, byesA);
-        const byeB = sB.splice(0, byesB);
+        const byeRecsA = poolA.splice(0, byesA);
+        const byeRecsB = poolB.splice(0, byesB);
 
-        // Build cross-team R1 pairs from remaining players
-        const realPairs = [];
-        while (sA.length > 0 && sB.length > 0) {
-            realPairs.push([sA.shift(), sB.shift()]);
-        }
-        // Leftover same-team players when split is uneven — pair together
-        while (sA.length >= 2) realPairs.push([sA.shift(), sA.shift()]);
-        while (sB.length >= 2) realPairs.push([sB.shift(), sB.shift()]);
-        // Single orphan gets a bonus bye
-        if (sA.length === 1) byeA.push(sA.shift());
-        if (sB.length === 1) byeB.push(sB.shift());
-
-        // Build bye pairs alternating A and B for balanced bracket quarters
-        const byePairs = [];
-        for (let i = 0; i < Math.max(byeA.length, byeB.length); i++) {
-            if (i < byeA.length) byePairs.push([byeA[i], 'BYE']);
-            if (i < byeB.length) byePairs.push(['BYE', byeB[i]]);
-        }
-
-        // Interleave bye pairs evenly across real pairs
-        // Position bye pairs at evenly-spaced bracket slots so bye-winners face cross-team opponents in R2
-        const totalPairs = bracketSize / 2;
         const ordered = [];
-        if (byePairs.length === 0) {
-            ordered.push(...realPairs);
-        } else {
-            const byePositions = new Set(byePairs.map((_, i) => Math.floor(i * totalPairs / byePairs.length)));
-            let bIdx = 0, rIdx = 0;
-            for (let pos = 0; pos < totalPairs; pos++) {
-                if (byePositions.has(pos) && bIdx < byePairs.length) {
-                    ordered.push(byePairs[bIdx++]);
-                } else if (rIdx < realPairs.length) {
-                    ordered.push(realPairs[rIdx++]);
-                } else if (bIdx < byePairs.length) {
-                    ordered.push(byePairs[bIdx++]);
-                }
+
+        // Each A bye recipient: place them, then fill adjacent slot with B vs B
+        for (const p of byeRecsA) {
+            ordered.push([p, 'BYE']);
+            if (poolB.length >= 2) {
+                ordered.push([poolB.shift(), poolB.shift()]);
+            } else if (poolB.length === 1 && poolA.length >= 1) {
+                ordered.push([poolB.shift(), poolA.shift()]); // best available fallback
+            } else if (poolA.length >= 2) {
+                ordered.push([poolA.shift(), poolA.shift()]); // last resort
             }
         }
+
+        // Each B bye recipient: place them, then fill adjacent slot with A vs A
+        for (const p of byeRecsB) {
+            ordered.push([p, 'BYE']);
+            if (poolA.length >= 2) {
+                ordered.push([poolA.shift(), poolA.shift()]);
+            } else if (poolA.length === 1 && poolB.length >= 1) {
+                ordered.push([poolA.shift(), poolB.shift()]); // best available fallback
+            } else if (poolB.length >= 2) {
+                ordered.push([poolB.shift(), poolB.shift()]); // last resort
+            }
+        }
+
+        // Any remaining players: cross-team R1 pairs
+        while (poolA.length > 0 && poolB.length > 0) ordered.push([poolA.shift(), poolB.shift()]);
+        while (poolA.length >= 2) ordered.push([poolA.shift(), poolA.shift()]);
+        while (poolB.length >= 2) ordered.push([poolB.shift(), poolB.shift()]);
 
         const slots = [];
         ordered.forEach(([l, r]) => {
