@@ -3990,6 +3990,8 @@
 
         /* Setup screen */
         .bt-back-btn { background: none; border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 6px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; }
+        .bt-detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .bt-detail-title { font-family: 'Georgia', serif; font-size: 1.25rem; font-weight: bold; color: #fff; flex: 1; }
         .bt-setup-section { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--card-shadow); margin-bottom: 10px; overflow: hidden; }
         .bt-setup-head { padding: 8px 12px; font-size: 0.78rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; background: #f5f5f5; color: #555; }
         .bt-setup-body { padding: 10px 12px 12px; }
@@ -4413,7 +4415,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.4';
+    const APP_VERSION = '3.2.5';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
