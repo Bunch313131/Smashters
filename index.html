@@ -4116,15 +4116,21 @@
 <script>
 (function(){
   function setAppHeight(){
-    // Touch devices (mobile): use screen.height for stable height that ignores browser chrome.
-    // Non-touch (desktop): use innerHeight to match the actual window size.
-    const isTouch = window.matchMedia('(pointer: coarse)').matches;
-    const h = isTouch ? screen.height : window.innerHeight;
+    // Use the visible viewport height. On iOS standalone PWAs (viewport-fit=cover),
+    // window.innerHeight matches the WebView exactly. Previously we used
+    // screen.height on touch devices, but on some iPhones (e.g., Display Zoom
+    // "Zoomed") screen.height exceeds the WebView height, pushing the bottom
+    // nav offscreen below the visible area.
+    const vv = window.visualViewport;
+    const h = (vv && vv.height) ? vv.height : window.innerHeight;
     document.documentElement.style.setProperty('--app-height', h + 'px');
   }
   setAppHeight();
   window.addEventListener('resize', setAppHeight);
   window.addEventListener('orientationchange', function(){ setTimeout(setAppHeight, 100); });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setAppHeight);
+  }
 })();
 </script>
 </head>
@@ -4413,7 +4419,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.4';
+    const APP_VERSION = '3.2.5';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
