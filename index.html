@@ -4415,7 +4415,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.7';
+    const APP_VERSION = '3.2.8';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -14469,8 +14469,8 @@
 
         return `<div class="bt-detail-header">
             <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
-            <span class="bt-detail-title">${bracket.name}</span>
         </div>
+        <h2 class="section-title" style="margin:0 0 12px">${bracket.name}</h2>
         ${winnerHtml}
         <div class="bt-bracket-scroll">
             ${renderBracketTree(bracket, false)}
