@@ -4413,7 +4413,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.3';
+    const APP_VERSION = '3.2.4';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -14059,7 +14059,10 @@
     function btDeleteBracket(id) {
         if (!requireAdmin('delete a bracket')) return;
         const bracket = (S.brackets || []).find(b => b.id === id);
-        if (bracket && bracket.bonusEventId && S.bonusEvents) {
+        if (!bracket) return;
+        const label = bracket.name || 'this bracket';
+        if (!confirm(`Delete "${label}"? This cannot be undone.`)) return;
+        if (bracket.bonusEventId && S.bonusEvents) {
             delete S.bonusEvents[bracket.bonusEventId];
         }
         S.brackets = (S.brackets || []).filter(b => b.id !== id);
@@ -14520,9 +14523,13 @@
                             ${check}
                         </div>`;
                     } else {
-                        const canClick = !winner && slot && slot !== 'BYE' && left && right && left !== 'BYE' && right !== 'BYE';
+                        const isByeMatch = left === 'BYE' || right === 'BYE';
+                        const canClick = !winner && slot && slot !== 'BYE' && left && right && !isByeMatch;
                         const clickAttr = canClick ? `onclick="btRecordWinner('${bracket.id}',${matchIdx},'${side}')"` : '';
-                        const clearAttr = isWinner ? `onclick="btClearWinner('${bracket.id}',${matchIdx})"` : '';
+                        // Bye auto-advance is automatic and shouldn't be clearable —
+                        // otherwise an accidental click strips the advancement with no
+                        // way to re-click (canClick is false for bye matches).
+                        const clearAttr = (isWinner && !isByeMatch) ? `onclick="btClearWinner('${bracket.id}',${matchIdx})"` : '';
                         return `<div class="bt-match-player${isWinner?' bt-winner':''}${isLoser?' bt-loser':''}" ${isWinner ? clearAttr : clickAttr}>
                             <span class="bt-player-dot" style="background:${color}"></span>
                             <span class="bt-player-name">${name}</span>
