@@ -4415,7 +4415,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.6';
+    const APP_VERSION = '3.2.7';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -9287,6 +9287,7 @@
                                 matchMaking: S.matchMaking,
                                 bonusEvents: S.bonusEvents,
                                 holeTimes: S.holeTimes,
+                                brackets: S.brackets || [],
                                 scorerCode: this.scorerCode,
                                 adminPin: this.adminPin,
                                 updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -9318,6 +9319,7 @@
                                 matchMaking: S.matchMaking,
                                 bonusEvents: S.bonusEvents,
                                 holeTimes: S.holeTimes,
+                                brackets: S.brackets || [],
                                 scorerCode: this.scorerCode,
                                 adminPin: this.adminPin,
                                 updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -9436,6 +9438,7 @@
                     matchMaking: S.matchMaking,
                     bonusEvents: S.bonusEvents,
                     holeTimes: S.holeTimes,
+                    brackets: S.brackets || [],
                     matchCodes: codeToMatch,
                     scorerCode: this.scorerCode,
                     adminPin: this.adminPin,
@@ -9503,6 +9506,7 @@
                     matchMaking: S.matchMaking,
                     bonusEvents: S.bonusEvents,
                     holeTimes: S.holeTimes,
+                    brackets: S.brackets || [],
                     updatedAt: firebase.database.ServerValue.TIMESTAMP,
                 }).then(() => {
                     setTimeout(() => { this._suppressListener = false; }, 500);
@@ -9618,6 +9622,7 @@
             }
             S.bonusEvents = val.bonusEvents || {};
             S.holeTimes = val.holeTimes || [];
+            S.brackets = val.brackets || [];
 
             // Ensure all matches have holes property initialized
             Object.values(S.matches).forEach(match => {
