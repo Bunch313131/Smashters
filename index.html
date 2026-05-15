@@ -4413,7 +4413,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.2';
+    const APP_VERSION = '3.2.3';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -5751,14 +5751,33 @@
         triggerScoreAnimations();
     }
 
+    // Scorer unlock persistence — keep scoring unlocked for the rest of the
+    // calendar day so closing/reopening the app doesn't re-prompt for the code.
+    const SCORER_UNLOCK_KEY = 'smashters-scorer-unlock-date';
+    function todayKey() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function persistScorerUnlock() {
+        try { localStorage.setItem(SCORER_UNLOCK_KEY, todayKey()); } catch (e) {}
+    }
+    function clearScorerUnlock() {
+        try { localStorage.removeItem(SCORER_UNLOCK_KEY); } catch (e) {}
+    }
+    function hasScorerUnlockForToday() {
+        try { return localStorage.getItem(SCORER_UNLOCK_KEY) === todayKey(); }
+        catch (e) { return false; }
+    }
+
     function enableScoring() {
         const code = prompt('Enter scorer code:');
         if (code === '6969') {
             LiveSync.isScorer = true;
             LiveSync.isViewer = false;
             LiveSync.scorerMatchId = null; // Can score all matches
+            persistScorerUnlock();
             LiveSync.updateBanner();
-            showToast('Scoring enabled!');
+            showToast('Scoring enabled for the day');
             switchTab('scoring');
         } else if (code !== null) {
             showToast('Incorrect scorer code');
@@ -9216,6 +9235,13 @@
             this.isAdmin = false; // Default to viewer mode - must enter PIN for admin
             this.isViewer = true; // Read-only by default
             this.isScorer = false;
+            // Restore same-day scorer unlock so users don't re-enter the code
+            // every time they reopen the app during a tournament day.
+            if (hasScorerUnlockForToday()) {
+                this.isScorer = true;
+                this.isViewer = false;
+                this.scorerMatchId = null;
+            }
             this.eventRef = this.db.ref('smashters/' + this.eventCode);
 
             try {
@@ -9754,6 +9780,7 @@
             this.matchCodes = {};
             this.adminPin = null;
             localStorage.removeItem('smashters-live');
+            clearScorerUnlock();
             document.body.classList.remove('viewer-mode', 'scorer-mode');
             this.updateBanner();
             showToast('Disconnected');
@@ -9886,6 +9913,7 @@
             this.isScorer = false;
             this.isViewer = true;
             this.scorerMatchId = null;
+            clearScorerUnlock();
             this.updateBanner();
             showToast('Returned to viewer mode');
             switchTab('leaderboard');
