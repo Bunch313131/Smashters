@@ -4415,7 +4415,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.10';
+    const APP_VERSION = '3.2.11';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -6890,7 +6890,7 @@
         try {
             const canEdit = LiveSync.canScore(match.id);
             const status = getMatchPlayStatus(match);
-            const hole = S.ui.scoringHole || 1;
+            const hole = Math.min(18, Math.max(1, S.ui.scoringHole || 1));
             const holeInfo = getHoleInfo(hole);
             const holeScores = match.holes[hole] || {};
             const allPlayers = [...match.teamA, ...match.teamB];
@@ -7242,6 +7242,7 @@
     function adjustScore(playerId, holeNum, delta) {
         const match = S.matches[S.ui.activeMatchId];
         if (!match) return;
+        if (holeNum < 1 || holeNum > 18) return;
 
         // Check permissions
         if (!LiveSync.canScore(S.ui.activeMatchId)) {
@@ -7283,6 +7284,7 @@
     function setScore(playerId, holeNum, newScore) {
         const match = S.matches[S.ui.activeMatchId];
         if (!match) return;
+        if (holeNum < 1 || holeNum > 18) return;
         if (!LiveSync.canScore(S.ui.activeMatchId)) {
             showToast('View only - you cannot edit this match');
             return;
@@ -7411,6 +7413,7 @@
     // Auto-fill par for any unscored players on the current hole
     function autoFillPar(match, holeNum) {
         if (!match || !LiveSync.canScore(match.id)) return;
+        if (holeNum < 1 || holeNum > 18) return;
         const par = getHoleInfo(holeNum).par;
         if (!match.holes[holeNum]) match.holes[holeNum] = {};
         const holeScores = match.holes[holeNum];
@@ -7451,6 +7454,10 @@
 
     function nextHole() {
         if (S.ui.scoringHole >= 18) return;
+        // Guard against rapid taps during the celebration delay below queueing
+        // multiple increments — without this, fast-clicking through a birdie
+        // celebration could push scoringHole past 18 into phantom holes.
+        if (S.ui._nextHolePending) return;
 
         const match = S.matches[S.ui.activeMatchId];
         if (!match) { S.ui.scoringHole++; saveState(); renderScoring(); return; }
@@ -7477,7 +7484,10 @@
             }
             // Wait so user can see the result banner + animation
             const delay = hasBirdieOrEagle ? 2500 : 1200;
+            S.ui._nextHolePending = true;
             setTimeout(() => {
+                S.ui._nextHolePending = false;
+                if (S.ui.scoringHole >= 18) return;
                 haptic(8);
                 S.ui.scoringHole++;
                 saveState();
@@ -13195,6 +13205,29 @@
         if (S.config.eventName && S.config.eventName.startsWith('The ')) {
             S.config.eventName = S.config.eventName.replace(/^The /, '');
             saveState();
+        }
+
+        // Migrate: strip phantom hole scores (h < 1 or h > 18) from matches.
+        // A race in nextHole's birdie/eagle celebration setTimeout could push
+        // S.ui.scoringHole past 18 on rapid taps, and adjustScore/setScore
+        // wrote those phantom scores into match.holes, inflating session
+        // gross totals on the Stats tab.
+        {
+            let scrubbed = 0;
+            Object.values(S.matches || {}).forEach(match => {
+                if (!match || !match.holes) return;
+                Object.keys(match.holes).forEach(k => {
+                    const h = parseInt(k, 10);
+                    if (!Number.isFinite(h) || h < 1 || h > 18) {
+                        delete match.holes[k];
+                        scrubbed++;
+                    }
+                });
+            });
+            if (scrubbed > 0) {
+                console.log(`Scrubbed ${scrubbed} phantom hole entries from matches`);
+                saveState();
+            }
         }
 
         // Migrate: ensure Horse Race placeholder bonus event exists
