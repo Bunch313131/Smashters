@@ -4432,7 +4432,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.1';
+    const APP_VERSION = '3.3.2';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -7504,16 +7504,16 @@
         const match = S.matches[S.ui.activeMatchId];
         if (!match || !LiveSync.canScore(match.id)) return;
 
-        // Backfill any prior holes that have at least one score entered but
-        // are missing others — these were played but not formally confirmed.
-        // Holes with zero scores are skipped (just browsed, not played).
-        const allPlayers = match.type === 'foursomes'
-            ? [match.teamA[0], match.teamB[0]]
-            : [...match.teamA, ...match.teamB];
+        // Backfill any prior holes that look genuinely played but were not
+        // formally confirmed. A hole qualifies only if at least one full team
+        // has all their scores entered — a single accidental drum touch won't
+        // meet that bar, preventing browsed holes from getting auto-filled.
+        const teamA = match.type === 'foursomes' ? [match.teamA[0]] : match.teamA;
+        const teamB = match.type === 'foursomes' ? [match.teamB[0]] : match.teamB;
+        const teamScored = (team, hScores) => team.every(pid => hScores[pid] !== undefined && hScores[pid] !== null);
         for (let h = 1; h < S.ui.scoringHole; h++) {
             const hScores = match.holes[h] || {};
-            const hasAnyScore = allPlayers.some(pid => hScores[pid] !== undefined && hScores[pid] !== null);
-            if (hasAnyScore) autoFillPar(match, h);
+            if (teamScored(teamA, hScores) || teamScored(teamB, hScores)) autoFillPar(match, h);
         }
 
         autoFillPar(match, S.ui.scoringHole);
