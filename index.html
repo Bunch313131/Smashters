@@ -4415,7 +4415,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.11';
+    const APP_VERSION = '3.2.12';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -9635,16 +9635,40 @@
             S.holeTimes = val.holeTimes || [];
             S.brackets = val.brackets || [];
 
-            // Ensure all matches have holes property initialized
+            // Ensure all matches have holes property initialized, and strip
+            // any phantom hole entries (hole numbers outside 1..18) that may
+            // have been written by an older client with the celebration-race
+            // bug. Without this, every Firebase sync re-introduces the bad
+            // scores even after the init() migration ran.
+            let phantomScrubbed = 0;
             Object.values(S.matches).forEach(match => {
                 if (!match.holes) {
                     match.holes = {};
+                    return;
                 }
+                Object.keys(match.holes).forEach(k => {
+                    const h = parseInt(k, 10);
+                    if (!Number.isFinite(h) || h < 1 || h > 18) {
+                        delete match.holes[k];
+                        phantomScrubbed++;
+                    }
+                });
             });
+            if (phantomScrubbed > 0) {
+                console.log(`Scrubbed ${phantomScrubbed} phantom hole entries from Firebase sync`);
+            }
 
             // Store the timestamp of this sync
             S._lastSync = val.updatedAt || Date.now();
             saveState(true); // Save to localStorage, skip Firebase sync (we're already pulling FROM Firebase)
+            // If we just scrubbed phantom holes and we're admin, push the
+            // cleaned matches back to Firebase so other devices stop pulling
+            // the bad data.
+            if (phantomScrubbed > 0 && this.isAdmin && this.eventRef) {
+                this.eventRef.child('matches').set(S.matches).catch(e => {
+                    console.error('Phantom-scrub push failed:', e);
+                });
+            }
             document.documentElement.style.setProperty('--team-a-color', S.config.teamA.color);
             document.documentElement.style.setProperty('--team-b-color', S.config.teamB.color);
             document.querySelector('.header-titles h1').textContent = S.config.eventName;
