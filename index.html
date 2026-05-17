@@ -938,15 +938,19 @@
             font-size: 1rem;
             font-weight: 600;
             min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
         .score-entry-name .hcp-badge {
             font-size: 0.7rem;
             color: #999;
             display: block;
             font-weight: normal;
+        }
+        .stroke-holes-label {
+            font-size: 0.65rem;
+            color: var(--masters-red);
+            display: block;
+            font-weight: normal;
+            opacity: 0.8;
         }
 
         .score-entry-controls {
@@ -1154,13 +1158,26 @@
         .hole-dot.team-b-won { border-color: var(--team-b-color); background: var(--team-b-color); color: var(--masters-white); }
         .hole-dot.halved-hole { border-color: #bbb; background: #bbb; color: var(--masters-white); }
 
+        .scoring-confirm-btn {
+            flex: 1;
+            padding: 11px 10px;
+            background: var(--masters-green);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+        }
+        .scoring-confirm-btn:active { opacity: 0.85; }
         .scoring-clear-btn {
             display: block;
-            width: 100%;
-            padding: 10px;
+            padding: 10px 14px;
             background: none;
             border: none;
-            border-top: 1px solid #eee;
+            border-left: 1px solid #eee;
             font-family: 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
             font-size: 0.7rem;
             font-weight: bold;
@@ -4415,7 +4432,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.2.12';
+    const APP_VERSION = '3.3.0';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -7019,7 +7036,11 @@
 
                 <div class="scoring-hole-strip">${holeStrip}</div>
 
-                ${canEdit ? `<button class="scoring-clear-btn" onclick="clearHoleScores(${hole})">Clear Hole ${hole} Scores</button>` : ''}
+                ${canEdit ? `
+                <div style="display:flex;gap:8px;margin:4px 0;">
+                    <button class="scoring-confirm-btn" onclick="confirmHole()">Confirm Hole ${hole} &amp; Next &rarr;</button>
+                    <button class="scoring-clear-btn" style="flex:0 0 auto;" onclick="clearHoleScores(${hole})">Clear</button>
+                </div>` : ''}
 
                     ${status.isComplete ? (() => {
                         const winTeam = status.leader;
@@ -7058,6 +7079,18 @@
         const hcpDisplay = matchPlayHcp !== hcp && matchPlayHcp > 0
             ? `HCP ${hcp} (${matchPlayHcp})`
             : `HCP ${hcp}`;
+
+        // Build list of holes where this player receives strokes
+        let strokeHolesLine = '';
+        if (S.config.useHandicaps && matchPlayHcp > 0) {
+            const strokeHoleNums = [];
+            for (let h = 1; h <= 18; h++) {
+                if (getStrokesOnHole(matchPlayHcp, getHoleInfo(h).hcp) > 0) strokeHoleNums.push(h);
+            }
+            if (strokeHoleNums.length > 0) {
+                strokeHolesLine = `<span class="stroke-holes-label">Strokes on: ${strokeHoleNums.join(', ')}</span>`;
+            }
+        }
 
         // Drum values: default to par if no score entered
         const currentScore = hasScore ? grossScore : par;
@@ -7123,6 +7156,7 @@
                 <div class="score-entry-name">
                     ${name}${strokeDots}
                     <span class="hcp-badge">${hcpDisplay}</span>
+                    ${strokeHolesLine}
                 </div>
                 ${drumHTML}
             </div>`;
@@ -7443,8 +7477,6 @@
 
     function prevHole() {
         if (S.ui.scoringHole > 1) {
-            const match = S.matches[S.ui.activeMatchId];
-            if (match) autoFillPar(match, S.ui.scoringHole);
             haptic(8);
             S.ui.scoringHole--;
             saveState();
@@ -7454,20 +7486,27 @@
 
     function nextHole() {
         if (S.ui.scoringHole >= 18) return;
-        // Guard against rapid taps during the celebration delay below queueing
-        // multiple increments — without this, fast-clicking through a birdie
-        // celebration could push scoringHole past 18 into phantom holes.
-        if (S.ui._nextHolePending) return;
+        haptic(8);
+        S.ui.scoringHole++;
+        saveState();
+        renderScoring();
+    }
 
+    function jumpToHole(h) {
+        haptic(8);
+        S.ui.scoringHole = h;
+        saveState();
+        renderScoring();
+    }
+
+    function confirmHole() {
+        if (S.ui._nextHolePending) return;
         const match = S.matches[S.ui.activeMatchId];
-        if (!match) { S.ui.scoringHole++; saveState(); renderScoring(); return; }
+        if (!match || !LiveSync.canScore(match.id)) return;
 
         autoFillPar(match, S.ui.scoringHole);
-
-        // Re-render current hole so banner/best-ball update before we leave
         renderScoring();
 
-        // Check if there's something worth pausing for
         const holeWinner = getHoleWinner(match, S.ui.scoringHole);
         const holeInfo = getHoleInfo(S.ui.scoringHole);
         const holeScores = match.holes[S.ui.scoringHole] || {};
@@ -7477,13 +7516,12 @@
             return s !== undefined && s !== null && s < holeInfo.par;
         });
 
-        if (holeWinner || hasBirdieOrEagle) {
-            // Celebrate birdies/eagles
-            if (hasBirdieOrEagle) {
-                checkForBirdiesAndCelebrate(match, S.ui.scoringHole);
-            }
-            // Wait so user can see the result banner + animation
-            const delay = hasBirdieOrEagle ? 2500 : 1200;
+        if (hasBirdieOrEagle) checkForBirdiesAndCelebrate(match, S.ui.scoringHole);
+
+        if (S.ui.scoringHole >= 18) return;
+
+        const delay = hasBirdieOrEagle ? 2500 : holeWinner ? 1200 : 0;
+        if (delay > 0) {
             S.ui._nextHolePending = true;
             setTimeout(() => {
                 S.ui._nextHolePending = false;
@@ -7499,15 +7537,6 @@
             saveState();
             renderScoring();
         }
-    }
-
-    function jumpToHole(h) {
-        const match = S.matches[S.ui.activeMatchId];
-        if (match) autoFillPar(match, S.ui.scoringHole);
-        haptic(8);
-        S.ui.scoringHole = h;
-        saveState();
-        renderScoring();
     }
 
     function checkForBirdiesAndCelebrate(match, holeNum) {
