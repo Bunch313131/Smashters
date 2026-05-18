@@ -4435,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.4';
+    const APP_VERSION = '3.3.5';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -8103,20 +8103,21 @@
             allHistory.forEach(h => {
                 const rowInner = `
                     <div style="padding:10px 0 10px 14px;font-size:0.78rem;font-weight:800;color:#888;">${h.year}</div>
-                    <div style="padding:10px 8px;flex:1;">
+                    <div style="padding:10px 8px;">
                         <div style="font-size:0.9rem;font-weight:700;color:#111;white-space:nowrap;">${h.winnerName || 'Tied'}</div>
                         ${h.loserName ? `<div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${h.loserName}</div>` : ''}
                     </div>
-                    <div style="padding:10px 8px;display:flex;align-items:center;gap:6px;">
+                    <div style="padding:10px 10px 10px 4px;display:flex;align-items:center;">
                         <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(to right,${h.winnerColor},${darkenColor(h.winnerColor)});color:#fff;font-size:0.82rem;font-weight:800;white-space:nowrap;">${fmtPts(h.wScore)}&ndash;${fmtPts(h.lScore)}</span>
-                        ${h.hasDetail ? `<span style="color:#ccc;font-size:1rem;">›</span>` : ''}
-                        ${h.hasDetail && isAdmin ? `<button onclick="event.stopPropagation();deleteArchive(${h.year})" style="background:none;border:none;color:#ddd;font-size:0.75rem;padding:4px 2px;cursor:pointer;" title="Delete archive">✕</button>` : ''}
+                    </div>
+                    <div style="width:32px;display:flex;align-items:center;justify-content:center;padding-right:6px;">
+                        ${h.hasDetail && isAdmin ? `<button onclick="event.stopPropagation();deleteArchive(${h.year})" style="background:none;border:none;color:#ccc;font-size:0.8rem;padding:4px;cursor:pointer;line-height:1;" title="Delete archive">✕</button>` : (h.hasDetail ? `<span style="color:#ccc;font-size:1rem;">›</span>` : '')}
                     </div>`;
 
                 if (h.hasDetail) {
-                    html += `<div class="archive-row-tap" onclick="ledgerViewArchive(${h.year})" style="display:grid;grid-template-columns:56px 1fr auto;align-items:center;min-height:52px;border-bottom:1px solid rgba(0,0,0,0.07);">${rowInner}</div>`;
+                    html += `<div class="archive-row-tap" onclick="ledgerViewArchive(${h.year})" style="display:grid;grid-template-columns:56px 1fr auto 32px;align-items:center;min-height:52px;border-bottom:1px solid rgba(0,0,0,0.07);">${rowInner}</div>`;
                 } else {
-                    html += `<div style="display:grid;grid-template-columns:56px 1fr auto;align-items:center;min-height:48px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">${rowInner}</div>`;
+                    html += `<div style="display:grid;grid-template-columns:56px 1fr auto 32px;align-items:center;min-height:48px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">${rowInner}</div>`;
                 }
             });
         }
@@ -8174,11 +8175,10 @@
                 winnerName: b.winnerName || null,
                 winnerTeam: b.winnerTeam || null,
             })),
-            horseRaces: (S.horseRaces || []).map(r => ({
+            horseRaces: (S.horseRaces || []).filter(r => r.status !== 'setup' && (r.teams || []).length > 0).map(r => ({
                 id: r.id, name: r.name || 'Horse Race', status: r.status,
                 winner: r.winner || null,
                 teams: (r.teams || []).map(t => ({
-                    name: t.name || t,
                     playerNames: (t.playerIds || []).map(id => getPlayerName(id)),
                 })),
             })),
@@ -8315,9 +8315,9 @@
             races.forEach(r => {
                 html += `<div style="padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">
                     <div style="font-size:0.88rem;font-weight:600;margin-bottom:6px;">${r.name || 'Horse Race'}</div>`;
-                (r.teams || []).forEach(t => {
-                    const players = (t.playerNames || []).join(', ');
-                    html += `<div style="font-size:0.78rem;color:#555;padding:2px 0;">${t.name || ''}${players ? ` — ${players}` : ''}</div>`;
+                (r.teams || []).forEach((t, ti) => {
+                    const players = (t.playerNames || []).join(' / ');
+                    html += `<div style="font-size:0.78rem;color:#555;padding:2px 0;">Pair ${ti + 1}: ${players || '—'}</div>`;
                 });
                 html += `</div>`;
             });
@@ -14440,6 +14440,17 @@
         renderTab('brackets');
     }
 
+    function btRenameBracket(id) {
+        if (!requireAdmin('rename a bracket')) return;
+        const bracket = (S.brackets || []).find(b => b.id === id);
+        if (!bracket) return;
+        const newName = prompt('Rename bracket:', bracket.name || '');
+        if (newName === null) return;
+        bracket.name = newName.trim() || bracket.name;
+        saveState();
+        renderTab('brackets');
+    }
+
     function btDeleteBracket(id) {
         if (!requireAdmin('delete a bracket')) return;
         const bracket = (S.brackets || []).find(b => b.id === id);
@@ -14620,13 +14631,11 @@
         if (!el) return;
         if (!S.brackets) S.brackets = [];
         const bracket = btGetBracket();
-        // Complete brackets go back to home list (like horse race)
         if (bracket && bracket.status === 'setup') {
             el.innerHTML = renderBracketSetup(bracket);
-        } else if (bracket && bracket.status !== 'complete') {
+        } else if (bracket) {
             el.innerHTML = renderBracketDetail(bracket);
         } else {
-            if (bracket && bracket.status === 'complete') S.ui.activeBracketId = null;
             el.innerHTML = renderBracketHome();
         }
     }
@@ -14673,6 +14682,7 @@
                             <div class="bt-card-actions">
                                 <button class="bt-btn bt-btn-view" onclick="btViewBracket('${b.id}')">View Results</button>
                                 ${awardBtn}
+                                ${isAdmin ? `<button class="bt-btn" style="background:#f0f0f0;color:#333;" onclick="btRenameBracket('${b.id}')">Rename</button>` : ''}
                                 ${isAdmin ? `<button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${b.id}')">Delete</button>` : ''}
                             </div>
                         </div>
@@ -14693,6 +14703,7 @@
                             <div class="bt-card-meta">${b.type === '2man' ? '2-Man Teams' : 'Individual'}${b.awardPoint ? ' · Awards Point' : ''}</div>
                             <div class="bt-card-actions">
                                 <button class="bt-btn bt-btn-view" onclick="btViewBracket('${b.id}')">Open</button>
+                                ${isAdmin ? `<button class="bt-btn" style="background:#f0f0f0;color:#333;" onclick="btRenameBracket('${b.id}')">Rename</button>` : ''}
                                 ${isAdmin ? `<button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${b.id}')">Delete</button>` : ''}
                             </div>
                         </div>
@@ -14846,6 +14857,7 @@
 
         return `<div class="bt-detail-header">
             <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
+            ${isAdmin ? `<button class="bt-back-btn" style="margin-left:auto;" onclick="btRenameBracket('${bracket.id}')">Rename</button>` : ''}
         </div>
         <h2 class="section-title" style="margin:0 0 12px">${bracket.name}</h2>
         ${winnerHtml}
