@@ -413,7 +413,7 @@
         }
 
         .archive-row-tap { cursor: pointer; }
-        .archive-row-tap:active > div { background: #f5f5f5 !important; }
+        .archive-row-tap:active { background: #f0faf5 !important; }
 
         .lb-section-header {
             background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
@@ -4435,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.7';
+    const APP_VERSION = '3.3.8';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -8101,23 +8101,38 @@
             html += `<div style="padding:20px;text-align:center;color:#aaa;font-size:0.85rem;background:#fff;">Loading&hellip;</div>`;
         } else {
             allHistory.forEach(h => {
-                const rowInner = `
-                    <div style="padding:10px 0 10px 14px;font-size:0.78rem;font-weight:800;color:#888;">${h.year}</div>
-                    <div style="padding:10px 8px;">
-                        <div style="font-size:0.9rem;font-weight:700;color:#111;white-space:nowrap;">${h.winnerName || 'Tied'}</div>
-                        ${h.loserName ? `<div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${h.loserName}</div>` : ''}
-                    </div>
-                    <div style="padding:10px 10px 10px 4px;display:flex;align-items:center;">
-                        <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(to right,${h.winnerColor},${darkenColor(h.winnerColor)});color:#fff;font-size:0.82rem;font-weight:800;white-space:nowrap;">${fmtPts(h.wScore)}&ndash;${fmtPts(h.lScore)}</span>
-                    </div>
-                    <div style="width:32px;display:flex;align-items:center;justify-content:center;padding-right:6px;">
-                        ${h.hasDetail && isAdmin ? `<button onclick="event.stopPropagation();deleteArchive(${h.year})" style="background:none;border:none;color:#ccc;font-size:0.8rem;padding:4px;cursor:pointer;line-height:1;" title="Delete archive">✕</button>` : (h.hasDetail ? `<span style="color:#ccc;font-size:1rem;">›</span>` : '')}
-                    </div>`;
-
                 if (h.hasDetail) {
-                    html += `<div class="archive-row-tap" onclick="ledgerViewArchive(${h.year})" style="display:grid;grid-template-columns:56px 1fr auto 32px;align-items:center;min-height:52px;border-bottom:1px solid rgba(0,0,0,0.07);">${rowInner}</div>`;
+                    html += `
+                    <div class="archive-row-tap" onclick="ledgerViewArchive(${h.year})"
+                         style="display:grid;grid-template-columns:56px 1fr auto 32px;align-items:center;min-height:54px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;border-left:4px solid var(--masters-green);">
+                        <div style="padding:10px 0 10px 10px;font-size:0.78rem;font-weight:800;color:var(--masters-green);">${h.year}</div>
+                        <div style="padding:10px 8px;">
+                            <div style="font-size:0.9rem;font-weight:700;color:#111;white-space:nowrap;">${h.winnerName || 'Tied'}</div>
+                            ${h.loserName ? `<div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${h.loserName}</div>` : ''}
+                            <div style="font-size:0.65rem;font-weight:700;color:var(--masters-green);letter-spacing:0.5px;margin-top:2px;text-transform:uppercase;">Full Results</div>
+                        </div>
+                        <div style="padding:10px 4px 10px 4px;display:flex;align-items:center;">
+                            <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(to right,${h.winnerColor},${darkenColor(h.winnerColor)});color:#fff;font-size:0.82rem;font-weight:800;white-space:nowrap;">${fmtPts(h.wScore)}&ndash;${fmtPts(h.lScore)}</span>
+                        </div>
+                        <div style="width:32px;display:flex;align-items:center;justify-content:center;padding-right:4px;">
+                            ${isAdmin
+                                ? `<button onclick="event.stopPropagation();deleteArchive(${h.year})" style="background:none;border:none;color:#ccc;font-size:0.8rem;padding:4px;cursor:pointer;line-height:1;" title="Delete archive">✕</button>`
+                                : `<span style="color:var(--masters-green);font-size:1.1rem;font-weight:700;">›</span>`}
+                        </div>
+                    </div>`;
                 } else {
-                    html += `<div style="display:grid;grid-template-columns:56px 1fr auto 32px;align-items:center;min-height:48px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">${rowInner}</div>`;
+                    html += `
+                    <div style="display:grid;grid-template-columns:56px 1fr auto 32px;align-items:center;min-height:48px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;border-left:4px solid transparent;">
+                        <div style="padding:10px 0 10px 10px;font-size:0.78rem;font-weight:800;color:#bbb;">${h.year}</div>
+                        <div style="padding:10px 8px;">
+                            <div style="font-size:0.9rem;font-weight:700;color:#111;white-space:nowrap;">${h.winnerName || 'Tied'}</div>
+                            ${h.loserName ? `<div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${h.loserName}</div>` : ''}
+                        </div>
+                        <div style="padding:10px 4px 10px 4px;display:flex;align-items:center;">
+                            <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(to right,${h.winnerColor},${darkenColor(h.winnerColor)});color:#fff;font-size:0.82rem;font-weight:800;white-space:nowrap;">${fmtPts(h.wScore)}&ndash;${fmtPts(h.lScore)}</span>
+                        </div>
+                        <div style="width:32px;"></div>
+                    </div>`;
                 }
             });
         }
