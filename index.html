@@ -4435,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.3';
+    const APP_VERSION = '3.3.4';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -8032,10 +8032,55 @@
 
         const fmtPts = n => n % 1 === 0.5 ? `${Math.floor(n)}&frac12;` : `${n}`;
         const teamColor = name => SMASHTERS_TEAM_COLORS[name] || '#555';
+        const isAdmin = S.ui.settingsUnlocked;
 
-        // Collect all unique team names and their win counts
+        // Kick off Firebase archive load on first visit
+        if (_archiveCache === null) {
+            _archiveCache = 'loading';
+            loadArchivesFromFirebase();
+        }
+
+        // Build unified history: Firebase archives take precedence over hardcoded entries for same year
+        const archiveMap = (_archiveCache && _archiveCache !== 'loading') ? _archiveCache : {};
+        const archiveYears = new Set(Object.keys(archiveMap).map(Number));
+
+        // Normalize each entry to { year, winnerName, loserName, wScore, lScore, hasDetail }
+        const normalizeArc = arc => {
+            const s = arc.finalScores || { A: 0, B: 0 };
+            const tA = arc.teamA || { name: 'Team A', color: '#555' };
+            const tB = arc.teamB || { name: 'Team B', color: '#555' };
+            const aWins = s.A > s.B, bWins = s.B > s.A;
+            return {
+                year: arc.year,
+                winnerName: aWins ? tA.name : (bWins ? tB.name : null),
+                loserName:  aWins ? tB.name : (bWins ? tA.name : null),
+                winnerColor: aWins ? tA.color : (bWins ? tB.color : '#555'),
+                wScore: aWins ? s.A : s.B,
+                lScore: aWins ? s.B : s.A,
+                hasDetail: true,
+            };
+        };
+
+        const allHistory = [
+            // Hardcoded entries not shadowed by a Firebase archive
+            ...SMASHTERS_HISTORY.filter(h => !archiveYears.has(h.year)).map(h => ({
+                year: h.year,
+                winnerName: h.winner,
+                loserName: h.loser,
+                winnerColor: teamColor(h.winner),
+                wScore: h.wScore,
+                lScore: h.lScore,
+                hasDetail: false,
+            })),
+            // Firebase archive entries (override hardcoded for same year)
+            ...Object.values(archiveMap).map(normalizeArc),
+        ].sort((a, b) => b.year - a.year);
+
+        // Win counts from unified history
         const winCounts = {};
-        SMASHTERS_HISTORY.forEach(h => { winCounts[h.winner] = (winCounts[h.winner] || 0) + 1; });
+        allHistory.forEach(h => {
+            if (h.winnerName) winCounts[h.winnerName] = (winCounts[h.winnerName] || 0) + 1;
+        });
         const teams = Object.keys(SMASHTERS_TEAM_COLORS);
 
         let html = `<div class="lb-board">
@@ -8052,64 +8097,28 @@
                 }).join('')}
             </div>`;
 
-        SMASHTERS_HISTORY.slice().reverse().forEach(h => {
-            const winColor = teamColor(h.winner);
-            const gradDir  = 'to right';
-            html += `
-            <div style="display:grid;grid-template-columns:56px 1fr auto;align-items:center;min-height:48px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">
-                <div style="padding:10px 0 10px 14px;font-size:0.78rem;font-weight:800;color:#888;">${h.year}</div>
-                <div style="padding:10px 8px;">
-                    <div style="font-size:0.9rem;font-weight:700;color:#111;white-space:nowrap;">${h.winner}</div>
-                    <div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${h.loser}</div>
-                </div>
-                <div style="padding:10px 14px;">
-                    <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(${gradDir},${winColor},${darkenColor(winColor)});color:#fff;font-size:0.82rem;font-weight:800;letter-spacing:0.5px;white-space:nowrap;">${fmtPts(h.wScore)}–${fmtPts(h.lScore)}</span>
-                </div>
-            </div>`;
-        });
-
-        html += `</div>`;
-
-        // Firebase year archives
-        html += `<div class="lb-board" style="margin-top:16px;">
-            <div class="lb-section-header" style="letter-spacing:2px;">Year Archives</div>`;
-
-        if (_archiveCache === null) {
-            // Kick off async load; show spinner for now
-            _archiveCache = 'loading';
-            loadArchivesFromFirebase();
-            html += `<div style="padding:20px;text-align:center;color:#aaa;font-size:0.85rem;background:#fff;">Loading archives&hellip;</div>`;
-        } else if (_archiveCache === 'loading') {
-            html += `<div style="padding:20px;text-align:center;color:#aaa;font-size:0.85rem;background:#fff;">Loading archives&hellip;</div>`;
+        if (_archiveCache === 'loading' && allHistory.length === 0) {
+            html += `<div style="padding:20px;text-align:center;color:#aaa;font-size:0.85rem;background:#fff;">Loading&hellip;</div>`;
         } else {
-            const archiveList = Object.values(_archiveCache).sort((a, b) => b.year - a.year);
-            if (archiveList.length === 0) {
-                html += `<div style="padding:20px;text-align:center;color:#aaa;font-style:italic;font-size:0.85rem;background:#fff;">No archived years yet.</div>`;
-            } else {
-                archiveList.forEach(arc => {
-                    const s = arc.finalScores || { A: 0, B: 0 };
-                    const tA = arc.teamA || { name: 'Team A', color: '#555' };
-                    const tB = arc.teamB || { name: 'Team B', color: '#555' };
-                    const winner = s.A > s.B ? tA : (s.B > s.A ? tB : null);
-                    const winColor = winner ? winner.color : '#555';
-                    const winScore = winner === tA ? s.A : s.B;
-                    const loseScore = winner === tA ? s.B : s.A;
-                    html += `
-                    <div class="archive-row-tap" onclick="ledgerViewArchive(${arc.year})">
-                        <div style="display:grid;grid-template-columns:56px 1fr auto;align-items:center;min-height:52px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">
-                            <div style="padding:10px 0 10px 14px;font-size:0.78rem;font-weight:800;color:#888;">${arc.year}</div>
-                            <div style="padding:10px 8px;">
-                                <div style="font-size:0.9rem;font-weight:700;color:#111;">${winner ? winner.name : 'Tied'}</div>
-                                ${winner ? `<div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${(winner===tA?tB:tA).name}</div>` : ''}
-                            </div>
-                            <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;">
-                                <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(to right,${winColor},${darkenColor(winColor)});color:#fff;font-size:0.82rem;font-weight:800;white-space:nowrap;">${fmtPts(winScore)}&ndash;${fmtPts(loseScore)}</span>
-                                <span style="color:#ccc;font-size:1rem;">›</span>
-                            </div>
-                        </div>
+            allHistory.forEach(h => {
+                const rowInner = `
+                    <div style="padding:10px 0 10px 14px;font-size:0.78rem;font-weight:800;color:#888;">${h.year}</div>
+                    <div style="padding:10px 8px;flex:1;">
+                        <div style="font-size:0.9rem;font-weight:700;color:#111;white-space:nowrap;">${h.winnerName || 'Tied'}</div>
+                        ${h.loserName ? `<div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${h.loserName}</div>` : ''}
+                    </div>
+                    <div style="padding:10px 8px;display:flex;align-items:center;gap:6px;">
+                        <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(to right,${h.winnerColor},${darkenColor(h.winnerColor)});color:#fff;font-size:0.82rem;font-weight:800;white-space:nowrap;">${fmtPts(h.wScore)}&ndash;${fmtPts(h.lScore)}</span>
+                        ${h.hasDetail ? `<span style="color:#ccc;font-size:1rem;">›</span>` : ''}
+                        ${h.hasDetail && isAdmin ? `<button onclick="event.stopPropagation();deleteArchive(${h.year})" style="background:none;border:none;color:#ddd;font-size:0.75rem;padding:4px 2px;cursor:pointer;" title="Delete archive">✕</button>` : ''}
                     </div>`;
-                });
-            }
+
+                if (h.hasDetail) {
+                    html += `<div class="archive-row-tap" onclick="ledgerViewArchive(${h.year})" style="display:grid;grid-template-columns:56px 1fr auto;align-items:center;min-height:52px;border-bottom:1px solid rgba(0,0,0,0.07);">${rowInner}</div>`;
+                } else {
+                    html += `<div style="display:grid;grid-template-columns:56px 1fr auto;align-items:center;min-height:48px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">${rowInner}</div>`;
+                }
+            });
         }
 
         html += `</div>`;
@@ -8128,10 +8137,8 @@
         if (!confirm(`Archive ${year} results to The Ledger?\n\nThis saves a permanent read-only snapshot that anyone can view. You can still reset the event afterward.`)) return;
         if (!LiveSync.init()) { alert('Firebase not available. Cannot archive.'); return; }
 
-        // Compute final team scores
         const finalScores = getTeamScores();
 
-        // Compute per-session scores + pre-compute match results (avoids re-running handicap logic at read time)
         const sessions = S.config.sessions.map(s => ({
             id: s.id, name: s.name, order: s.order,
             scores: getSessionScores(s.id),
@@ -8151,12 +8158,6 @@
             };
         });
 
-        // Compact bracket winners
-        const bracketSummaries = (S.brackets || []).map(b => ({
-            id: b.id, name: b.name, status: b.status,
-            winner: b.winner ? getPlayerName(b.winner) : null,
-        }));
-
         const archiveData = {
             year,
             eventName: S.config.eventName || 'Smashters',
@@ -8168,16 +8169,42 @@
             finalScores,
             sessions,
             matchResults,
-            bracketSummaries,
+            brackets: (S.brackets || []).map(b => ({
+                id: b.id, name: b.name, status: b.status,
+                winnerName: b.winnerName || null,
+                winnerTeam: b.winnerTeam || null,
+            })),
+            horseRaces: (S.horseRaces || []).map(r => ({
+                id: r.id, name: r.name || 'Horse Race', status: r.status,
+                winner: r.winner || null,
+                teams: (r.teams || []).map(t => ({
+                    name: t.name || t,
+                    playerNames: (t.playerIds || []).map(id => getPlayerName(id)),
+                })),
+            })),
             archivedAt: firebase.database.ServerValue.TIMESTAMP,
         };
 
         try {
             await LiveSync.db.ref('smashters-archives/' + year).set(archiveData);
-            _archiveCache = null; // bust cache so Ledger re-fetches
+            _archiveCache = null;
             showToast(`${year} archived to The Ledger!`);
         } catch (e) {
             alert('Error archiving: ' + e.message);
+        }
+    }
+
+    async function deleteArchive(year) {
+        if (!S.ui.settingsUnlocked) { alert('Admin access required.'); return; }
+        if (!confirm(`Delete the ${year} archive? This cannot be undone.`)) return;
+        if (!LiveSync.init()) { alert('Firebase not available.'); return; }
+        try {
+            await LiveSync.db.ref('smashters-archives/' + year).remove();
+            if (_archiveCache && _archiveCache !== 'loading') delete _archiveCache[year];
+            renderLedger();
+            showToast(`${year} archive deleted`);
+        } catch (e) {
+            alert('Error deleting: ' + e.message);
         }
     }
 
@@ -8267,15 +8294,32 @@
         });
 
         // Brackets
-        const brackets = (archive.bracketSummaries || []).filter(b => b.status === 'complete' || b.status === 'active');
+        const brackets = (archive.brackets || archive.bracketSummaries || []).filter(b => b.status === 'complete' || b.status === 'active');
         if (brackets.length > 0) {
             html += `<div class="lb-board" style="margin-top:12px;">
                 <div class="lb-section-header">&#127942; Brackets</div>`;
             brackets.forEach(b => {
                 html += `<div style="padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-size:0.88rem;font-weight:600;">${b.name}</span>
-                    <span style="font-size:0.82rem;color:#555;">${b.winner ? '&#127942; ' + b.winner : b.status === 'active' ? 'In progress' : '–'}</span>
+                    <span style="font-size:0.88rem;font-weight:600;">${b.name || 'Bracket'}</span>
+                    <span style="font-size:0.82rem;color:#555;">${b.winnerName ? '&#127942; ' + b.winnerName : (b.status === 'active' ? 'In progress' : '–')}</span>
                 </div>`;
+            });
+            html += `</div>`;
+        }
+
+        // Horse Races
+        const races = (archive.horseRaces || []).filter(r => r.status !== 'setup');
+        if (races.length > 0) {
+            html += `<div class="lb-board" style="margin-top:12px;">
+                <div class="lb-section-header">&#127939; Horse Races</div>`;
+            races.forEach(r => {
+                html += `<div style="padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">
+                    <div style="font-size:0.88rem;font-weight:600;margin-bottom:6px;">${r.name || 'Horse Race'}</div>`;
+                (r.teams || []).forEach(t => {
+                    const players = (t.playerNames || []).join(', ');
+                    html += `<div style="font-size:0.78rem;color:#555;padding:2px 0;">${t.name || ''}${players ? ` — ${players}` : ''}</div>`;
+                });
+                html += `</div>`;
             });
             html += `</div>`;
         }
