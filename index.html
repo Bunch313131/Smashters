@@ -4435,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.5';
+    const APP_VERSION = '3.3.6';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -8245,10 +8245,10 @@
         const loseScore = winner === teamA ? scores.B : scores.A;
 
         let html = `
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                 <button class="bt-back-btn" onclick="ledgerGoHome()">← Back</button>
+                <h2 class="section-title" style="margin:0;flex:1;">${archive.eventName || 'Smashters'} ${archive.year}</h2>
             </div>
-            <h2 class="section-title" style="margin:0 0 12px;">${archive.eventName || 'Smashters'} ${archive.year}</h2>
             <div class="lb-board">
                 <div class="lb-section-header" style="text-align:center;letter-spacing:2px;">Final Result</div>
                 <div style="padding:18px 16px;text-align:center;background:#fff;">
@@ -14855,11 +14855,11 @@
             ? `<button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${bracket.id}')">Delete Bracket</button>`
             : '';
 
-        return `<div class="bt-detail-header">
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
-            ${isAdmin ? `<button class="bt-back-btn" style="margin-left:auto;" onclick="btRenameBracket('${bracket.id}')">Rename</button>` : ''}
+            <h2 class="section-title" style="margin:0;flex:1;">${bracket.name}</h2>
+            ${isAdmin ? `<button class="bt-back-btn" onclick="btRenameBracket('${bracket.id}')">Rename</button>` : ''}
         </div>
-        <h2 class="section-title" style="margin:0 0 12px">${bracket.name}</h2>
         ${winnerHtml}
         <div class="bt-bracket-scroll">
             ${renderBracketTree(bracket, false)}
