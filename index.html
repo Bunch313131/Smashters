@@ -412,6 +412,9 @@
             border: 1px solid rgba(0,0,0,0.08);
         }
 
+        .archive-row-tap { cursor: pointer; }
+        .archive-row-tap:active > div { background: #f5f5f5 !important; }
+
         .lb-section-header {
             background: linear-gradient(135deg, #004d35 0%, var(--masters-green) 50%, #007a52 100%);
             color: var(--masters-yellow);
@@ -4432,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.2';
+    const APP_VERSION = '3.3.3';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -8024,6 +8027,9 @@
         const el = document.getElementById('ledger-content');
         if (!el) return;
 
+        // Sub-view: archive detail
+        if (_ledgerDetailArchive) { renderArchiveDetailView(el); return; }
+
         const fmtPts = n => n % 1 === 0.5 ? `${Math.floor(n)}&frac12;` : `${n}`;
         const teamColor = name => SMASHTERS_TEAM_COLORS[name] || '#555';
 
@@ -8063,6 +8069,217 @@
         });
 
         html += `</div>`;
+
+        // Firebase year archives
+        html += `<div class="lb-board" style="margin-top:16px;">
+            <div class="lb-section-header" style="letter-spacing:2px;">Year Archives</div>`;
+
+        if (_archiveCache === null) {
+            // Kick off async load; show spinner for now
+            _archiveCache = 'loading';
+            loadArchivesFromFirebase();
+            html += `<div style="padding:20px;text-align:center;color:#aaa;font-size:0.85rem;background:#fff;">Loading archives&hellip;</div>`;
+        } else if (_archiveCache === 'loading') {
+            html += `<div style="padding:20px;text-align:center;color:#aaa;font-size:0.85rem;background:#fff;">Loading archives&hellip;</div>`;
+        } else {
+            const archiveList = Object.values(_archiveCache).sort((a, b) => b.year - a.year);
+            if (archiveList.length === 0) {
+                html += `<div style="padding:20px;text-align:center;color:#aaa;font-style:italic;font-size:0.85rem;background:#fff;">No archived years yet.</div>`;
+            } else {
+                archiveList.forEach(arc => {
+                    const s = arc.finalScores || { A: 0, B: 0 };
+                    const tA = arc.teamA || { name: 'Team A', color: '#555' };
+                    const tB = arc.teamB || { name: 'Team B', color: '#555' };
+                    const winner = s.A > s.B ? tA : (s.B > s.A ? tB : null);
+                    const winColor = winner ? winner.color : '#555';
+                    const winScore = winner === tA ? s.A : s.B;
+                    const loseScore = winner === tA ? s.B : s.A;
+                    html += `
+                    <div class="archive-row-tap" onclick="ledgerViewArchive(${arc.year})">
+                        <div style="display:grid;grid-template-columns:56px 1fr auto;align-items:center;min-height:52px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">
+                            <div style="padding:10px 0 10px 14px;font-size:0.78rem;font-weight:800;color:#888;">${arc.year}</div>
+                            <div style="padding:10px 8px;">
+                                <div style="font-size:0.9rem;font-weight:700;color:#111;">${winner ? winner.name : 'Tied'}</div>
+                                ${winner ? `<div style="font-size:0.7rem;color:#999;margin-top:1px;">def. ${(winner===tA?tB:tA).name}</div>` : ''}
+                            </div>
+                            <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;">
+                                <span style="display:inline-block;padding:4px 11px;border-radius:6px;background:linear-gradient(to right,${winColor},${darkenColor(winColor)});color:#fff;font-size:0.82rem;font-weight:800;white-space:nowrap;">${fmtPts(winScore)}&ndash;${fmtPts(loseScore)}</span>
+                                <span style="color:#ccc;font-size:1rem;">›</span>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            }
+        }
+
+        html += `</div>`;
+        el.innerHTML = html;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // ARCHIVE: Year-End snapshot to Firebase smashters-archives/{year}
+    // ─────────────────────────────────────────────────────────
+    let _archiveCache = null;       // null=not loaded, 'loading'=in flight, obj=loaded
+    let _ledgerDetailArchive = null; // set when viewing a detail sub-view
+
+    async function archiveCurrentYear() {
+        if (!S.ui.settingsUnlocked) { alert('Admin access required.'); return; }
+        const year = S.config.year || new Date().getFullYear();
+        if (!confirm(`Archive ${year} results to The Ledger?\n\nThis saves a permanent read-only snapshot that anyone can view. You can still reset the event afterward.`)) return;
+        if (!LiveSync.init()) { alert('Firebase not available. Cannot archive.'); return; }
+
+        // Compute final team scores
+        const finalScores = getTeamScores();
+
+        // Compute per-session scores + pre-compute match results (avoids re-running handicap logic at read time)
+        const sessions = S.config.sessions.map(s => ({
+            id: s.id, name: s.name, order: s.order,
+            scores: getSessionScores(s.id),
+        }));
+
+        const matchResults = Object.values(S.matches).map(m => {
+            const status = getMatchPlayStatus(m);
+            return {
+                id: m.id,
+                sessionId: m.sessionId,
+                type: m.type,
+                teamANames: m.teamA.map(id => getPlayerName(id)),
+                teamBNames: m.teamB.map(id => getPlayerName(id)),
+                result: status.text,
+                winner: status.leader,
+                isComplete: status.isComplete,
+            };
+        });
+
+        // Compact bracket winners
+        const bracketSummaries = (S.brackets || []).map(b => ({
+            id: b.id, name: b.name, status: b.status,
+            winner: b.winner ? getPlayerName(b.winner) : null,
+        }));
+
+        const archiveData = {
+            year,
+            eventName: S.config.eventName || 'Smashters',
+            eventDate: S.config.eventDate || '',
+            courseName: S.config.courseName || '',
+            clubName: S.config.clubName || '',
+            teamA: { name: S.config.teamA.name, color: S.config.teamA.color },
+            teamB: { name: S.config.teamB.name, color: S.config.teamB.color },
+            finalScores,
+            sessions,
+            matchResults,
+            bracketSummaries,
+            archivedAt: firebase.database.ServerValue.TIMESTAMP,
+        };
+
+        try {
+            await LiveSync.db.ref('smashters-archives/' + year).set(archiveData);
+            _archiveCache = null; // bust cache so Ledger re-fetches
+            showToast(`${year} archived to The Ledger!`);
+        } catch (e) {
+            alert('Error archiving: ' + e.message);
+        }
+    }
+
+    async function loadArchivesFromFirebase() {
+        try {
+            if (!LiveSync.init()) { _archiveCache = {}; renderLedger(); return; }
+            const snap = await LiveSync.db.ref('smashters-archives').once('value');
+            _archiveCache = snap.val() || {};
+        } catch (e) {
+            _archiveCache = {};
+        }
+        renderLedger();
+    }
+
+    function ledgerViewArchive(year) {
+        if (!_archiveCache || !_archiveCache[year]) return;
+        _ledgerDetailArchive = _archiveCache[year];
+        const el = document.getElementById('ledger-content');
+        if (el) renderArchiveDetailView(el);
+    }
+
+    function ledgerGoHome() {
+        _ledgerDetailArchive = null;
+        renderLedger();
+    }
+
+    function renderArchiveDetailView(el) {
+        const archive = _ledgerDetailArchive;
+        if (!archive) { ledgerGoHome(); return; }
+
+        const fmtPts = n => n % 1 === 0.5 ? `${Math.floor(n)}&frac12;` : `${n}`;
+        const scores = archive.finalScores || { A: 0, B: 0 };
+        const teamA = archive.teamA || { name: 'Team A', color: '#555' };
+        const teamB = archive.teamB || { name: 'Team B', color: '#555' };
+        const winner = scores.A > scores.B ? teamA : (scores.B > scores.A ? teamB : null);
+        const loser  = winner ? (winner === teamA ? teamB : teamA) : null;
+        const winScore = winner === teamA ? scores.A : scores.B;
+        const loseScore = winner === teamA ? scores.B : scores.A;
+
+        let html = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <button class="bt-back-btn" onclick="ledgerGoHome()">← Back</button>
+            </div>
+            <h2 class="section-title" style="margin:0 0 12px;">${archive.eventName || 'Smashters'} ${archive.year}</h2>
+            <div class="lb-board">
+                <div class="lb-section-header" style="text-align:center;letter-spacing:2px;">Final Result</div>
+                <div style="padding:18px 16px;text-align:center;background:#fff;">
+                    ${winner
+                        ? `<div style="font-size:1rem;font-weight:700;color:${winner.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${winner.name} wins</div>
+                           <div style="font-size:2rem;font-weight:900;color:#111;letter-spacing:1px;">${fmtPts(winScore)} &ndash; ${fmtPts(loseScore)}</div>
+                           <div style="font-size:0.78rem;color:#888;margin-top:4px;">def. ${loser.name}</div>`
+                        : `<div style="font-size:1.6rem;font-weight:900;">TIED ${fmtPts(scores.A)} &ndash; ${fmtPts(scores.B)}</div>`
+                    }
+                    ${archive.courseName ? `<div style="font-size:0.72rem;color:#aaa;margin-top:10px;">&#128204; ${archive.courseName}${archive.clubName ? ' &middot; ' + archive.clubName : ''}</div>` : ''}
+                    ${archive.eventDate  ? `<div style="font-size:0.72rem;color:#aaa;">${archive.eventDate}</div>` : ''}
+                </div>
+            </div>`;
+
+        // Sessions + match results
+        const sessions = (archive.sessions || []).slice().sort((a, b) => a.order - b.order);
+        sessions.forEach(session => {
+            const sessionMatches = (archive.matchResults || []).filter(m => m.sessionId === session.id);
+            const sess = session.scores || { A: 0, B: 0 };
+            html += `
+            <div class="lb-board" style="margin-top:12px;">
+                <div class="lb-section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    <span>${session.name}</span>
+                    <span style="font-size:0.8rem;font-weight:700;opacity:0.9;">${teamA.name} ${fmtPts(sess.A)} &ndash; ${fmtPts(sess.B)} ${teamB.name}</span>
+                </div>`;
+            sessionMatches.forEach(m => {
+                const aWon = m.winner === 'A';
+                const bWon = m.winner === 'B';
+                const halved = m.isComplete && !m.winner;
+                html += `
+                <div style="display:grid;grid-template-columns:1fr 56px 1fr;min-height:44px;align-items:center;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;">
+                    <div style="padding:8px 12px;text-align:right;font-size:0.82rem;font-weight:${aWon?'700':'400'};color:${aWon?teamA.color:'#555'};">
+                        ${aWon ? `<span style="font-size:0.68rem;margin-right:5px;background:${teamA.color};color:#fff;padding:1px 5px;border-radius:3px;">${m.result}</span>` : ''}${m.teamANames.join(' / ')}
+                    </div>
+                    <div style="text-align:center;font-size:0.68rem;font-weight:700;color:#bbb;text-transform:uppercase;">${m.isComplete ? (halved ? 'TIE' : 'F') : '–'}</div>
+                    <div style="padding:8px 12px;font-size:0.82rem;font-weight:${bWon?'700':'400'};color:${bWon?teamB.color:'#555'};">
+                        ${m.teamBNames.join(' / ')}${bWon ? `<span style="font-size:0.68rem;margin-left:5px;background:${teamB.color};color:#fff;padding:1px 5px;border-radius:3px;">${m.result}</span>` : ''}
+                        ${halved ? `<span style="font-size:0.68rem;margin-left:5px;color:#888;">${m.result}</span>` : ''}
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+        });
+
+        // Brackets
+        const brackets = (archive.bracketSummaries || []).filter(b => b.status === 'complete' || b.status === 'active');
+        if (brackets.length > 0) {
+            html += `<div class="lb-board" style="margin-top:12px;">
+                <div class="lb-section-header">&#127942; Brackets</div>`;
+            brackets.forEach(b => {
+                html += `<div style="padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.07);background:#fff;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.88rem;font-weight:600;">${b.name}</span>
+                    <span style="font-size:0.82rem;color:#555;">${b.winner ? '&#127942; ' + b.winner : b.status === 'active' ? 'In progress' : '–'}</span>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+
         el.innerHTML = html;
     }
 
@@ -8692,6 +8909,16 @@
             </div>
 
             <button class="btn btn-primary btn-block" onclick="saveSettings()">Save Settings</button>
+
+            ${S.ui.settingsUnlocked ? `
+            <div class="settings-section" style="margin-top:24px;">
+                <div class="settings-section-header" style="background:var(--masters-green);">Year End</div>
+                <div class="settings-section-body">
+                    <p class="text-sm text-muted mb-16">Save a permanent snapshot of this year's results to The Ledger. Anyone can view it anytime — no login required.</p>
+                    <button class="btn" style="background:var(--masters-green);color:#fff;font-weight:600;" onclick="archiveCurrentYear()">📚 Archive This Year</button>
+                </div>
+            </div>
+            ` : ''}
 
             <div class="settings-section" style="margin-top:24px;">
                 <div class="settings-section-header" style="background:var(--masters-red);">Danger Zone</div>
