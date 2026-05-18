@@ -4435,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.6';
+    const APP_VERSION = '3.3.7';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -8245,9 +8245,9 @@
         const loseScore = winner === teamA ? scores.B : scores.A;
 
         let html = `
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <button class="bt-back-btn" onclick="ledgerGoHome()">← Back</button>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
                 <h2 class="section-title" style="margin:0;flex:1;">${archive.eventName || 'Smashters'} ${archive.year}</h2>
+                <button class="bt-back-btn" onclick="ledgerGoHome()">← Back</button>
             </div>
             <div class="lb-board">
                 <div class="lb-section-header" style="text-align:center;letter-spacing:2px;">Final Result</div>
@@ -14775,8 +14775,8 @@
         }
 
         return `<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-            <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
             <h2 class="section-title" style="margin:0;flex:1;">New Bracket</h2>
+            <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
         </div>
         <div class="bt-setup-section">
             <div class="bt-setup-head">Settings</div>
@@ -14855,10 +14855,10 @@
             ? `<button class="bt-btn bt-btn-delete" onclick="btDeleteBracket('${bracket.id}')">Delete Bracket</button>`
             : '';
 
-        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
             <h2 class="section-title" style="margin:0;flex:1;">${bracket.name}</h2>
             ${isAdmin ? `<button class="bt-back-btn" onclick="btRenameBracket('${bracket.id}')">Rename</button>` : ''}
+            <button class="bt-back-btn" onclick="btBackToHome()">← Back</button>
         </div>
         ${winnerHtml}
         <div class="bt-bracket-scroll">
