@@ -4435,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.8';
+    const APP_VERSION = '3.3.9';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -13414,7 +13414,7 @@
         if (holeTimerSelectedTeam) selectHoleTimerTeam(holeTimerSelectedTeam);
         // Restore display if timer was running or has elapsed time
         if (holeTimerElapsed > 0 || holeTimerRunning) {
-            updateSegClock(holeTimerRunning ? holeTimerElapsed + (Date.now() - holeTimerStartTime) : holeTimerElapsed);
+            updateSegClock(holeTimerRunning ? holeTimerElapsed + (performance.now() - holeTimerStartTime) : holeTimerElapsed);
         }
         if (holeTimerRunning) {
             const btn = document.getElementById('htStartStop');
@@ -13434,7 +13434,7 @@
     }
 
     function updateHoleTimerDisplay() {
-        const current = holeTimerElapsed + (Date.now() - holeTimerStartTime);
+        const current = holeTimerElapsed + (performance.now() - holeTimerStartTime);
         updateSegClock(current);
     }
 
@@ -13443,14 +13443,16 @@
         if (holeTimerRunning) {
             // Stop
             clearInterval(holeTimerInterval);
-            holeTimerElapsed += Date.now() - holeTimerStartTime;
+            holeTimerElapsed += performance.now() - holeTimerStartTime;
             holeTimerRunning = false;
             if (btn) { btn.textContent = 'Start'; btn.style.background = ''; }
             updateHoleTimerDisplay();
         } else {
-            // Start
-            holeTimerStartTime = Date.now();
+            // Start — always reset elapsed so a forgotten Reset doesn't carry over
+            holeTimerElapsed = 0;
+            holeTimerStartTime = performance.now();
             holeTimerRunning = true;
+            clearInterval(holeTimerInterval);
             holeTimerInterval = setInterval(updateHoleTimerDisplay, 100);
             if (btn) { btn.textContent = 'Stop'; btn.style.background = '#c0392b'; }
         }
@@ -13468,7 +13470,7 @@
 
     function logHoleTime() {
         if (!holeTimerSelectedTeam) { showToast('Select a team first'); return; }
-        const elapsed = holeTimerRunning ? holeTimerElapsed + (Date.now() - holeTimerStartTime) : holeTimerElapsed;
+        const elapsed = holeTimerRunning ? holeTimerElapsed + (performance.now() - holeTimerStartTime) : holeTimerElapsed;
         if (elapsed === 0) { showToast('Timer has not started'); return; }
 
         if (!S.holeTimes) S.holeTimes = [];
