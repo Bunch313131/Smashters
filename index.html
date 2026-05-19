@@ -4435,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.9';
+    const APP_VERSION = '3.3.10';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -14022,16 +14022,63 @@
         if (!S.horseRaces) S.horseRaces = [];
         if (!S.ui.activeHorseRaceId) S.ui.activeHorseRaceId = null;
         const race = hrGetRace();
-        if (!race || race.status === 'complete') {
+        if (!race) {
             el.innerHTML = renderHRHome();
         } else if (race.status === 'setup') {
             el.innerHTML = renderHRSetup(race);
             hrRefreshSelects();
+        } else if (race.status === 'complete') {
+            el.innerHTML = renderHRComplete(race);
         } else if (race.status === 'scoring') {
             el.innerHTML = renderHRScoring(race);
         } else if (race.status === 'chipoff') {
             el.innerHTML = renderHRChipoff(race);
         }
+    }
+
+    function renderHRComplete(race) {
+        const isAdmin = S.ui.settingsUnlocked;
+        const teamName = race.winner ? hrTeamDisplayName(race, race.winner.teamId) : null;
+        const color = race.winner?.smashtersTeam === 'A' ? S.config.teamA.color : S.config.teamB.color;
+
+        let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <h2 class="section-title" style="margin:0;flex:1;">${race.name}</h2>
+            ${isAdmin && !race.pointAwarded ? `<button class="bt-back-btn" onclick="hrAwardPoint('${race.id}')">+ Award Point</button>` : ''}
+            <button class="bt-back-btn" onclick="hrBackHome()">← Back</button>
+        </div>`;
+
+        if (teamName) {
+            html += `<div class="hr-winner-badge" style="background:${color};margin-bottom:14px;">🏆 ${teamName} wins!</div>`;
+        }
+        if (race.pointAwarded) {
+            html += `<div style="text-align:center;margin-bottom:14px;"><span class="hr-point-awarded">✓ Point on Leaderboard</span></div>`;
+        }
+
+        // Show all teams grouped by smashters team
+        const teamsA = race.teams.filter(t => t.smashtersTeam === 'A');
+        const teamsB = race.teams.filter(t => t.smashtersTeam === 'B');
+        const renderTeamGroup = (teams, label, labelColor) => {
+            if (!teams.length) return '';
+            return `<div style="margin-bottom:12px;">
+                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${labelColor};margin-bottom:6px;">${label}</div>
+                ${teams.map(t => {
+                    const players = (t.playerIds || []).map(id => getPlayerName(id)).join(' / ');
+                    const isWinner = race.winner?.teamId === t.id;
+                    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border-radius:8px;margin-bottom:6px;border:2px solid ${isWinner ? color : 'transparent'};">
+                        ${isWinner ? `<span style="font-size:1rem;">🏆</span>` : `<span style="font-size:0.85rem;color:#ccc;">○</span>`}
+                        <span style="font-size:0.88rem;font-weight:${isWinner ? '700' : '400'};color:${isWinner ? '#111' : '#555'};">${players}</span>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        };
+
+        html += renderTeamGroup(teamsA, S.config.teamA.name, S.config.teamA.color);
+        html += renderTeamGroup(teamsB, S.config.teamB.name, S.config.teamB.color);
+
+        if (isAdmin) {
+            html += `<button class="btn btn-danger" style="width:100%;margin-top:8px;" onclick="hrDeleteRace('${race.id}')">Delete Race</button>`;
+        }
+        return html;
     }
 
     function renderHRHome() {
@@ -14066,7 +14113,9 @@
                     <div class="hr-race-card-body">
                         ${winnerHtml}
                         <div class="hr-race-card-actions">
-                            ${!isComplete ? `<button class="hr-btn-resume" onclick="hrViewRace('${race.id}')">Resume</button>` : ''}
+                            ${isComplete
+                                ? `<button class="hr-btn-resume" onclick="hrViewRace('${race.id}')">View Results</button>`
+                                : `<button class="hr-btn-resume" onclick="hrViewRace('${race.id}')">Resume</button>`}
                             ${awardBtn}
                             <button class="hr-btn-delete" onclick="hrDeleteRace('${race.id}')">Delete</button>
                         </div>
