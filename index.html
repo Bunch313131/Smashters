@@ -4435,7 +4435,7 @@
     // COURSE DATA
     // ─────────────────────────────────────────────────────────
     // App version for cache busting and migration
-    const APP_VERSION = '3.3.10';
+    const APP_VERSION = '3.3.12';
     const VERSION_KEY = 'smashters-version';
 
     const DEFAULT_COURSE_HOLES = [
@@ -13434,7 +13434,7 @@
     }
 
     function updateHoleTimerDisplay() {
-        const current = holeTimerElapsed + (performance.now() - holeTimerStartTime);
+        const current = holeTimerRunning ? holeTimerElapsed + (performance.now() - holeTimerStartTime) : holeTimerElapsed;
         updateSegClock(current);
     }
 
@@ -13443,10 +13443,13 @@
         if (holeTimerRunning) {
             // Stop
             clearInterval(holeTimerInterval);
-            holeTimerElapsed += performance.now() - holeTimerStartTime;
+            holeTimerInterval = null;
+            const now = performance.now();
+            holeTimerElapsed += now - holeTimerStartTime;
+            holeTimerStartTime = now; // reset so any stray computation gets ~0 delta
             holeTimerRunning = false;
             if (btn) { btn.textContent = 'Start'; btn.style.background = ''; }
-            updateHoleTimerDisplay();
+            updateSegClock(holeTimerElapsed); // bypass updateHoleTimerDisplay entirely
         } else {
             // Start — always reset elapsed so a forgotten Reset doesn't carry over
             holeTimerElapsed = 0;
